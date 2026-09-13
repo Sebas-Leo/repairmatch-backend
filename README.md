@@ -2,7 +2,11 @@
 
 Backend project for **DBP, 2026-II**. RepairMatch connects people who need an appliance repaired with suitable technicians: publish a request, receive proposals, select a technician, complete the service, and leave a review.
 
-**Status: initial planning only.** This repository does not yet contain a Spring Boot application, database migrations, automated tests, or a Postman collection. The assignments and implementation choices below are proposals for team agreement, not completed features.
+**Status: backend planning; collaboration automation added.** This repository does not yet contain a Spring Boot application, database migrations, backend tests, or a Postman collection. The assignments and implementation choices below are proposals for team agreement, not completed features.
+
+## Team workflow and visible progress
+
+Follow the [team contribution workflow](docs/TEAM_WORKFLOW.md) and inspect the [shared progress dashboard](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). Tasks, approved issue references, reviewed pull requests, and linked verification evidence make contributions traceable. GitHub Actions checks contribution metadata and refreshes the dashboard; it does **not** yet run the Java backend or Postman tests. Status/checklist claims are self-reported, while PR/merge records are observed evidence—not grades or proof of a finished feature.
 
 ## Scope and first milestone
 

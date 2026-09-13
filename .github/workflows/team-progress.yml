@@ -1,0 +1,75 @@
+name: Team progress
+on:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned]
+  pull_request_target:
+    types: [opened, edited, closed, reopened, synchronize, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+concurrency:
+  group: team-progress
+  cancel-in-progress: false
+jobs:
+  dashboard:
+    if: ${{ github.event.issue.number == null || format('{0}', github.event.issue.number) != vars.PROGRESS_ISSUE_NUMBER }}
+    runs-on: ubuntu-latest
+    steps:
+      # Metadata only: never check out a PR or execute contributor-controlled code.
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          PROGRESS_ISSUE_NUMBER: ${{ vars.PROGRESS_ISSUE_NUMBER }}
+        with:
+          script: |
+            const target = process.env.PROGRESS_ISSUE_NUMBER || '';
+            if (!/^[1-9]\d*$/.test(target)) throw new Error('Set repository variable PROGRESS_ISSUE_NUMBER.');
+            const issue_number = Number(target);
+            const { data: dashboard } = await github.rest.issues.get({ ...context.repo, issue_number });
+            if (dashboard.pull_request || !dashboard.labels.some(l => l.name === 'dashboard'))
+              throw new Error('Target must be an issue labeled dashboard; refusing to overwrite it.');
+            const issues = (await github.paginate(github.rest.issues.listForRepo,
+              { ...context.repo, labels: 'delivery', state: 'all', per_page: 100 }))
+              .filter(i => !i.pull_request && !i.labels.some(l => ['dashboard', 'planning-only'].includes(l.name)));
+            const prs = await github.paginate(github.rest.pulls.list, { ...context.repo, state: 'all', per_page: 100 });
+            const references = new Map(prs.map(pr => [pr.number, new Set([...(pr.body || '')
+              .replace(/<!--[\s\S]*?-->/g, '').matchAll(/^\s*(?:Closes|Refs) #(\d+)\s*$/gmi)].map(m => Number(m[1])))]));
+            const modules = { identity: 'Ariana', requests: 'Camila', matching: 'Jairo', proposals: 'Sebastian', services: 'Adrian', shared: 'Team' };
+            const safe = value => String(value).replace(/[|`<>\r\n]/g, ' ');
+            const counts = { open: 0, inProgress: 0, blocked: 0, closedWithMerge: 0, closedWithoutMerge: 0, canceled: 0 };
+            const lines = ['# Team progress', '',
+              'Observed GitHub records, not grades or proof of working software. Checklists and status labels are self-reported. A merged PR is evidence to inspect, not certification that acceptance criteria pass.', '',
+              '| Module / proposed owner | Task | Assigned GitHub users | Declared status | Acceptance checklist (self-reported) | Linked PRs | Observed evidence | Updated (UTC) |',
+              '| --- | --- | --- | --- | --- | --- | --- | --- |'];
+            issues.sort((a, b) => a.number - b.number);
+            for (const module of [...Object.keys(modules), 'unclassified']) {
+              for (const issue of issues) {
+                const labels = issue.labels.map(l => l.name);
+                const matched = Object.keys(modules).filter(m => labels.includes(`module:${m}`));
+                if ((matched.length === 1 ? matched[0] : 'unclassified') !== module) continue;
+                const linked = prs.filter(pr => references.get(pr.number).has(issue.number));
+                const merged = linked.filter(pr => pr.merged_at && pr.base.ref === 'main');
+                const canceled = issue.state === 'closed' && issue.state_reason === 'not_planned';
+                const evidence = canceled ? 'Canceled / not planned' : issue.state === 'closed'
+                  ? merged.length ? 'Merged evidence; review tests' : 'Closed without merged evidence'
+                  : merged.length ? 'Open; partial merged evidence' : 'No merge to main observed';
+                if (canceled) counts.canceled++;
+                else if (issue.state === 'closed') counts[merged.length ? 'closedWithMerge' : 'closedWithoutMerge']++;
+                else { counts.open++; if (labels.includes('status:in-progress')) counts.inProgress++; if (labels.includes('status:blocked')) counts.blocked++; }
+                const acceptance = ((issue.body || '').match(/^### Acceptance criteria\s*\n([\s\S]*?)(?=^### |$(?![\s\S]))/mi) || [])[1] || '';
+                const boxes = [...acceptance.matchAll(/^\s*- \[([ xX])\]/gm)];
+                const checklist = boxes.length ? `${boxes.filter(m => /x/i.test(m[1])).length}/${boxes.length}` : 'Not provided';
+                const statuses = labels.filter(l => l.startsWith('status:')).join(', ') || 'No status label';
+                const links = linked.map(pr => `[#${pr.number}](${pr.html_url}) (${pr.merged_at ? 'merged' : pr.state})`).join(', ') || 'None';
+                lines.push(`| ${module} / ${modules[module] || 'Needs one module label'} | [#${issue.number}](${issue.html_url}) | ${safe(issue.assignees.map(a => a.login).join(', ') || 'Unassigned')} | ${safe(statuses)} | ${checklist} | ${links} | ${evidence} | ${safe(issue.updated_at)} |`);
+              }
+            }
+            lines.splice(4, 0, `Open: ${counts.open} (in progress: ${counts.inProgress}, blocked: ${counts.blocked}; labels can overlap). Closed with merged evidence: ${counts.closedWithMerge}. Closed without merged evidence: ${counts.closedWithoutMerge}. Canceled: ${counts.canceled}.`, '');
+            lines.push('', 'Only delivery-labeled tasks are included; planning-only trackers are excluded. References require a standalone Closes #123 or Refs #123 line. Merged evidence counts only PRs targeting main. Multiple/missing module labels appear as unclassified.', '',
+              '[Team workflow](https://github.com/Sebas-Leo/repairmatch-backend/blob/main/docs/TEAM_WORKFLOW.md)');
+            const body = lines.join('\n');
+            await core.summary.addRaw(body).write();
+            if (dashboard.body !== body) await github.rest.issues.update({ ...context.repo, issue_number, body });
