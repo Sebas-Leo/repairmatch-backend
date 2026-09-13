@@ -1,0 +1,258 @@
+{
+  "info": {
+    "name": "RepairMatch - Registro #3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 - Registrar cliente",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"clientEmail\", \"cliente-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "2 - Rechazar correo duplicado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "3 - Registrar técnico",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"technicianEmail\", \"tecnico-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{technicianEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"TECHNICIAN\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "4 - Rechazar correo inválido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"incorrecto\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "5 - Rechazar nombre vacío",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"   \",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "6 - Rechazar contraseña corta",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"123\",\n  \"role\": \"CLIENT\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "7 - Rechazar rol desconocido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"ADMIN\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "8 - Rechazar contraseña mayor a 72 bytes",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"bytes@example.com\",\n  \"password\": \"ááááááááááááááááááááááááááááááááááááá\",\n  \"role\": \"CLIENT\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    }
+  ]
+}
