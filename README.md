@@ -18,9 +18,9 @@ The first milestone is one working, tested journey:
 
 No frontend, payments, escrow, automatic AI diagnosis, "fair price" estimation, GPS tracking, or complex guarantees are included in the initial scope.
 
-## Five module owners
+## Team roles
 
-These are suggested assignments, not assessments of anyone's existing skills. **Everyone implements backend code.** Each owner delivers their module's controllers, DTOs and validation, services/business rules, persistence, automated tests, Postman examples, and API documentation. Integration and reviews are shared; nobody is assigned only documentation or testing.
+Each team member owns a backend module, including controllers, DTOs and validation, services/business rules, persistence, automated tests, Postman examples, and API documentation. Integration and peer reviews are shared responsibilities.
 
 | Owner | Module | Main responsibilities | Acceptance example |
 | --- | --- | --- | --- |
@@ -30,13 +30,9 @@ These are suggested assignments, not assessments of anyone's existing skills. **
 | **Royer Sebastian Ramos Vargas** | Proposals and transactional selection | Submit/list/compare proposals, visit/diagnosis cost and availability, selection authorization, atomic proposal acceptance + request closure + service creation. | Two competing accept operations cannot create two services; any failed selection rolls back all related changes. |
 | **Adrian Luis Pacheco Sulluchuco** | Service lifecycle, reviews, and reputation | Manage an already-created service, permitted state transitions, completed-service reviews, one-review rule, derived technician reputation. | Reject an invalid transition or early/duplicate review; a valid completed-service review contributes to the correct technician's reputation. |
 
-### Recommended learning role for Sebastian
+### Module coordination
 
-**Own proposals and transactional selection.** This combines API design, relational modeling, JPA relationships, authorization, business validation, transactions, concurrency, and integration testing. It connects the modules rather than being isolated CRUD, making it a strong learning assignment for DBP.
-
-Start with proposal creation and listing, then add selection, rollback behavior, and concurrent acceptance tests. The tradeoff is greater integration complexity: agree on contracts with Camila and Adrian before implementing selection, and ask for peer review rather than handling all integration alone.
-
-**Ownership boundary:** Sebastian's selection use case creates the initial `Service` and closes its `Request` atomically. Adrian owns the service model contract and its subsequent lifecycle. Coordinate that contract together; do not implement a second service-creation path in Adrian's module.
+The proposals module creates the initial `Service` and closes its `Request` atomically when an offer is accepted. The services module owns the service model contract and subsequent lifecycle. Both modules share one agreed creation contract; there must not be a second service-creation path.
 
 ## Proposed technical approach
 
@@ -132,6 +128,6 @@ Based on **"RepairMatch - Propuesta de Proyecto, DBP (Semana 3)"**, supplied as 
 
 Supporting official references: [Spring transactions](https://spring.io/guides/gs/managing-transactions/), [Spring Boot SQL/JPA support](https://docs.spring.io/spring-boot/reference/data/sql.html), and [Postman test examples](https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-examples).
 
-- [x] Documented the initial scope, five proposed module owners, learning recommendation, and implementation dependencies.
+- [x] Documented the initial scope, team roles, shared workflow, and implementation dependencies.
 - [ ] Confirm the open decisions with the team.
 - [ ] Bootstrap and implement the backend after approval to continue.
