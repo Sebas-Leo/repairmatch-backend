@@ -1,133 +1,133 @@
 # RepairMatch Backend
 
-Backend project for **DBP, 2026-II**. RepairMatch connects people who need an appliance repaired with suitable technicians: publish a request, receive proposals, select a technician, complete the service, and leave a review.
+Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que necesitan reparar un electrodoméstico con técnicos adecuados: el cliente publica una solicitud, recibe propuestas, selecciona un técnico, completa el servicio y deja una reseña.
 
-**Status: backend planning; collaboration automation added.** This repository does not yet contain a Spring Boot application, database migrations, backend tests, or a Postman collection. The assignments and implementation choices below are proposals for team agreement, not completed features.
+**Estado: planificación del backend; automatización del trabajo en equipo incorporada.** Este repositorio todavía no contiene una aplicación Spring Boot, migraciones de base de datos, pruebas del backend ni una colección de Postman. Las responsabilidades y decisiones de implementación descritas son propuestas para coordinar con el equipo, no funcionalidades terminadas.
 
-## Team workflow and visible progress
+## Flujo de trabajo y seguimiento del avance
 
-Follow the [team contribution workflow](docs/TEAM_WORKFLOW.md) and inspect the [shared progress dashboard](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). Tasks, approved issue references, reviewed pull requests, and linked verification evidence make contributions traceable. GitHub Actions checks contribution metadata and refreshes the dashboard; it does **not** yet run the Java backend or Postman tests. Status/checklist claims are self-reported, while PR/merge records are observed evidence—not grades or proof of a finished feature.
+Consulta la [guía de trabajo del equipo](docs/TEAM_WORKFLOW.md) y el [tablero compartido de avance](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). Las tareas, sus aprobaciones, las solicitudes de integración (pull requests o PR) revisadas y las evidencias de verificación permiten identificar las contribuciones. GitHub Actions comprueba los datos de los PR y actualiza el tablero; **todavía no ejecuta el backend Java ni pruebas de Postman**. Los estados y las listas de verificación son declarados por el equipo; los PR y las integraciones registradas son evidencias observables, no calificaciones ni pruebas de que una funcionalidad esté terminada.
 
-## Scope and first milestone
+## Alcance y primer hito
 
-Build a REST API with **Java and Spring Boot**, persist data in **PostgreSQL**, and validate the complete workflow through **Postman**. The current assignment is **backend-only**, overriding the web/mobile frontend scope mentioned in the original report.
+Desarrollar una API REST con **Java y Spring Boot**, almacenar los datos en **PostgreSQL** y validar el flujo completo mediante **Postman**. La entrega actual incluye **únicamente el backend**, reemplazando el alcance de frontend web y móvil mencionado en el informe original.
 
-The first milestone is one working, tested journey:
+El primer hito consiste en completar y probar este recorrido:
 
-`Client -> Repair request -> Compatible technicians -> Proposals -> Selection -> Service -> Review`
+`Cliente -> Solicitud de reparación -> Técnicos compatibles -> Propuestas -> Selección -> Servicio -> Reseña`
 
-No frontend, payments, escrow, automatic AI diagnosis, "fair price" estimation, GPS tracking, or complex guarantees are included in the initial scope.
+El alcance inicial no incluye frontend, pagos, custodia de fondos, diagnóstico automático con IA, estimación de un "precio justo", seguimiento GPS ni un sistema complejo de garantías.
 
-## Team roles
+## Roles del equipo
 
-Each team member owns a backend module, including controllers, DTOs and validation, services/business rules, persistence, automated tests, Postman examples, and API documentation. Integration and peer reviews are shared responsibilities.
+Cada integrante es responsable de un módulo del backend: controladores, DTO y validaciones, servicios y reglas de negocio, persistencia, pruebas automatizadas, ejemplos de Postman y documentación de la API. La integración y la revisión entre compañeros son responsabilidades compartidas.
 
-| Owner | Module | Main responsibilities | Acceptance example |
+| Responsable | Módulo | Responsabilidades principales | Ejemplo de criterio de aceptación |
 | --- | --- | --- | --- |
-| **Ariana Belen Blanco Anicama** | Identity and access | User registration/login, password protection, client/technician access rules, authenticated identity, shared authorization foundation. | Valid credentials authenticate; invalid credentials fail; a user cannot modify another user's protected resources. |
-| **Camila Araceli Alfaro Chuquino** | Requests, evidence, and appliance types | Structured publication, original description and normalized fields, type catalog, request states, request-owned evidence, ownership checks. | Publish a valid request; reject invalid data; prevent evidence from existing without its parent request. |
-| **Jairo Andre Cunya Villalta** | Technician profiles and matching | Technician specialization of User, experience/profile, supported appliance types, service areas/radius, deterministic eligibility queries. | A technician matches only a supported appliance type inside their radius; reject out-of-radius and unsupported-type matches. |
-| **Royer Sebastian Ramos Vargas** | Proposals and transactional selection | Submit/list/compare proposals, visit/diagnosis cost and availability, selection authorization, atomic proposal acceptance + request closure + service creation. | Two competing accept operations cannot create two services; any failed selection rolls back all related changes. |
-| **Adrian Luis Pacheco Sulluchuco** | Service lifecycle, reviews, and reputation | Manage an already-created service, permitted state transitions, completed-service reviews, one-review rule, derived technician reputation. | Reject an invalid transition or early/duplicate review; a valid completed-service review contributes to the correct technician's reputation. |
+| **Ariana Belen Blanco Anicama** | Identidad y acceso | Registro e inicio de sesión, protección de contraseñas, permisos de clientes y técnicos, identidad autenticada y base común de autorización. | Las credenciales válidas permiten autenticarse; las inválidas se rechazan; un usuario no puede modificar recursos protegidos de otro. |
+| **Camila Araceli Alfaro Chuquino** | Solicitudes, evidencias y tipos de electrodomésticos | Publicación estructurada, descripción original y campos normalizados, catálogo de tipos, estados de la solicitud, evidencias asociadas y validación del propietario. | Se publica una solicitud válida, se rechazan datos incorrectos y se impide que una evidencia exista sin su solicitud. |
+| **Jairo Andre Cunya Villalta** | Perfiles de técnicos y búsqueda de técnicos compatibles | Especialización de Usuario en Técnico, experiencia y perfil, tipos de electrodomésticos atendidos, zonas y radio de servicio, consultas determinísticas de compatibilidad. | Un técnico solo es compatible si atiende el tipo de electrodoméstico y la ubicación está dentro de su radio; se descartan los demás casos. |
+| **Royer Sebastian Ramos Vargas** | Propuestas y selección transaccional | Envío, consulta y comparación de propuestas, costo de visita o diagnóstico, disponibilidad, autorización de la selección y aceptación atómica junto con el cierre de la solicitud y la creación del servicio. | Dos aceptaciones simultáneas no pueden crear dos servicios; si la selección falla, se revierten todos los cambios relacionados. |
+| **Adrian Luis Pacheco Sulluchuco** | Ciclo del servicio, reseñas y reputación | Gestión del servicio creado, transiciones de estado permitidas, reseñas de servicios completados, restricción de una reseña por servicio y reputación derivada del técnico. | Se rechaza una transición inválida o una reseña anticipada o duplicada; una reseña válida afecta la reputación del técnico correspondiente. |
 
-### Module coordination
+### Coordinación entre módulos
 
-The proposals module creates the initial `Service` and closes its `Request` atomically when an offer is accepted. The services module owns the service model contract and subsequent lifecycle. Both modules share one agreed creation contract; there must not be a second service-creation path.
+El módulo de propuestas crea el `Service` inicial y cierra su `Request` de forma atómica cuando se acepta una oferta. El módulo de servicios define el contrato del modelo de servicio y gestiona su ciclo posterior. Ambos módulos deben compartir un único contrato de creación; no debe existir una segunda vía para crear servicios.
 
-## Proposed technical approach
+## Propuesta técnica
 
-Use a **modular monolith**: one Spring Boot application and one PostgreSQL database, organized by business module. This keeps a five-person course project manageable and allows selection to use one database transaction; the tradeoff is a shared deployment and the need to enforce module boundaries in code. Microservices are not planned.
+Utilizar un **monolito modular**: una aplicación Spring Boot y una base de datos PostgreSQL, organizadas por módulos de negocio. Esta estructura mantiene manejable un proyecto académico de cinco integrantes y permite que la selección se realice en una sola transacción de base de datos. Como contrapartida, todos los módulos comparten el despliegue y sus límites deben respetarse en el código. No se contemplan microservicios.
 
-| Technology | Role | Status |
+| Tecnología | Uso | Estado |
 | --- | --- | --- |
-| Java, Spring Boot, REST | Backend application and HTTP API | Required stack; not scaffolded |
-| Spring Data JPA, PostgreSQL | Persistence and relational constraints | From the report; not configured |
-| Spring Security | Authentication and authorization | From the report; authentication mechanism pending |
-| Postman | Shared requests, environments, and API validation | Required by current assignment; collection pending |
-| Maven | Reproducible build and dependency management | Recommended supporting tool |
-| JUnit and Mockito | Automated business-rule tests and isolated collaborators | Recommended supporting tools |
-| OpenAPI | Shared API contracts and discoverable documentation | Recommended supporting tool |
+| Java, Spring Boot, REST | Aplicación backend y API HTTP | Tecnologías requeridas; proyecto base pendiente |
+| Spring Data JPA, PostgreSQL | Persistencia y restricciones relacionales | Incluidas en el informe; configuración pendiente |
+| Spring Security | Autenticación y autorización | Incluida en el informe; mecanismo de autenticación por definir |
+| Postman | Solicitudes, entornos compartidos y validación de la API | Requerido para la entrega actual; colección pendiente |
+| Maven | Compilación reproducible y gestión de dependencias | Herramienta de apoyo recomendada |
+| JUnit y Mockito | Pruebas automatizadas de reglas de negocio y aislamiento de dependencias | Herramientas de apoyo recomendadas |
+| OpenAPI | Contratos compartidos y documentación consultable de la API | Herramienta de apoyo recomendada |
 
-Select compatible Java/Spring Boot/tool versions when bootstrapping; no version or runnable setup is claimed here. Postman validation complements, rather than replaces, automated tests. Transaction and concurrency behavior must also be verified against PostgreSQL.
+Las versiones compatibles de Java, Spring Boot y las herramientas se elegirán al crear el proyecto base. Este documento todavía no define una versión ni una configuración ejecutable. La validación con Postman complementa las pruebas automatizadas, no las reemplaza. Las transacciones y la concurrencia también deben verificarse con PostgreSQL.
 
-## Domain rules to preserve
+## Reglas del dominio
 
-The source report defines the following model and semantic rules (pp. 3-4):
+El informe original define el siguiente modelo y sus reglas semánticas (páginas 3 y 4). Los identificadores técnicos se conservan en inglés para facilitar su relación con la implementación:
 
-- **Technician is a specialization of User:** every technician is a user, but not every user is a technician. The concrete JPA mapping remains to be agreed.
-- A `Request` belongs to one publishing user and one `ApplianceType`; technicians can support multiple appliance types, and each type can have multiple technicians.
-- Do not introduce a persistent `Appliance` entity in the MVP. Brand, model, symptom, and other equipment details belong to the request.
-- `Evidence` is a weak, request-owned entity identified by **(`requestId`, `evidenceNumber`)**. Its partial number is local to the request; it cannot exist independently.
-- Each `Proposal` belongs to one technician and one request. **At most one proposal per request can be accepted and originate a service.** Enforce the invariant in transaction/concurrency handling and database constraints, not only in controller checks.
-- Each `Service` originates from exactly one accepted proposal; a proposal originates at most one service. Derive the responsible technician through `Service -> Proposal -> Technician`, not a redundant direct relationship.
-- Derive the serviced appliance type through `Service -> Proposal -> Request -> ApplianceType`; get brand/model and other equipment details from the request.
-- Each `Review` has one author and evaluates one service; a service has at most one review. Review creation follows completion. Reviewer eligibility and rating limits require an explicit API rule before implementation.
-- Technician reputation is **derived from reviews of services originating from that technician's proposals**. It is not an independently editable profile value; a cache is optional later.
-- Preserve the original request description alongside any normalized matching fields. AI, if added later, only structures text; it must not diagnose, and the user must confirm/correct its interpretation before saving.
+- **Técnico es una especialización de Usuario:** todo técnico es usuario, pero no todo usuario es técnico. El mapeo concreto en JPA está pendiente de acuerdo.
+- Una `Request` pertenece al usuario que la publica y a un `ApplianceType`. Un técnico puede atender varios tipos de electrodomésticos y cada tipo puede ser atendido por varios técnicos.
+- No se incorpora una entidad persistente `Appliance` en el producto mínimo viable (MVP). La marca, el modelo, el síntoma y los demás datos del equipo pertenecen a la solicitud.
+- `Evidence` es una entidad débil de la solicitud, identificada por **(`requestId`, `evidenceNumber`)**. Su número parcial es local a cada solicitud; no puede existir de forma independiente.
+- Cada `Proposal` pertenece a un técnico y a una solicitud. **Como máximo una propuesta por solicitud puede ser aceptada y originar un servicio.** Esta regla debe garantizarse mediante transacciones, control de concurrencia y restricciones de base de datos, no solo mediante validaciones en el controlador.
+- Cada `Service` nace de exactamente una propuesta aceptada; una propuesta puede originar como máximo un servicio. El técnico responsable se obtiene mediante `Service -> Proposal -> Technician`, sin una relación directa redundante.
+- El tipo de electrodoméstico atendido se obtiene mediante `Service -> Proposal -> Request -> ApplianceType`. La marca, el modelo y los demás datos se consultan en la solicitud.
+- Cada `Review` tiene un autor y evalúa un servicio; un servicio puede tener como máximo una reseña. La reseña se registra después de completar el servicio. Antes de implementar, se deben definir las reglas sobre quién puede escribirla y el rango de calificación.
+- La reputación del técnico **se deriva de las reseñas de los servicios originados por sus propuestas**. No es un valor editable de forma independiente en su perfil; más adelante podría almacenarse en caché.
+- Se conserva la descripción original de la solicitud junto con los campos normalizados para la búsqueda de técnicos compatibles. Si posteriormente se incorpora IA, solo estructurará texto: no realizará diagnósticos y el usuario deberá confirmar o corregir la interpretación antes de guardar.
 
-### Requests and services have different states
+### Las solicitudes y los servicios tienen estados diferentes
 
-These are the report's state labels, not finalized API enum spellings:
+Estos son los estados del informe, no los nombres definitivos de las enumeraciones de la API:
 
-| Entity | States in the report | Critical transition |
+| Entidad | Estados del informe | Transición principal |
 | --- | --- | --- |
-| Request | `PUBLICADA`, `CON_PROPUESTAS`, `CERRADA`, `CANCELADA`, `EXPIRADA` | Accepting a proposal closes the request. |
-| Service | `PROGRAMADO`, `EN_ATENCIÓN`, `COMPLETADO`, `CANCELADO` | Selection creates a scheduled service; its lifecycle then proceeds separately. |
+| Solicitud (`Request`) | `PUBLICADA`, `CON_PROPUESTAS`, `CERRADA`, `CANCELADA`, `EXPIRADA` | Aceptar una propuesta cierra la solicitud. |
+| Servicio (`Service`) | `PROGRAMADO`, `EN_ATENCIÓN`, `COMPLETADO`, `CANCELADO` | La selección crea un servicio programado; su ciclo continúa por separado. |
 
-**Proposed selection contract:** verify that the authenticated requester may select the proposal and the request is eligible; atomically accept that proposal, close the request, and create one scheduled service. A transaction alone does not prevent competing selections: add an agreed concurrency guard and database constraints. Repeated or competing selections must never produce a second contract. Agree on repeat-request responses and cancellation/expiration rules before coding.
+**Contrato de selección propuesto:** comprobar que el solicitante autenticado puede seleccionar la propuesta y que la solicitud cumple las condiciones; aceptar la propuesta, cerrar la solicitud y crear un servicio programado de forma atómica. Una transacción por sí sola no evita selecciones simultáneas: se necesita un mecanismo de concurrencia acordado y restricciones de base de datos. Los intentos repetidos o simultáneos nunca deben crear un segundo contrato. Las respuestas a solicitudes repetidas y las reglas de cancelación y expiración deben definirse antes de programar.
 
-### Matching clarification required
+### Aclaración pendiente sobre la búsqueda de técnicos compatibles
 
-The detailed rule on **p. 4** uses **compatible appliance type AND distance within the technician's radius**, with availability expressed in the request/proposal. The feature summary on **p. 2** and formula on **p. 5** also include availability in matching.
+La regla detallada de la **página 4** utiliza **tipo de electrodoméstico compatible Y distancia dentro del radio del técnico**, con la disponibilidad expresada en la solicitud y la propuesta. El resumen de funcionalidades de la **página 2** y la fórmula de la **página 5** también incluyen la disponibilidad como filtro de compatibilidad.
 
-**Provisional planning assumption:** follow the detailed p. 4 rule for the MVP; display availability for proposal comparison without making it an automatic eligibility filter. Confirm this inconsistency with the team/docent before implementation. Matching is deterministic, not AI-based.
+**Supuesto provisional de planificación:** seguir la regla detallada de la página 4 para el MVP y mostrar la disponibilidad al comparar propuestas, sin convertirla en un filtro automático. Esta diferencia debe confirmarse con el equipo y el docente antes de implementar. La búsqueda de técnicos compatibles (matching) es determinística, no utiliza IA.
 
-## Proposed API surface
+## Rutas propuestas de la API
 
-These routes are contract discussion starters, **not implemented endpoints**. Agree on payloads, pagination, error format, permissions, and final names together.
+Estas rutas son una base para acordar los contratos; **no son endpoints implementados**. El equipo debe definir los datos de entrada y salida, la paginación, el formato de errores, los permisos y los nombres definitivos.
 
-| Module | Proposed routes |
+| Módulo | Rutas propuestas |
 | --- | --- |
-| Identity | `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/users/me` |
-| Requests | `GET /api/appliance-types`, `POST /api/requests`, `GET /api/requests/{id}`, `POST /api/requests/{id}/evidence` |
-| Technicians | `GET /api/technicians/{id}`, `PUT /api/technicians/me/profile`, `PUT /api/technicians/me/service-areas`, `GET /api/technicians/me/matching-requests` |
-| Proposals | `POST /api/requests/{id}/proposals`, `GET /api/requests/{id}/proposals`, `POST /api/proposals/{id}/accept` |
-| Services and reviews | `GET /api/services/{id}`, `PATCH /api/services/{id}/status`, `POST /api/services/{id}/review`, `GET /api/technicians/{id}/reputation` |
+| Identidad | `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/users/me` |
+| Solicitudes | `GET /api/appliance-types`, `POST /api/requests`, `GET /api/requests/{id}`, `POST /api/requests/{id}/evidence` |
+| Técnicos | `GET /api/technicians/{id}`, `PUT /api/technicians/me/profile`, `PUT /api/technicians/me/service-areas`, `GET /api/technicians/me/matching-requests` |
+| Propuestas | `POST /api/requests/{id}/proposals`, `GET /api/requests/{id}/proposals`, `POST /api/proposals/{id}/accept` |
+| Servicios y reseñas | `GET /api/services/{id}`, `PATCH /api/services/{id}/status`, `POST /api/services/{id}/review`, `GET /api/technicians/{id}/reputation` |
 
-An authenticated role alone is insufficient: apply ownership checks to requests, proposals, services, and reviews. Final visibility of user/location/evidence data must be agreed before exposing it.
+El rol autenticado no es suficiente: también se debe comprobar la propiedad o relación del usuario con las solicitudes, propuestas, servicios y reseñas. La visibilidad de los datos personales, la ubicación y las evidencias debe acordarse antes de exponerlos.
 
-## Delivery roadmap and dependencies
+## Etapas de entrega y dependencias
 
-1. **Agree on contracts:** confirm assignments, settle matching ambiguity, model tables/constraints, state transitions, authorization, and request/response examples. Review the selection boundary first.
-2. **Bootstrap together:** create the Spring Boot project, database configuration, repeatable schema setup, test foundation, shared errors, and a safe Postman environment. Never commit secrets or real credentials.
-3. **Enable publication and matching:** Ariana supplies identity; Camila supplies request/type contracts; Jairo uses those contracts for technician eligibility. Use known coordinates initially; choose real geocoding later.
-4. **Complete hiring:** Sebastian consumes identity, request, and technician contracts; coordinate with Adrian to create a service atomically. Demonstrate competing selections and rollback with database-backed tests.
-5. **Close the loop:** Adrian implements subsequent service transitions, reviews, and derived reputation; the team validates the whole journey and unauthorized/invalid flows.
-6. **Add supporting integrations only after the core works:** real evidence storage, maps/geocoding, notifications, asynchronous processing, and automatic expiration. Keep provider boundaries explicit; do not present test substitutes as production integrations. Optional text-structuring AI is not required for the core MVP.
+1. **Acordar los contratos:** confirmar responsabilidades, resolver la diferencia sobre compatibilidad, modelar tablas y restricciones, definir transiciones de estado, autorización y ejemplos de entrada y salida. Revisar primero los límites de la selección.
+2. **Crear la base del proyecto en equipo:** configurar Spring Boot, la base de datos, un esquema reproducible, la estructura de pruebas, los errores compartidos y un entorno seguro de Postman. Nunca guardar secretos ni credenciales reales en el repositorio.
+3. **Habilitar la publicación y la compatibilidad:** Ariana proporciona la identidad; Camila, los contratos de solicitudes y tipos; Jairo utiliza esos contratos para determinar técnicos compatibles. Empezar con coordenadas conocidas y elegir después un servicio real de geocodificación.
+4. **Completar la contratación:** Sebastian utiliza los contratos de identidad, solicitudes y técnicos, y coordina con Adrian la creación atómica del servicio. Demostrar el comportamiento ante selecciones simultáneas y la reversión de cambios mediante pruebas con base de datos.
+5. **Completar el recorrido:** Adrian implementa las transiciones posteriores del servicio, las reseñas y la reputación derivada. El equipo valida el flujo completo y los casos inválidos o no autorizados.
+6. **Agregar integraciones de apoyo cuando funcione el núcleo:** almacenamiento real de evidencias, mapas y geocodificación, notificaciones, procesamiento asíncrono y expiración automática. Mantener claros los límites de cada proveedor y no presentar sustitutos de prueba como integraciones de producción. La IA opcional para estructurar texto no es necesaria para el núcleo del MVP.
 
-## Shared completion checklist
+## Lista compartida de finalización
 
-- [ ] Each member has delivered a substantive backend module, tests, Postman examples, documentation, and a peer review.
-- [ ] The client-to-review journey works with persisted data through Postman.
-- [ ] Validation, authorization, ownership, missing-resource, and invalid-transition cases are tested.
-- [ ] Atomic selection, rollback, and competing acceptance preserve one service per request.
-- [ ] Database relationships, evidence identity, and derived values match the agreed model.
-- [ ] API contracts and a sanitized Postman collection/environment are committed.
-- [ ] Setup instructions reflect an actually runnable application, with no secrets in the repository.
+- [ ] Cada integrante entregó un módulo sustancial del backend, pruebas, ejemplos de Postman, documentación y una revisión de otro compañero.
+- [ ] El recorrido del cliente hasta la reseña funciona con datos persistidos y se valida mediante Postman.
+- [ ] Existen pruebas de validación, autorización, propiedad de recursos, recursos inexistentes y transiciones inválidas.
+- [ ] La selección atómica, la reversión de cambios y las aceptaciones simultáneas mantienen un único servicio por solicitud.
+- [ ] Las relaciones de base de datos, la identificación de evidencias y los valores derivados coinciden con el modelo acordado.
+- [ ] Los contratos de la API y una colección y un entorno de Postman sin credenciales sensibles están versionados.
+- [ ] Las instrucciones de configuración corresponden a una aplicación realmente ejecutable, sin secretos en el repositorio.
 
-## Decisions still open
+## Decisiones pendientes
 
-- Team/docent confirmation of module assignments and the availability matching rule.
-- Exact state-transition permissions, cancellation/expiration policies, duplicate acceptance responses, proposal statuses, and review eligibility/rating scale.
-- Authentication mechanism, JPA mapping for User/Technician, database concurrency strategy, compatible versions, and repeatable schema tooling.
-- Location precision/radius units, evidence restrictions/access/storage, integration providers, and whether deferred asynchronous features are required for the first graded delivery.
+- Confirmación de las responsabilidades y de la regla de disponibilidad en la búsqueda de técnicos compatibles con el equipo y el docente.
+- Permisos exactos para las transiciones, políticas de cancelación y expiración, respuestas ante aceptaciones repetidas, estados de las propuestas y reglas de autoría y escala de las reseñas.
+- Mecanismo de autenticación, mapeo JPA de Usuario/Técnico, estrategia de concurrencia, versiones compatibles y herramienta para gestionar el esquema de forma reproducible.
+- Precisión de ubicación y unidades del radio, restricciones y almacenamiento de evidencias, proveedores externos y confirmación de si las funciones asíncronas aplazadas se requieren en la primera entrega calificada.
 
-## Source and current progress
+## Fuente y avance actual
 
-Based on **"RepairMatch - Propuesta de Proyecto, DBP (Semana 3)"**, supplied as `RepairMatch_Propuesta_DBP_Semana3_corregida.pdf`: members/problem (p. 1), MVP (p. 2), data model and semantics (pp. 3-4), technologies/integrations (pp. 4-5), exclusions (p. 6). The report is not included in this repository. Backend-only delivery and Postman validation come from the team's current request.
+Basado en **"RepairMatch - Propuesta de Proyecto, DBP (Semana 3)"**, proporcionado como `RepairMatch_Propuesta_DBP_Semana3_corregida.pdf`: integrantes y problema (página 1), MVP (página 2), modelo de datos y reglas semánticas (páginas 3 y 4), tecnologías e integraciones (páginas 4 y 5) y exclusiones (página 6). El informe no está incluido en este repositorio. La entrega exclusiva del backend y la validación con Postman corresponden al alcance actual solicitado por el equipo.
 
-Supporting official references: [Spring transactions](https://spring.io/guides/gs/managing-transactions/), [Spring Boot SQL/JPA support](https://docs.spring.io/spring-boot/reference/data/sql.html), and [Postman test examples](https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-examples).
+Referencias oficiales de apoyo: [transacciones en Spring](https://spring.io/guides/gs/managing-transactions/), [soporte SQL y JPA en Spring Boot](https://docs.spring.io/spring-boot/reference/data/sql.html) y [ejemplos de pruebas en Postman](https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-examples).
 
-- [x] Documented the initial scope, team roles, shared workflow, and implementation dependencies.
-- [ ] Confirm the open decisions with the team.
-- [ ] Bootstrap and implement the backend after approval to continue.
+- [x] Se documentaron el alcance inicial, los roles, el flujo compartido y las dependencias de implementación.
+- [ ] Confirmar las decisiones pendientes con el equipo.
+- [ ] Crear e implementar el backend después de autorizar la siguiente etapa.
