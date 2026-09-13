@@ -1,43 +1,43 @@
-name: Backend task
-description: Propose one reviewable backend deliverable or bug fix.
+name: Tarea de backend
+description: Propón un entregable de backend o una corrección que se pueda revisar por separado.
 title: "feat(module): "
 labels: [delivery, "status:needs-review"]
 body:
   - type: checkboxes
     attributes:
-      label: Pre-flight
+      label: Comprobaciones previas
       options:
-        - label: I searched existing issues for duplicates.
+        - label: Busqué tareas existentes para evitar duplicados.
           required: true
-        - label: I will wait for maintainer approval before opening a PR.
+        - label: Esperaré la aprobación del responsable de mantenimiento antes de abrir una PR.
           required: true
   - type: textarea
     attributes:
-      label: Problem
-      description: Explain the need or the bug, including reproduction steps when relevant.
+      label: Problema
+      description: Explica la necesidad o el error e incluye pasos para reproducirlo cuando corresponda.
     validations:
       required: true
   - type: textarea
     attributes:
-      label: Proposed solution
-      description: Define a small deliverable, dependencies, and what stays out of scope.
+      label: Solución propuesta
+      description: Define un entregable pequeño, sus dependencias y lo que queda fuera del alcance.
     validations:
       required: true
   - type: dropdown
     attributes:
-      label: Module
-      description: A maintainer must also apply the matching module label and assignee.
-      options: [identity, requests, matching, proposals, services, shared]
+      label: Módulo
+      description: El responsable de mantenimiento también debe aplicar la etiqueta module correspondiente y asignar al colaborador.
+      options: [Identidad (identity), Solicitudes (requests), Emparejamiento (matching), Propuestas (proposals), Servicios (services), Compartido (shared)]
     validations:
       required: true
   - type: textarea
     attributes:
-      label: Acceptance criteria
-      description: Use Markdown checkboxes for observable outcomes, including invalid/unauthorized cases.
-      placeholder: "- [ ] Describe an observable result."
+      label: Criterios de aceptación
+      description: Usa casillas Markdown para resultados observables, incluidos casos inválidos o no autorizados.
+      placeholder: "- [ ] Describe un resultado observable."
     validations:
       required: true
   - type: textarea
     attributes:
-      label: Evidence
-      description: Add test results, sanitized Postman runs, or linked PRs as work progresses. Never include credentials.
+      label: Evidencia
+      description: Agrega resultados de pruebas, ejecuciones Postman sin datos sensibles o PR vinculadas durante el trabajo. Nunca incluyas credenciales.

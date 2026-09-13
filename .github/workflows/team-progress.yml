@@ -1,4 +1,4 @@
-name: Team progress
+name: Progreso del equipo
 on:
   issues:
     types: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned]
@@ -19,30 +19,32 @@ jobs:
     if: ${{ github.event.issue.number == null || format('{0}', github.event.issue.number) != vars.PROGRESS_ISSUE_NUMBER }}
     runs-on: ubuntu-latest
     steps:
-      # Metadata only: never check out a PR or execute contributor-controlled code.
+      # Solo metadatos: nunca descargar una PR ni ejecutar código de colaboradores.
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           PROGRESS_ISSUE_NUMBER: ${{ vars.PROGRESS_ISSUE_NUMBER }}
         with:
           script: |
             const target = process.env.PROGRESS_ISSUE_NUMBER || '';
-            if (!/^[1-9]\d*$/.test(target)) throw new Error('Set repository variable PROGRESS_ISSUE_NUMBER.');
+            if (!/^[1-9]\d*$/.test(target)) throw new Error('Configura la variable del repositorio PROGRESS_ISSUE_NUMBER.');
             const issue_number = Number(target);
             const { data: dashboard } = await github.rest.issues.get({ ...context.repo, issue_number });
             if (dashboard.pull_request || !dashboard.labels.some(l => l.name === 'dashboard'))
-              throw new Error('Target must be an issue labeled dashboard; refusing to overwrite it.');
+              throw new Error('El destino debe ser una tarea con la etiqueta dashboard; se rechaza sobrescribirlo.');
             const issues = (await github.paginate(github.rest.issues.listForRepo,
               { ...context.repo, labels: 'delivery', state: 'all', per_page: 100 }))
               .filter(i => !i.pull_request && !i.labels.some(l => ['dashboard', 'planning-only'].includes(l.name)));
             const prs = await github.paginate(github.rest.pulls.list, { ...context.repo, state: 'all', per_page: 100 });
             const references = new Map(prs.map(pr => [pr.number, new Set([...(pr.body || '')
               .replace(/<!--[\s\S]*?-->/g, '').matchAll(/^\s*(?:Closes|Refs) #(\d+)\s*$/gmi)].map(m => Number(m[1])))]));
-            const modules = { identity: 'Ariana', requests: 'Camila', matching: 'Jairo', proposals: 'Sebastian', services: 'Adrian', shared: 'Team' };
+            const modules = { identity: 'Ariana', requests: 'Camila', matching: 'Jairo', proposals: 'Sebastian', services: 'Adrian', shared: 'Equipo' };
+            const moduleNames = { identity: 'Identidad', requests: 'Solicitudes', matching: 'Emparejamiento', proposals: 'Propuestas', services: 'Servicios', shared: 'Compartido', unclassified: 'Sin clasificar' };
+            const statusNames = { 'status:needs-review': 'Pendiente de aprobación', 'status:approved': 'Aprobada', 'status:in-progress': 'En curso', 'status:blocked': 'Bloqueada', 'status:in-review': 'En revisión' };
             const safe = value => String(value).replace(/[|`<>\r\n]/g, ' ');
             const counts = { open: 0, inProgress: 0, blocked: 0, closedWithMerge: 0, closedWithoutMerge: 0, canceled: 0 };
-            const lines = ['# Team progress', '',
-              'Observed GitHub records, not grades or proof of working software. Checklists and status labels are self-reported. A merged PR is evidence to inspect, not certification that acceptance criteria pass.', '',
-              '| Module / proposed owner | Task | Assigned GitHub users | Declared status | Acceptance checklist (self-reported) | Linked PRs | Observed evidence | Updated (UTC) |',
+            const lines = ['# Progreso del equipo', '',
+              'Registros observados en GitHub, no notas ni prueba de software funcional. Las casillas y etiquetas de estado son declaraciones del equipo. Una PR integrada es evidencia para revisar, no una certificación de que se cumplen los criterios de aceptación.', '',
+              '| Módulo / responsable propuesto | Tarea | Usuarios asignados en GitHub | Estado declarado | Casillas de aceptación (declaradas) | PR vinculadas | Evidencia observada | Actualización (UTC) |',
               '| --- | --- | --- | --- | --- | --- | --- | --- |'];
             issues.sort((a, b) => a.number - b.number);
             for (const module of [...Object.keys(modules), 'unclassified']) {
@@ -53,23 +55,23 @@ jobs:
                 const linked = prs.filter(pr => references.get(pr.number).has(issue.number));
                 const merged = linked.filter(pr => pr.merged_at && pr.base.ref === 'main');
                 const canceled = issue.state === 'closed' && issue.state_reason === 'not_planned';
-                const evidence = canceled ? 'Canceled / not planned' : issue.state === 'closed'
-                  ? merged.length ? 'Merged evidence; review tests' : 'Closed without merged evidence'
-                  : merged.length ? 'Open; partial merged evidence' : 'No merge to main observed';
+                const evidence = canceled ? 'Cancelada / no planificada' : issue.state === 'closed'
+                  ? merged.length ? 'Con evidencia de integración; revisa las pruebas' : 'Cerrada sin evidencia de integración'
+                  : merged.length ? 'Abierta; evidencia de integración parcial' : 'Sin integración observada en main';
                 if (canceled) counts.canceled++;
                 else if (issue.state === 'closed') counts[merged.length ? 'closedWithMerge' : 'closedWithoutMerge']++;
                 else { counts.open++; if (labels.includes('status:in-progress')) counts.inProgress++; if (labels.includes('status:blocked')) counts.blocked++; }
-                const acceptance = ((issue.body || '').match(/^### Acceptance criteria\s*\n([\s\S]*?)(?=^### |$(?![\s\S]))/mi) || [])[1] || '';
+                const acceptance = ((issue.body || '').match(/^### (?:Acceptance criteria|Criterios de aceptación)\s*\n([\s\S]*?)(?=^### |$(?![\s\S]))/mi) || [])[1] || '';
                 const boxes = [...acceptance.matchAll(/^\s*- \[([ xX])\]/gm)];
-                const checklist = boxes.length ? `${boxes.filter(m => /x/i.test(m[1])).length}/${boxes.length}` : 'Not provided';
-                const statuses = labels.filter(l => l.startsWith('status:')).join(', ') || 'No status label';
-                const links = linked.map(pr => `[#${pr.number}](${pr.html_url}) (${pr.merged_at ? 'merged' : pr.state})`).join(', ') || 'None';
-                lines.push(`| ${module} / ${modules[module] || 'Needs one module label'} | [#${issue.number}](${issue.html_url}) | ${safe(issue.assignees.map(a => a.login).join(', ') || 'Unassigned')} | ${safe(statuses)} | ${checklist} | ${links} | ${evidence} | ${safe(issue.updated_at)} |`);
+                const checklist = boxes.length ? `${boxes.filter(m => /x/i.test(m[1])).length}/${boxes.length}` : 'Sin registrar';
+                const statuses = labels.filter(l => l.startsWith('status:')).map(l => statusNames[l] || l).join(', ') || 'Sin etiqueta de estado';
+                const links = linked.map(pr => `[#${pr.number}](${pr.html_url}) (${pr.merged_at ? 'integrada' : pr.state === 'open' ? 'abierta' : 'cerrada'})`).join(', ') || 'Ninguna';
+                lines.push(`| ${moduleNames[module]} / ${modules[module] || 'Requiere una sola etiqueta de módulo'} | [#${issue.number}](${issue.html_url}) | ${safe(issue.assignees.map(a => a.login).join(', ') || 'Sin asignar')} | ${safe(statuses)} | ${checklist} | ${links} | ${evidence} | ${safe(issue.updated_at)} |`);
               }
             }
-            lines.splice(4, 0, `Open: ${counts.open} (in progress: ${counts.inProgress}, blocked: ${counts.blocked}; labels can overlap). Closed with merged evidence: ${counts.closedWithMerge}. Closed without merged evidence: ${counts.closedWithoutMerge}. Canceled: ${counts.canceled}.`, '');
-            lines.push('', 'Only delivery-labeled tasks are included; planning-only trackers are excluded. References require a standalone Closes #123 or Refs #123 line. Merged evidence counts only PRs targeting main. Multiple/missing module labels appear as unclassified.', '',
-              '[Team workflow](https://github.com/Sebas-Leo/repairmatch-backend/blob/main/docs/TEAM_WORKFLOW.md)');
+            lines.splice(4, 0, `Abiertas: ${counts.open} (en curso: ${counts.inProgress}, bloqueadas: ${counts.blocked}; las etiquetas pueden superponerse). Cerradas con evidencia de integración: ${counts.closedWithMerge}. Cerradas sin evidencia de integración: ${counts.closedWithoutMerge}. Canceladas: ${counts.canceled}.`, '');
+            lines.push('', 'Solo se incluyen tareas con la etiqueta delivery; se excluyen seguimientos planning-only. Las referencias requieren una línea independiente Closes #123 o Refs #123. La evidencia de integración solo cuenta PR dirigidas a main. Las tareas sin etiqueta de módulo o con varias aparecen sin clasificar.', '',
+              '[Guía de trabajo del equipo](https://github.com/Sebas-Leo/repairmatch-backend/blob/main/docs/TEAM_WORKFLOW.md)');
             const body = lines.join('\n');
             await core.summary.addRaw(body).write();
             if (dashboard.body !== body) await github.rest.issues.update({ ...context.repo, issue_number, body });

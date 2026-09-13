@@ -1,35 +1,36 @@
-# Make each contribution visible
+# Haz visible cada contribución
 
-Use one small issue per deliverable, one branch, and one reviewed pull request (PR). See the [shared progress dashboard](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). Module owners are proposed in the README; GitHub assignments remain pending until teammates provide their usernames and accept invitations.
+Usa una tarea pequeña por entregable, una rama y una solicitud de cambios (PR) revisada. Consulta el [tablero compartido](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). El README propone responsables por módulo; las asignaciones en GitHub siguen pendientes hasta que los integrantes compartan sus usuarios y acepten las invitaciones.
 
-## Daily path
+## Ruta diaria
 
-1. Search existing issues. Use **Backend task** for new work; define the problem, solution, dependencies, and observable acceptance checkboxes. Initial tasks are proposals, not approved work.
-2. A maintainer checks scope, assigns the contributor and exactly one `module:*` label, removes `status:needs-review`, and adds `status:approved`. Keep approval while work progresses; use `status:in-progress`, `status:blocked`, or `status:in-review` to describe the current state (one of these at a time).
-3. Start from updated `main`, create `feature/<issue>-short-description`, and make small conventional commits, for example `feat(proposals): validate proposal ownership`. Include tests and documentation with each behavior. Never commit credentials or production data.
-4. Open a PR with a conventional title. Put **one standalone `Closes #123` line per completed issue**, or `Refs #123` for partial work in this repository. Replace template instructions with actual verification commands/results and sanitized evidence links.
-5. Request another member's review. Wait for peer approval and passing checks, resolve feedback, then squash-merge with a conventional commit title. No direct pushes to `main` under this team agreement.
-6. Check the issue and dashboard after merge. `Closes` links close completed work when merged into the default branch; `Refs` leaves work open. Do not close incomplete work to improve the dashboard.
+1. Busca tareas existentes. Usa **Tarea de backend** para trabajo nuevo; define el problema, la solución, las dependencias y criterios de aceptación observables con casillas. Las tareas iniciales son propuestas, no trabajo aprobado.
+2. Un responsable de mantenimiento revisa el alcance, asigna al colaborador y exactamente una etiqueta `module:*`, quita `status:needs-review` y agrega `status:approved`. Conserva la aprobación durante el trabajo; usa `status:in-progress`, `status:blocked` o `status:in-review` para indicar el estado actual (solo una a la vez).
+3. Parte de `main` actualizada, crea `feature/<numero>-descripcion-breve` y realiza commits convencionales pequeños, por ejemplo `feat(proposals): validar propietario de la propuesta`. Incluye pruebas y documentación con cada comportamiento. Nunca subas credenciales ni datos de producción.
+4. Abre una PR con título convencional. Incluye **una línea independiente `Closes #123` por cada tarea terminada**, o `Refs #123` para trabajo parcial de este repositorio. Sustituye las instrucciones de la plantilla por comandos, resultados reales y enlaces de evidencia sin datos sensibles.
+5. Solicita la revisión de otro integrante. Espera su aprobación y las comprobaciones requeridas, resuelve los comentarios y combina con *squash* y un título de commit convencional. No envíes cambios directamente a `main`.
+6. Revisa la tarea y el tablero después de combinar. `Closes` cierra las tareas terminadas al combinar en la rama predeterminada; `Refs` las mantiene abiertas. No cierres trabajo incompleto para mejorar el tablero.
 
-## What the automation does (and does not do)
+## Qué hace la automatización (y qué no)
 
-| Automation | Observed checks / limits |
+| Automatización | Comprobaciones y límites |
 | --- | --- |
-| **PR checks / Contribution contract** | Checks title format, same-repository issue references, `status:approved` on every referenced issue, and nonempty verification text. Does **not** validate whether evidence is true, tests pass, or a peer approved. Approval-label changes alone do not rerun this check: edit the PR description or rerun it in Actions afterward. |
-| **Team progress** | Refreshes on task events, PR events, pushes to `main`, or manual Actions run. Lists task owners/assignees, declared labels, acceptance checkboxes, linked PRs, merges to `main`, and last task update. Only `delivery` tasks count; `planning-only` trackers do not. |
-| **PR checks / Workflow tests** | Runs mocked workflow-logic tests on PRs and pushes to `main` with read-only permissions and no secrets. Checks metadata parsing and reporting, not backend functionality. |
-| **Backend CI (pending)** | No Java application or Postman collection exists yet. Maven/JUnit/database tests and automated Postman runs must be added with the application; a green contribution check is **not** a passing backend test. |
+| **Comprobaciones de PR / Contribution contract** | Revisa el formato del título, referencias a tareas de este repositorio, `status:approved` en cada tarea y texto de verificación no vacío. **No** comprueba que la evidencia sea verdadera, que las pruebas pasen ni que exista aprobación de otro integrante. Cambiar solo la etiqueta de aprobación no repite esta comprobación: edita la descripción de la PR o vuelve a ejecutarla desde Actions. |
+| **Progreso del equipo** | Se actualiza con eventos de tareas y PR, cambios en `main` o ejecución manual desde Actions. Muestra responsables propuestos y asignados, estados declarados, casillas de aceptación, PR vinculadas, integraciones en `main` y última actualización. Solo cuenta tareas `delivery`; excluye los seguimientos `planning-only`. |
+| **Comprobaciones de PR / Workflow tests** | Ejecuta pruebas simuladas de la lógica de automatización en PR y cambios en `main`, con permisos de lectura y sin secretos. Comprueba el análisis de metadatos y los informes, no la funcionalidad del backend. |
+| **Integración continua del backend (pendiente)** | Aún no hay aplicación Java ni colección Postman. Las pruebas Maven/JUnit/base de datos y ejecuciones automáticas de Postman deben incorporarse con la aplicación; una comprobación de contribución exitosa **no** equivale a pruebas del backend aprobadas. |
 
-The dashboard distinguishes **closed without merged evidence**, **closed with merged evidence**, and **canceled/not planned**. A partial `Refs` merge is still only evidence to inspect, not proof the entire task works. Checklist totals include only the `### Acceptance criteria` section, not pre-flight checkboxes. Counts are records, not completion percentages, grades, hours, effort, or personal-performance rankings. Review the linked changes and tests together.
+El tablero distingue **cerradas sin evidencia de integración**, **cerradas con evidencia de integración** y **canceladas/no planificadas**. Una integración parcial con `Refs` es evidencia para revisar, no prueba de que toda la tarea funcione. Solo cuenta casillas de la sección `### Criterios de aceptación` (también acepta `### Acceptance criteria`), no las comprobaciones previas. Los conteos son registros, no porcentajes de finalización, notas, horas, esfuerzo ni clasificaciones de rendimiento personal. Revisa los cambios vinculados y sus pruebas en conjunto.
 
-## Maintainer setup and safety
+## Configuración y seguridad
 
-- Labels and issues are managed on GitHub. The issue form's module selection does **not** apply its module label automatically; triage must do that. Approval is a team convention, not a tamper-proof permission system.
-- Set repository Actions variable `PROGRESS_ISSUE_NUMBER` to the shared dashboard issue number. That issue must have `dashboard`; the workflow refuses other targets and never commits or pushes files. Refresh manually through **Actions → Team progress → Run workflow** when needed.
-- Main-branch protection is **not assumed to be enabled**. Where the repository plan supports it, configure a rule requiring a PR, one approval, resolved conversations, and the `Contribution contract` check; disallow force-push/deletion. Until verified, these are team rules rather than enforced restrictions. Add real backend check names when backend CI exists.
-- Dashboard automation uses `pull_request_target` only to read metadata and update the designated issue: no checkout, no PR code execution, no credentials in PR content. Keep this boundary when changing workflows. Updates appear as GitHub Actions bot activity, not human implementation commits.
-- Local workflow-logic checks: `node --test tests/workflows.test.cjs`. These mocked metadata tests are not application tests.
+- Las etiquetas y tareas se administran en GitHub. Elegir un módulo en el formulario **no** aplica su etiqueta automáticamente; debes asignarla durante la revisión inicial. La etiqueta de aprobación es una convención del equipo, no un permiso imposible de alterar.
+- Configura la variable de Actions `PROGRESS_ISSUE_NUMBER` con el número de la tarea del tablero. Esta debe tener la etiqueta `dashboard`; el flujo rechaza otros destinos y nunca crea commits ni envía archivos. Para actualizar manualmente, usa **Actions → Progreso del equipo → Run workflow**.
+- La protección actual de `main` exige una PR, **una aprobación de otro integrante**, conversaciones resueltas y las comprobaciones **`Contribution contract` y `Workflow tests`**. También se aplica a administradores; no permite envíos forzados ni eliminar la rama. Incorpora las comprobaciones reales del backend cuando existan.
+- Los nombres técnicos de las comprobaciones requeridas y las claves de etiquetas (`module:*`, `status:*`, `delivery`, `planning-only`, `dashboard`) se conservan en inglés para mantener las reglas y automatizaciones. El tablero traduce sus valores conocidos para la lectura. Las PR anteriores con `## Verification` siguen siendo compatibles con la nueva sección `## Verificación`.
+- El tablero usa `pull_request_target` solo para leer metadatos y actualizar la tarea designada: sin descargar código de la PR, ejecutarlo ni incluir credenciales en su contenido. Mantén este límite al editar los flujos. Las actualizaciones aparecen como actividad del bot de GitHub Actions, no como commits humanos de implementación.
+- Comprobación local: `node --test tests/workflows.test.cjs`. Estas pruebas simuladas de metadatos no son pruebas de la aplicación.
 
-## Evidence each module should provide
+## Evidencia que debe aportar cada módulo
 
-Each owner supplies endpoints/persistence, business rules and ownership checks, automated valid/invalid-path tests, sanitized Postman requests/results, and a peer review. Agreement on API contracts and integration dependencies comes before parallel implementation; review the selection/service-creation boundary together.
+Cada responsable debe aportar endpoints y persistencia, reglas de negocio y controles de propiedad, pruebas automatizadas de casos válidos e inválidos, solicitudes y resultados Postman sin datos sensibles y revisión de otro integrante. Acuerda los contratos de API y dependencias de integración antes de implementar en paralelo; revisa en equipo el límite entre selección y creación del servicio.

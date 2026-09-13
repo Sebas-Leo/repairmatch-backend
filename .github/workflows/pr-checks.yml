@@ -1,4 +1,4 @@
-name: PR checks
+name: Comprobaciones de PR
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened, ready_for_review]
@@ -21,21 +21,21 @@ jobs:
             const body = (pr.body || '').replace(/<!--[\s\S]*?-->/g, '');
             const errors = [];
             if (!/^(feat|fix|docs|test|refactor|chore|ci|build|perf|revert)(\([a-z0-9-]+\))?!?: .+/.test(pr.title))
-              errors.push('Use a conventional title, e.g. feat(proposals): accept one proposal.');
+              errors.push('Usa un título convencional, por ejemplo feat(proposals): aceptar una propuesta.');
             const numbers = [...new Set([...body.matchAll(/^\s*(?:Closes|Refs) #(\d+)\s*$/gmi)].map(m => Number(m[1])))];
-            if (!numbers.length) errors.push('Add an exact Closes #123 or Refs #123 line for this repository.');
+            if (!numbers.length) errors.push('Agrega una línea exacta Closes #123 o Refs #123 de este repositorio.');
             for (const issue_number of numbers) {
               try {
                 const { data: issue } = await github.rest.issues.get({ ...context.repo, issue_number });
                 if (issue.pull_request || !issue.labels.some(l => l.name === 'status:approved'))
-                  errors.push(`#${issue_number} must be an issue labeled status:approved by a maintainer.`);
-              } catch { errors.push(`Cannot verify issue #${issue_number} in this repository.`); }
+                  errors.push(`#${issue_number} debe ser una tarea con status:approved asignado por un responsable de mantenimiento.`);
+              } catch { errors.push(`No se pudo verificar la tarea #${issue_number} en este repositorio.`); }
             }
-            const verification = (body.match(/^## Verification\s*\n([\s\S]*?)(?=^## |$(?![\s\S]))/m) || [])[1] || '';
-            if (!verification.trim() || /^(todo|tbd|n\/a|none|pending)[.!]?$/i.test(verification.trim()))
-              errors.push('Fill ## Verification with actual checks/results and evidence, not a placeholder.');
+            const verification = (body.match(/^## (?:Verification|Verificación)\s*\n([\s\S]*?)(?=^## |$(?![\s\S]))/m) || [])[1] || '';
+            if (!verification.trim() || /^(todo|tbd|n\/a|none|pending|pendiente|ninguna|por completar|no aplica)[.!]?$/i.test(verification.trim()))
+              errors.push('Completa ## Verificación (o ## Verification) con comprobaciones, resultados reales y evidencia, no texto de relleno.');
             if (errors.length) core.setFailed(errors.join('\n'));
-            else core.info('Contribution metadata verified. This does not verify backend behavior or peer approval.');
+            else core.info('Metadatos de contribución verificados. Esto no verifica el comportamiento del backend ni la aprobación de otro integrante.');
   workflow-tests:
     name: Workflow tests
     runs-on: ubuntu-latest
