@@ -1,18 +1,18 @@
-<!-- Title: feat(module): outcome (or fix/docs/test/refactor/chore/ci/build/perf/revert). -->
-<!-- Replace the reference below with an approved issue in THIS repository.
-Use one exact Closes #123 line per completed issue, or Refs #123 for partial work. -->
+<!-- Título: feat(module): resultado (o fix/docs/test/refactor/chore/ci/build/perf/revert). -->
+<!-- Sustituye la referencia por una tarea aprobada de ESTE repositorio.
+Usa una línea exacta Closes #123 por tarea terminada, o Refs #123 para trabajo parcial. -->
 Refs #123
 
-## Summary
-<!-- What changed, why, boundaries, and anything intentionally left unfinished. -->
+## Resumen
+<!-- Qué cambió, por qué, límites del alcance y trabajo que se dejó pendiente a propósito. -->
 
-## Verification
-<!-- Replace with actual commands/results and evidence links (tests/Postman run).
-For documentation/process-only changes, describe the checks actually performed.
-Do not claim backend tests ran when no backend exists. Remove secrets from evidence. -->
+## Verificación
+<!-- Sustituye por comandos, resultados reales y enlaces de evidencia (pruebas/Postman).
+Para cambios solo de documentación o proceso, describe las comprobaciones realizadas.
+No afirmes que ejecutaste pruebas del backend si aún no existe. Elimina secretos de la evidencia. -->
 
-## Checklist
-- [ ] Acceptance criteria are addressed, or remaining work is explicitly listed.
-- [ ] Authorization, validation, and sensitive-data handling are covered where relevant.
-- [ ] Actual verification evidence is included above.
-- [ ] I requested review from another team member; I will wait for approval before merging.
+## Lista de comprobación
+- [ ] Se cubrieron los criterios de aceptación o se detalló el trabajo pendiente.
+- [ ] Se cubrieron autorización, validación y manejo de datos sensibles cuando corresponde.
+- [ ] Incluí evidencia real de verificación arriba.
+- [ ] Solicité la revisión de otro integrante; esperaré su aprobación antes de combinar.
