@@ -13,7 +13,7 @@ import lombok.*;
 public class Evidence {
 
     @EmbeddedId
-    private EvidenceID id;
+    private EvidenceId id;
 
     @MapsId("requestId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
