@@ -1,0 +1,18 @@
+$kind: http-request
+name: http://localhost:8080/api/users/me
+description: ""
+url: http://localhost:8080/api/users/me
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: token-invalido
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Rechaza el acceso no autorizado\", function () {\r
+
+      \    pm.response.to.have.status(401);\r
+
+      });"
+    language: text/javascript
+order: 4146765872658379

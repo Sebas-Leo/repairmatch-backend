@@ -1,0 +1,37 @@
+$kind: http-request
+name: http://localhost:8080/api/auth/login
+description: ""
+url: http://localhost:8080/api/auth/login
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"email\": \"prueba.jwt@example.com\",\r
+
+    \  \"password\": \"PruebaLocal2026!\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Login correcto\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      if (pm.response.code === 200) {\r
+
+      \    const respuesta = pm.response.json();\r
+
+      \    pm.collectionVariables.set(\"accessToken\", respuesta.accessToken);\r
+
+      } else {\r
+
+      \    pm.collectionVariables.unset(\"accessToken\");\r
+
+      }"
+    language: text/javascript
+order: 2342335054051223

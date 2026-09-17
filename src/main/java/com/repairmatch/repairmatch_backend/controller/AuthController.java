@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.repairmatch.repairmatch_backend.dto.LoginRequestDto;
+import com.repairmatch.repairmatch_backend.dto.LoginResponseDto;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,5 +27,12 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDto> login(
+            @Valid @RequestBody LoginRequestDto request
+    ) {
+        return ResponseEntity.ok(userService.login(request));
     }
 }
