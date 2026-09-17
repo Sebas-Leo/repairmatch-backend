@@ -2,6 +2,7 @@ package com.repairmatch.repairmatch_backend.controller;
 
 import com.repairmatch.repairmatch_backend.dto.CreateEvidenceDto;
 import com.repairmatch.repairmatch_backend.dto.EvidenceResponseDto;
+import com.repairmatch.repairmatch_backend.dto.RequestResponseDto;
 import com.repairmatch.repairmatch_backend.service.RequestService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +36,25 @@ public class RequestController {
     public ResponseEntity<List<EvidenceResponseDto>> getEvidencesByRequestId(@PathVariable Long requestId) {
         List<EvidenceResponseDto> response = requestService.getEvidencesByRequestId(requestId);
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{requestId}/cancel")
+    public ResponseEntity<RequestResponseDto> cancelRequest(
+            @PathVariable Long requestId,
+            Authentication authentication) {
+
+        UUID currentUserId = UUID.fromString(authentication.getName());
+        RequestResponseDto response = requestService.cancelRequest(requestId, currentUserId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{requestId}/close")
+    public ResponseEntity<Void> closeRequest(
+            @PathVariable Long requestId,
+            Authentication authentication) {
+
+        UUID currentUserId = UUID.fromString(authentication.getName());
+        requestService.closeRequest(requestId, currentUserId);
+        return ResponseEntity.noContent().build();
     }
 }
