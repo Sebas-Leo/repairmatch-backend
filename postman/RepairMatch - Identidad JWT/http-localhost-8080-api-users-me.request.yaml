@@ -1,0 +1,34 @@
+$kind: http-request
+name: http://localhost:8080/api/users/me
+description: ""
+url: http://localhost:8080/api/users/me
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Devuelve el perfil autenticado\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      \r
+
+      \    const perfil = pm.response.json();\r
+
+      \r
+
+      \    pm.expect(perfil).to.have.all.keys(\r
+
+      \        \"id\", \"name\", \"email\", \"role\"\r
+
+      \    );\r
+
+      \    pm.expect(perfil.email).to.eql(\"prueba.jwt@example.com\");\r
+
+      \    pm.expect(perfil.role).to.eql(\"CLIENT\");\r
+
+      });"
+    language: text/javascript
+order: 3908348936512192
