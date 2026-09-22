@@ -26,7 +26,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final RefreshTokenService refreshTokens;
+    private final org.springframework.security.authentication.AuthenticationManager authenticationManager;
     private final ModelMapper modelMapper;
 
 
@@ -59,7 +60,7 @@ public class UserService {
         return modelMapper.map(savedUser, UserResponseDto.class);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public LoginResponseDto login(LoginRequestDto request) {
         String email = request.getEmail()
                 .strip()
@@ -69,17 +70,14 @@ public class UserService {
             throw new InvalidCredentialsException();
         }
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new InvalidCredentialsException());
-
-        if (!passwordEncoder.matches(
-                request.getPassword(),
-                user.getPasswordHash()
-        )) {
+        try {
+            authenticationManager.authenticate(
+                    org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated(email,request.getPassword()));
+        } catch (org.springframework.security.core.AuthenticationException ex) {
             throw new InvalidCredentialsException();
         }
-
-        return jwtService.generateToken(user);
+        User user=userRepository.findByEmail(email).orElseThrow(InvalidCredentialsException::new);
+        return refreshTokens.startSession(user);
     }
     @Transactional(readOnly = true)
     public UserResponseDto getCurrentUser(UUID userId) {

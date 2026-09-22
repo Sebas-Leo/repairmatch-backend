@@ -54,7 +54,7 @@ Se valida la firma, el emisor y el vencimiento.
 El validador admite una tolerancia de reloj de 60 segundos.
 
 La API no utiliza sesiones para guardar la autenticación.
-No se implementan renovación ni revocación individual de tokens.
+Se implementa rotación de refresh tokens y revocación mediante logout. Los access tokens ya emitidos conservan su validez hasta vencer; ver docs/RUBRIC_IDENTITY.md.
 
 ## Pruebas automatizadas
 
@@ -86,3 +86,6 @@ Debe conservarse también la carpeta `.resources`.
 El login guarda el token en la variable accessToken.
 La consulta autenticada usa {{accessToken}}.
 Mantener esa variable vacía en los archivos versionados.
+## Renovación y CORS (rúbrica)
+
+POST /api/auth/refresh recibe refreshToken y devuelve un nuevo par; el anterior no se reutiliza. POST /api/auth/logout revoca el refresh token y devuelve 204. CORS_ALLOWED_ORIGINS configura la lista de orígenes permitidos. La colección incluye los casos de rotación y revocación. Ver docs/RUBRIC_IDENTITY.md.

@@ -1,7 +1,7 @@
 $kind: http-request
-name: "04 - Rechazar consulta sin token"
+name: 04 - Rechazar consulta sin token
 description: ""
-url: http://localhost:8080/api/users/me
+url: "{{baseUrl}}/api/users/me"
 method: GET
 scripts:
   - type: afterResponse
