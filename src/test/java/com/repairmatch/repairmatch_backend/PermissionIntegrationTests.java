@@ -68,6 +68,11 @@ class PermissionIntegrationTests {
                         .param("currentUserId", owner.getId().toString())
                         .param("clientId", owner.getId().toString()))
                 .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.error").value("Forbidden"))
+                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(jsonPath("$.path").isNotEmpty())
                 .andExpect(content().string(org.hamcrest.Matchers.not(
                         org.hamcrest.Matchers.containsString("private.jpg"))));
         unchanged();
@@ -151,8 +156,7 @@ class PermissionIntegrationTests {
     void serviceDoesNotTrustCallsWithoutAuthentication() {
         SecurityContextHolder.clearContext();
         assertThatThrownBy(() -> requestService.getEvidencesByRequestId(request.getId()))
-                .isInstanceOfSatisfying(ResponseStatusException.class,
-                        ex -> assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED));
+                .isInstanceOf(org.springframework.security.authentication.AuthenticationCredentialsNotFoundException.class);
         unchanged();
     }
 

@@ -11,6 +11,26 @@
       "type": "string"
     },
     {
+      "key": "requestId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "ownerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "otherToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "technicianToken",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "clientEmail",
       "value": "",
       "type": "string"
@@ -42,6 +62,825 @@
     }
   ],
   "item": [
+    {
+      "name": "RepairMatch -Permisos #5",
+      "description": "Ejecutar en orden. Los casos de permisos requieren los datos H2 descritos en docs/AUTHORIZATION.md.",
+      "item": [
+        {
+          "name": "01 - Login cliente propietario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"ownerToken\", pm.response.json().accessToken); else pm.collectionVariables.unset(\"ownerToken\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "01 - Login cliente propietario. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"owner.permissions@example.com\",\"password\":\"PermisosDemo2026!\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "description": "01 - Login cliente propietario. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"owner.permissions@example.com\",\"password\":\"PermisosDemo2026!\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<token generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<token de renovación>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "02 - Login otro cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"otherToken\", pm.response.json().accessToken); else pm.collectionVariables.unset(\"otherToken\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "02 - Login otro cliente. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"other.permissions@example.com\",\"password\":\"PermisosDemo2026!\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "description": "02 - Login otro cliente. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"other.permissions@example.com\",\"password\":\"PermisosDemo2026!\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<token generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<token de renovación>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "03 - Login técnico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"technicianToken\", pm.response.json().accessToken); else pm.collectionVariables.unset(\"technicianToken\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "03 - Login técnico. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"technician.permissions@example.com\",\"password\":\"PermisosDemo2026!\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "description": "03 - Login técnico. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"technician.permissions@example.com\",\"password\":\"PermisosDemo2026!\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<token generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<token de renovación>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "04 - Propietario consulta evidencias",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Evidencia propia\", () => { const b = pm.response.json(); pm.expect(b).to.have.lengthOf(1); pm.expect(b[0].mediaUrl).to.eql(\"https://example.com/private.jpg\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "description": "04 - Propietario consulta evidencias. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "description": "04 - Propietario consulta evidencias. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[]"
+            }
+          ]
+        },
+        {
+          "name": "05 - Otro cliente no lee evidencias",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"No revela evidencia privada\", () => pm.expect(pm.response.text()).not.to.include(\"private.jpg\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "description": "05 - Otro cliente no lee evidencias. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "description": "05 - Otro cliente no lee evidencias. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests/{{requestId}}/evidences\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "06 - Técnico no lee evidencias privadas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"No revela evidencia privada\", () => pm.expect(pm.response.text()).not.to.include(\"private.jpg\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "description": "06 - Técnico no lee evidencias privadas. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{technicianToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "description": "06 - Técnico no lee evidencias privadas. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{technicianToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests/{{requestId}}/evidences\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "07 - Sin token no accede",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"No revela evidencia privada\", () => pm.expect(pm.response.text()).not.to.include(\"private.jpg\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "description": "07 - Sin token no accede. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "description": "07 - Sin token no accede. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests/{{requestId}}/evidences\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "08 - Otro cliente no adjunta evidencias",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "description": "08 - Otro cliente no adjunta evidencias. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "description": "08 - Otro cliente no adjunta evidencias. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests/{{requestId}}/evidences\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "09 - Propietario adjunta evidencia",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"El intento ajeno no creó evidencia\", () => pm.expect(pm.response.json().evidenceNumber).to.eql(2));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "description": "09 - Propietario adjunta evidencia. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "description": "09 - Propietario adjunta evidencia. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"Respuesta de ejemplo; ejecutar para obtener el recurso real\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "10 - Otro cliente no cancela solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/cancel",
+            "description": "10 - Otro cliente no cancela solicitud. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/cancel",
+                "description": "10 - Otro cliente no cancela solicitud. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests/{{requestId}}/cancel\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "11 - Propietario no cierra fuera de selección",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/close",
+            "description": "11 - Propietario no cierra fuera de selección. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/close",
+                "description": "11 - Propietario no cierra fuera de selección. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests/{{requestId}}/close\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "12 - Propietario cancela solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Cancelación aplicada\", () => pm.expect(pm.response.json().status).to.eql(\"CANCELADA\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/cancel",
+            "description": "12 - Propietario cancela solicitud. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/cancel",
+                "description": "12 - Propietario cancela solicitud. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"Respuesta de ejemplo; ejecutar para obtener el recurso real\"\n}"
+            }
+          ]
+        }
+      ]
+    },
     {
       "name": "RepairMatch -Registro #3",
       "description": "Ejecutar en orden. Los casos de permisos requieren los datos H2 descritos en docs/AUTHORIZATION.md.",

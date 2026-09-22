@@ -73,3 +73,7 @@ node scripts/run-permissions-postman.cjs
 Conservar las variables de token vacías al guardar la colección. La configuración compartida no contiene JWT reales. Las evidencias de ejecución no sustituyen el acuerdo ni la revisión del equipo.
 
 Resultados actuales: 67 pruebas Java aprobadas (20 de permisos), 12 solicitudes YAML y 18 aserciones aprobadas. Ver [evidencias](evidence/issue-5/README.md). El cierre del #5 sigue pendiente de los otros módulos y del acuerdo compartido.
+
+## Ajuste de rúbrica
+
+Los métodos sensibles incorporan @PreAuthorize además de las comprobaciones de propiedad persistida. Los errores de API y de los filtros de seguridad usan ErrorResponseDto. La entrega incluye postman_collection.json en la raíz, regenerable desde los YAML. Consultar docs/RUBRIC_IDENTITY.md.

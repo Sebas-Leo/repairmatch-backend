@@ -9,6 +9,8 @@ import com.repairmatch.repairmatch_backend.model.Request;
 import com.repairmatch.repairmatch_backend.repository.EvidenceRepository;
 import com.repairmatch.repairmatch_backend.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.repairmatch.repairmatch_backend.exception.*;
 import com.repairmatch.repairmatch_backend.model.Role;
 import com.repairmatch.repairmatch_backend.security.AccountAccess;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,7 @@ public class RequestService {
     private final AccountAccess accountAccess;
 
     @Transactional
+    @PreAuthorize("hasRole('CLIENT')")
     public EvidenceResponseDto addEvidence(Long requestId, CreateEvidenceDto dto) {
         Request request = getOwnedRequest(requestId);
 
@@ -54,6 +57,7 @@ public class RequestService {
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('CLIENT')")
     public List<EvidenceResponseDto> getEvidencesByRequestId(Long requestId) {
         getOwnedRequest(requestId);
 
@@ -68,13 +72,14 @@ public class RequestService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('CLIENT')")
     public RequestResponseDto cancelRequest(Long requestId) {
         Request request = getOwnedRequest(requestId);
 
         if (request.getStatus() == Request.RequestStatus.CERRADA ||
                 request.getStatus() == Request.RequestStatus.CANCELADA ||
                 request.getStatus() == Request.RequestStatus.EXPIRADA) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede cancelar una solicitud en estado: " + request.getStatus());
+            throw new InvalidStateException( "No se puede cancelar una solicitud en estado: " + request.getStatus());
         }
 
         request.setStatus(Request.RequestStatus.CANCELADA);
@@ -85,7 +90,7 @@ public class RequestService {
     @Transactional
     public void transitionToHasProposals(Long requestId) {
         Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("La solicitud especificada no existe"));
+                .orElseThrow(() -> new ResourceNotFoundException("La solicitud especificada no existe"));
 
         if (request.getStatus() == Request.RequestStatus.PUBLICADA) {
             request.setStatus(Request.RequestStatus.CON_PROPUESTAS);
@@ -94,11 +99,12 @@ public class RequestService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('CLIENT')")
     public void closeRequest(Long requestId) {
         Request request = getOwnedRequest(requestId);
 
         if (request.getStatus() != Request.RequestStatus.CON_PROPUESTAS) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden cerrar solicitudes con propuestas activas");
+            throw new InvalidStateException( "Solo se pueden cerrar solicitudes con propuestas activas");
         }
 
         request.setStatus(Request.RequestStatus.CERRADA);
@@ -108,7 +114,7 @@ public class RequestService {
     @Transactional
     public void expireRequest(Long requestId) {
         Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("La solicitud especificada no existe"));
+                .orElseThrow(() -> new ResourceNotFoundException("La solicitud especificada no existe"));
 
         if (request.getStatus() == Request.RequestStatus.PUBLICADA ||
                 request.getStatus() == Request.RequestStatus.CON_PROPUESTAS) {
@@ -120,7 +126,7 @@ public class RequestService {
     private Request getOwnedRequest(Long requestId) {
         UUID userId = accountAccess.requireRole(Role.CLIENT);
         Request request = requestRepository.findById(requestId).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "La solicitud no existe"));
+                new ResourceNotFoundException( "La solicitud no existe"));
         accountAccess.requireOwner(userId, request.getClient().getId());
         return request;
     }
