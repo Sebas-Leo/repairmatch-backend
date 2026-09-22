@@ -8,11 +8,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/requests")
@@ -24,11 +22,9 @@ public class RequestController {
     @PostMapping("/{requestId}/evidences")
     public ResponseEntity<EvidenceResponseDto> addEvidence(
             @PathVariable Long requestId,
-            @Valid @RequestBody CreateEvidenceDto dto,
-            Authentication authentication) {
+            @Valid @RequestBody CreateEvidenceDto dto) {
 
-        UUID currentUserId = UUID.fromString(authentication.getName());
-        EvidenceResponseDto response = requestService.addEvidence(requestId, dto, currentUserId);
+        EvidenceResponseDto response = requestService.addEvidence(requestId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -40,21 +36,17 @@ public class RequestController {
 
     @PatchMapping("/{requestId}/cancel")
     public ResponseEntity<RequestResponseDto> cancelRequest(
-            @PathVariable Long requestId,
-            Authentication authentication) {
+            @PathVariable Long requestId) {
 
-        UUID currentUserId = UUID.fromString(authentication.getName());
-        RequestResponseDto response = requestService.cancelRequest(requestId, currentUserId);
+        RequestResponseDto response = requestService.cancelRequest(requestId);
         return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{requestId}/close")
     public ResponseEntity<Void> closeRequest(
-            @PathVariable Long requestId,
-            Authentication authentication) {
+            @PathVariable Long requestId) {
 
-        UUID currentUserId = UUID.fromString(authentication.getName());
-        requestService.closeRequest(requestId, currentUserId);
+        requestService.closeRequest(requestId);
         return ResponseEntity.noContent().build();
     }
 }

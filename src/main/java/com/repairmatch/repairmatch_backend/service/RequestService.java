@@ -9,6 +9,10 @@ import com.repairmatch.repairmatch_backend.model.Request;
 import com.repairmatch.repairmatch_backend.repository.EvidenceRepository;
 import com.repairmatch.repairmatch_backend.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
+import com.repairmatch.repairmatch_backend.model.Role;
+import com.repairmatch.repairmatch_backend.security.AccountAccess;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +26,11 @@ public class RequestService {
 
     private final RequestRepository requestRepository;
     private final EvidenceRepository evidenceRepository;
+    private final AccountAccess accountAccess;
 
     @Transactional
-    public EvidenceResponseDto addEvidence(Long requestId, CreateEvidenceDto dto, UUID currentUserId) {
-        Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("La solicitud especificada no existe"));
-
-        if (!request.getClient().getId().equals(currentUserId)) {
-            throw new SecurityException("No tiene autorización para adjuntar evidencias a esta solicitud");
-        }
+    public EvidenceResponseDto addEvidence(Long requestId, CreateEvidenceDto dto) {
+        Request request = getOwnedRequest(requestId);
 
         List<Evidence> existingEvidences = evidenceRepository.findByRequestId(requestId);
         int nextEvidenceNumber = existingEvidences.size() + 1;
@@ -55,9 +55,7 @@ public class RequestService {
 
     @Transactional(readOnly = true)
     public List<EvidenceResponseDto> getEvidencesByRequestId(Long requestId) {
-        if (!requestRepository.existsById(requestId)) {
-            throw new IllegalArgumentException("La solicitud especificada no existe");
-        }
+        getOwnedRequest(requestId);
 
         return evidenceRepository.findByRequestId(requestId).stream()
                 .map(evidence -> EvidenceResponseDto.builder()
@@ -70,18 +68,13 @@ public class RequestService {
     }
 
     @Transactional
-    public RequestResponseDto cancelRequest(Long requestId, UUID currentUserId) {
-        Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("La solicitud especificada no existe"));
-
-        if (!request.getClient().getId().equals(currentUserId)) {
-            throw new SecurityException("No tiene autorización para cancelar esta solicitud");
-        }
+    public RequestResponseDto cancelRequest(Long requestId) {
+        Request request = getOwnedRequest(requestId);
 
         if (request.getStatus() == Request.RequestStatus.CERRADA ||
                 request.getStatus() == Request.RequestStatus.CANCELADA ||
                 request.getStatus() == Request.RequestStatus.EXPIRADA) {
-            throw new IllegalStateException("No se puede cancelar una solicitud en estado: " + request.getStatus());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede cancelar una solicitud en estado: " + request.getStatus());
         }
 
         request.setStatus(Request.RequestStatus.CANCELADA);
@@ -101,16 +94,11 @@ public class RequestService {
     }
 
     @Transactional
-    public void closeRequest(Long requestId, UUID currentUserId) {
-        Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("La solicitud especificada no existe"));
-
-        if (!request.getClient().getId().equals(currentUserId)) {
-            throw new SecurityException("No tiene autorización para cerrar esta solicitud");
-        }
+    public void closeRequest(Long requestId) {
+        Request request = getOwnedRequest(requestId);
 
         if (request.getStatus() != Request.RequestStatus.CON_PROPUESTAS) {
-            throw new IllegalStateException("Solo se pueden cerrar solicitudes con propuestas activas");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden cerrar solicitudes con propuestas activas");
         }
 
         request.setStatus(Request.RequestStatus.CERRADA);
@@ -127,6 +115,14 @@ public class RequestService {
             request.setStatus(Request.RequestStatus.EXPIRADA);
             requestRepository.save(request);
         }
+    }
+
+    private Request getOwnedRequest(Long requestId) {
+        UUID userId = accountAccess.requireRole(Role.CLIENT);
+        Request request = requestRepository.findById(requestId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "La solicitud no existe"));
+        accountAccess.requireOwner(userId, request.getClient().getId());
+        return request;
     }
 
     private RequestResponseDto mapToResponseDto(Request request) {

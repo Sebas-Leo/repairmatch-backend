@@ -46,6 +46,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        // Closing is part of atomic proposal selection, never a standalone HTTP action.
+                        .requestMatchers(HttpMethod.PATCH, "/api/requests/*/close").denyAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
