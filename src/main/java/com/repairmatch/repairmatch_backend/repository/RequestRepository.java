@@ -9,6 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    List<Request> findByClientId(UUID clientId);
+    List<Request> findByClientIdOrderByCreatedAtDesc(UUID clientId);
     List<Request> findByApplianceTypeId(Long applianceTypeId);
 }
