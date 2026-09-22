@@ -1,8 +1,5 @@
 package com.repairmatch.repairmatch_backend.exception;
-
-public class EmailAlreadyExistsException extends RuntimeException {
-    public EmailAlreadyExistsException(String message) {
-
-        super(message);
-    }
+import org.springframework.http.HttpStatus;
+public class EmailAlreadyExistsException extends ApiException {
+    public EmailAlreadyExistsException(String message) { super(HttpStatus.CONFLICT, message); }
 }

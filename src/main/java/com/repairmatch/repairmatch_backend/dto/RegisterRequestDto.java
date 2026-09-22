@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 @Getter
@@ -27,6 +28,8 @@ public class RegisterRequestDto {
             max = 72,
             message = "La contraseña debe tener entre 8 y 72 caracteres"
     )
+    @Pattern(regexp = "(?s)^(?=.*\\p{Ll})(?=.*\\p{Lu})(?=.*\\p{Nd})(?=.*[^\\p{L}\\p{N}\\s]).+$",
+            message = "Incluye mayúscula, minúscula, número y símbolo")
     private String password;
 
     @NotNull(message = "El rol es obligatorio")

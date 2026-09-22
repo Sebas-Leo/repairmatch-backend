@@ -1,90 +1,67 @@
 package com.repairmatch.repairmatch_backend.exception;
 
-import org.hibernate.exception.ConstraintViolationException;
+import com.repairmatch.repairmatch_backend.dto.ErrorResponseDto;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ProblemDetail handleEmailAlreadyExists(
-            EmailAlreadyExistsException ex
-    ) {
-        return ProblemDetail.forStatusAndDetail(
-                HttpStatus.CONFLICT,
-                ex.getMessage()
-        );
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponseDto> api(ApiException ex, HttpServletRequest request) {
+        return response(ex.getStatus(), ex.getMessage(), request, Map.of());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
-
+    public ResponseEntity<ErrorResponseDto> validation(MethodArgumentNotValidException ex, HttpServletRequest request) {
         Map<String, String> errors = new LinkedHashMap<>();
-
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.putIfAbsent(error.getField(), error.getDefaultMessage())
-        );
-
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                "Revisa los campos enviados"
-        );
-
-        problem.setProperty("errors", errors);
-
-        return problem;
+        ex.getBindingResult().getFieldErrors().forEach(error -> errors.putIfAbsent(error.getField(), error.getDefaultMessage()));
+        return response(HttpStatus.BAD_REQUEST, "Revisa los campos enviados", request, errors);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ProblemDetail handleInvalidJson(HttpMessageNotReadableException ex) {
-
-        return ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                "JSON inválido. Verifica los campos y el rol: CLIENT o TECHNICIAN"
-        );
+    public ResponseEntity<ErrorResponseDto> invalidJson(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "JSON inválido. Verifica los campos y el rol: CLIENT o TECHNICIAN", request, Map.of());
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ProblemDetail handleResponseStatus(ResponseStatusException ex) {
-
-        return ProblemDetail.forStatusAndDetail(
-                ex.getStatusCode(),
-                ex.getReason() == null ? "Solicitud rechazada" : ex.getReason()
-        );
+    public ResponseEntity<ErrorResponseDto> status(ResponseStatusException ex, HttpServletRequest request) {
+        return response(ex.getStatusCode(), ex.getReason() == null ? "Solicitud rechazada" : ex.getReason(), request, Map.of());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ProblemDetail integrity(DataIntegrityViolationException ex) {
+    public ResponseEntity<ErrorResponseDto> integrity(DataIntegrityViolationException ex, HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, "Los datos incumplen una restricción de integridad", request, Map.of());
+    }
 
-        for (Throwable cause = ex; cause != null; cause = cause.getCause()) {
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDto> forbidden(AccessDeniedException ex, HttpServletRequest request) {
+        return response(HttpStatus.FORBIDDEN, "Acceso denegado", request, Map.of());
+    }
 
-            if (cause instanceof ConstraintViolationException violation) {
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDto> unauthorized(AuthenticationException ex, HttpServletRequest request) {
+        return response(HttpStatus.UNAUTHORIZED, "Autenticación requerida", request, Map.of());
+    }
 
-                String constraint = violation.getConstraintName();
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDto> unexpected(Exception ex, HttpServletRequest request) {
+        org.slf4j.LoggerFactory.getLogger(getClass()).error("Error interno de API: {}", ex.getClass().getName());
+        return response(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor", request, Map.of());
+    }
 
-                if (constraint != null
-                        && constraint.toLowerCase(Locale.ROOT)
-                        .contains("uk_users_email")) {
-
-                    return ProblemDetail.forStatusAndDetail(
-                            HttpStatus.CONFLICT,
-                            "El correo ya está registrado"
-                    );
-                }
-            }
-        }
-
-        return ProblemDetail.forStatusAndDetail(
-                HttpStatus.CONFLICT,
-                "Los datos incumplen una restricción de integridad"
-        );
+    private ResponseEntity<ErrorResponseDto> response(HttpStatusCode status, String message,
+            HttpServletRequest request, Map<String, String> errors) {
+        HttpStatus known = HttpStatus.resolve(status.value());
+        return ResponseEntity.status(status).body(ErrorResponseDto.of(status.value(),
+                known == null ? "Error" : known.getReasonPhrase(), message, request.getRequestURI(), errors));
     }
 }

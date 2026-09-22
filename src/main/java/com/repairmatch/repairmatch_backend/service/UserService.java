@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import com.repairmatch.repairmatch_backend.exception.EmailAlreadyExistsException;
+import com.repairmatch.repairmatch_backend.exception.*;
 import com.repairmatch.repairmatch_backend.dto.LoginRequestDto;
 import com.repairmatch.repairmatch_backend.dto.LoginResponseDto;
 
@@ -42,10 +42,7 @@ public class UserService {
         }
 
         if (request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "La contraseña no puede superar 72 bytes en UTF-8"
-            );
+            throw new InvalidPasswordException();
         }
 
         String passwordHash = passwordEncoder.encode(request.getPassword());
@@ -69,26 +66,17 @@ public class UserService {
                 .toLowerCase(Locale.ROOT);
 
         if (request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Credenciales inválidas"
-            );
+            throw new InvalidCredentialsException();
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED,
-                        "Credenciales inválidas"
-                ));
+                .orElseThrow(() -> new InvalidCredentialsException());
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPasswordHash()
         )) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Credenciales inválidas"
-            );
+            throw new InvalidCredentialsException();
         }
 
         return jwtService.generateToken(user);
@@ -96,10 +84,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponseDto getCurrentUser(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED,
-                        "La cuenta autenticada ya no está disponible"
-                ));
+                .orElseThrow(() -> new AccountUnavailableException());
 
         return modelMapper.map(user, UserResponseDto.class);
     }
