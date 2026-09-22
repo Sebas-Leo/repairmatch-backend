@@ -1,7 +1,7 @@
 $kind: http-request
-name: "03 - Consultar perfil autenticado"
+name: 03 - Consultar perfil autenticado
 description: ""
-url: http://localhost:8080/api/users/me
+url: "{{baseUrl}}/api/users/me"
 method: GET
 auth:
   type: bearer
@@ -25,7 +25,8 @@ scripts:
 
       \    );\r
 
-      \    pm.expect(perfil.email).to.eql(\"prueba.jwt@example.com\");\r
+      \    pm.expect(perfil.email).to.eql(pm.collectionVariables.get(\"identity\
+      Email\"));\r
 
       \    pm.expect(perfil.role).to.eql(\"CLIENT\");\r
 

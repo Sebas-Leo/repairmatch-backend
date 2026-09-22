@@ -1,0 +1,21 @@
+$kind: http-request
+name: 14 - Tecnico no crea solicitud
+url: "{{baseUrl}}/api/requests"
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: "{{technicianToken}}"
+body:
+  type: json
+  content: |-
+    {
+      "applianceTypeId": 1,
+      "originalDescription": "Intento rechazado"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |
+      pm.test("Estado 403", () => pm.response.to.have.status(403));
+order: 14000

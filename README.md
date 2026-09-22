@@ -131,3 +131,7 @@ Referencias oficiales de apoyo: [transacciones en Spring](https://spring.io/guid
 - [x] Se documentaron el alcance inicial, los roles, el flujo compartido y las dependencias de implementación.
 - [ ] Confirmar las decisiones pendientes con el equipo.
 - [ ] Crear e implementar el backend después de autorizar la siguiente etapa.
+
+## Permisos y propiedad — avance del #5
+
+La [política de autorización](docs/AUTHORIZATION.md) define los controles de solicitudes y evidencias implementados y las reglas propuestas para los módulos pendientes. La entrega es parcial: no cierra el #5. Ver [evidencias](docs/evidence/issue-5/README.md).

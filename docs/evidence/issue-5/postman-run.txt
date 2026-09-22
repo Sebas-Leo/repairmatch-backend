@@ -1,0 +1,79 @@
+(node:9396) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+newman
+
+RepairMatch -Permisos #5 (YAML)
+
+→ 01 - Login cliente propietario
+  POST http://127.0.0.1:18085/api/auth/login [200 OK, 627B, 2.4s]
+  √  Estado 200
+
+→ 02 - Login otro cliente
+  POST http://127.0.0.1:18085/api/auth/login [200 OK, 627B, 273ms]
+  √  Estado 200
+
+→ 03 - Login técnico
+  POST http://127.0.0.1:18085/api/auth/login [200 OK, 633B, 228ms]
+  √  Estado 200
+
+→ 04 - Propietario consulta evidencias
+  GET http://127.0.0.1:18085/api/requests/1/evidences [200 OK, 440B, 202ms]
+  √  Estado 200
+  √  Evidencia propia
+
+→ 05 - Otro cliente no lee evidencias
+  GET http://127.0.0.1:18085/api/requests/1/evidences [403 Forbidden, 464B, 67ms]
+  √  Estado 403
+  √  No revela evidencia privada
+
+→ 06 - Técnico no lee evidencias privadas
+  GET http://127.0.0.1:18085/api/requests/1/evidences [403 Forbidden, 451B, 25ms]
+  √  Estado 403
+  √  No revela evidencia privada
+
+→ 07 - Sin token no accede
+  GET http://127.0.0.1:18085/api/requests/1/evidences [401 Unauthorized, 409B, 45ms]
+  √  Estado 401
+  √  No revela evidencia privada
+
+→ 08 - Otro cliente no adjunta evidencias
+  POST http://127.0.0.1:18085/api/requests/1/evidences [403 Forbidden, 464B, 55ms]
+  √  Estado 403
+
+→ 09 - Propietario adjunta evidencia
+  POST http://127.0.0.1:18085/api/requests/1/evidences [201 Created, 439B, 31ms]
+  √  Estado 201
+  √  El intento ajeno no creó evidencia
+
+→ 10 - Otro cliente no cancela solicitud
+  PATCH http://127.0.0.1:18085/api/requests/1/cancel [403 Forbidden, 461B, 17ms]
+  √  Estado 403
+
+→ 11 - Propietario no cierra fuera de selección
+  PATCH http://127.0.0.1:18085/api/requests/1/close [403 Forbidden, 509B, 14ms]
+  √  Estado 403
+
+→ 12 - Propietario cancela solicitud
+  PATCH http://127.0.0.1:18085/api/requests/1/cancel [200 OK, 581B, 54ms]
+  √  Estado 200
+  √  Cancelación aplicada
+
+┌─────────────────────────┬────────────────────┬───────────────────┐
+│                         │           executed │            failed │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│              iterations │                  1 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│                requests │                 12 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│            test-scripts │                 12 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│      prerequest-scripts │                  0 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│              assertions │                 18 │                 0 │
+├─────────────────────────┴────────────────────┴───────────────────┤
+│ total run duration: 4.6s                                         │
+├──────────────────────────────────────────────────────────────────┤
+│ total data received: 1.78kB (approx)                             │
+├──────────────────────────────────────────────────────────────────┤
+│ average response time: 288ms [min: 14ms, max: 2.4s, s.d.: 658ms] │
+└──────────────────────────────────────────────────────────────────┘

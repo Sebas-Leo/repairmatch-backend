@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:requests_integration;DB_CLOSE_DELAY=-1")
 @AutoConfigureMockMvc
 class RequestIntegrationTests {
 
@@ -101,7 +101,7 @@ class RequestIntegrationTests {
                                 {"applianceTypeId": %d, "originalDescription": "Broken"}
                                 """.formatted(type.getId())))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.detail").value("Solo los clientes pueden publicar solicitudes"));
+                .andExpect(jsonPath("$.status").value(403));
     }
 
     @Test
@@ -132,7 +132,7 @@ class RequestIntegrationTests {
 
         mockMvc.perform(patch("/api/requests/{requestId}/close", request.getId())
                         .header("Authorization", bearer(owner)))
-                .andExpect(status().isConflict());
+                .andExpect(status().isForbidden());
 
         mockMvc.perform(get("/api/requests/{requestId}", 999_999L)
                         .header("Authorization", bearer(owner)))

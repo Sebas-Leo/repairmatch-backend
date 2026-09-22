@@ -1,0 +1,9 @@
+$kind: http-request
+name: "07 - Sin token no accede"
+url: "{{baseUrl}}/api/requests/{{requestId}}/evidences"
+method: GET
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: "pm.test(\"Estado 401\", () => pm.response.to.have.status(401));\npm.test(\"No revela evidencia privada\", () => pm.expect(pm.response.text()).not.to.include(\"private.jpg\"));"
+order: 7000

@@ -1,8 +1,7 @@
 $kind: collection
 variables:
-  - key: json_web_token_043d
-    secret: true
-    disabled: false
-  - key: accessToken
-    value: ""
-    disabled: false
+  baseUrl: http://localhost:8080
+  identityEmail: ""
+  accessToken: ""
+  refreshToken: ""
+  previousRefreshToken: ""

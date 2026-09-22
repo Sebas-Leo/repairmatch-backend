@@ -1,0 +1,7 @@
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 25.00 s -- in com.repairmatch.repairmatch_backend.IdentityIntegrationTests
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.437 s -- in com.repairmatch.repairmatch_backend.RefreshIntegrationTests
+[INFO] Tests run: 44, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.154 s -- in com.repairmatch.repairmatch_backend.RegistrationIntegrationTests
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.724 s -- in com.repairmatch.repairmatch_backend.RepairmatchBackendApplicationTests
+[INFO] Tests run: 62, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Finished at: 2026-09-22T16:12:47-05:00

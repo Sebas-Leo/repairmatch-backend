@@ -14,10 +14,11 @@ import com.repairmatch.repairmatch_backend.repository.EvidenceRepository;
 import com.repairmatch.repairmatch_backend.repository.RequestRepository;
 import com.repairmatch.repairmatch_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import com.repairmatch.repairmatch_backend.security.AccountAccess;
+import com.repairmatch.repairmatch_backend.exception.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,27 +31,18 @@ public class RequestService {
     private final RequestRepository requestRepository;
     private final EvidenceRepository evidenceRepository;
     private final UserRepository userRepository;
+    private final AccountAccess accountAccess;
     private final ApplianceTypeRepository applianceTypeRepository;
 
     @Transactional
-    public RequestResponseDto createRequest(CreateRequestDto dto, UUID currentUserId) {
+    @PreAuthorize("hasRole('CLIENT')")
+    public RequestResponseDto createRequest(CreateRequestDto dto) {
+        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
         User client = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED,
-                        "El usuario autenticado no existe"
-                ));
-
-        if (client.getRole() != Role.CLIENT) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Solo los clientes pueden publicar solicitudes"
-            );
-        }
+                .orElseThrow(() -> new AuthenticationRequiredException("El usuario autenticado no existe"));
 
         var applianceType = applianceTypeRepository.findById(dto.getApplianceTypeId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "El tipo de electrodoméstico especificado no existe"
+                .orElseThrow(() -> new ResourceNotFoundException("El tipo de electrodoméstico especificado no existe"
                 ));
 
         Request request = Request.builder()
@@ -65,12 +57,15 @@ public class RequestService {
     }
 
     @Transactional(readOnly = true)
-    public RequestResponseDto getRequest(Long requestId, UUID currentUserId) {
-        return mapToResponseDto(loadOwnedRequest(requestId, currentUserId));
+    @PreAuthorize("hasRole('CLIENT')")
+    public RequestResponseDto getRequest(Long requestId) {
+        return mapToResponseDto(loadOwnedRequest(requestId));
     }
 
     @Transactional(readOnly = true)
-    public List<RequestResponseDto> getOwnRequests(UUID currentUserId) {
+    @PreAuthorize("hasRole('CLIENT')")
+    public List<RequestResponseDto> getOwnRequests() {
+        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
         return requestRepository.findByClientIdOrderByCreatedAtDesc(currentUserId)
                 .stream()
                 .map(this::mapToResponseDto)
@@ -78,8 +73,9 @@ public class RequestService {
     }
 
     @Transactional
-    public EvidenceResponseDto addEvidence(Long requestId, CreateEvidenceDto dto, UUID currentUserId) {
-        Request request = loadOwnedRequest(requestId, currentUserId);
+    @PreAuthorize("hasRole('CLIENT')")
+    public EvidenceResponseDto addEvidence(Long requestId, CreateEvidenceDto dto) {
+        Request request = loadOwnedRequest(requestId);
 
         List<Evidence> existingEvidences = evidenceRepository.findByRequestId(requestId);
         int nextEvidenceNumber = existingEvidences.size() + 1;
@@ -103,8 +99,9 @@ public class RequestService {
     }
 
     @Transactional(readOnly = true)
-    public List<EvidenceResponseDto> getEvidencesByRequestId(Long requestId, UUID currentUserId) {
-        loadOwnedRequest(requestId, currentUserId);
+    @PreAuthorize("hasRole('CLIENT')")
+    public List<EvidenceResponseDto> getEvidencesByRequestId(Long requestId) {
+        loadOwnedRequest(requestId);
 
         return evidenceRepository.findByRequestId(requestId).stream()
                 .map(evidence -> EvidenceResponseDto.builder()
@@ -117,15 +114,14 @@ public class RequestService {
     }
 
     @Transactional
-    public RequestResponseDto cancelRequest(Long requestId, UUID currentUserId) {
-        Request request = loadOwnedRequest(requestId, currentUserId);
+    @PreAuthorize("hasRole('CLIENT')")
+    public RequestResponseDto cancelRequest(Long requestId) {
+        Request request = loadOwnedRequest(requestId);
 
         if (request.getStatus() == Request.RequestStatus.CERRADA ||
                 request.getStatus() == Request.RequestStatus.CANCELADA ||
                 request.getStatus() == Request.RequestStatus.EXPIRADA) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "No se puede cancelar una solicitud en estado: " + request.getStatus()
+            throw new InvalidStateException("No se puede cancelar una solicitud en estado: " + request.getStatus()
             );
         }
 
@@ -145,13 +141,12 @@ public class RequestService {
     }
 
     @Transactional
-    public void closeRequest(Long requestId, UUID currentUserId) {
-        Request request = loadOwnedRequest(requestId, currentUserId);
+    @PreAuthorize("hasRole('CLIENT')")
+    public void closeRequest(Long requestId) {
+        Request request = loadOwnedRequest(requestId);
 
         if (request.getStatus() != Request.RequestStatus.CON_PROPUESTAS) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Solo se pueden cerrar solicitudes con propuestas activas"
+            throw new InvalidStateException("Solo se pueden cerrar solicitudes con propuestas activas"
             );
         }
 
@@ -184,22 +179,16 @@ public class RequestService {
                 .build();
     }
 
-    private Request loadOwnedRequest(Long requestId, UUID currentUserId) {
+    private Request loadOwnedRequest(Long requestId) {
+        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
         Request request = loadRequest(requestId);
-        if (!request.getClient().getId().equals(currentUserId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "No tiene autorización para acceder a esta solicitud"
-            );
-        }
+        accountAccess.requireOwner(currentUserId, request.getClient().getId());
         return request;
     }
 
     private Request loadRequest(Long requestId) {
         return requestRepository.findById(requestId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "La solicitud especificada no existe"
+                .orElseThrow(() -> new ResourceNotFoundException("La solicitud especificada no existe"
                 ));
     }
 

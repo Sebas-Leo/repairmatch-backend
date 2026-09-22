@@ -1,6 +1,8 @@
 package com.repairmatch.repairmatch_backend.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import com.repairmatch.repairmatch_backend.security.SecurityErrorHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,10 +12,11 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityErrorHandler errors)
             throws Exception {
 
         JwtGrantedAuthoritiesConverter authoritiesConverter =
@@ -30,7 +33,9 @@ public class SecurityConfig {
         );
 
         http
+                .cors(org.springframework.security.config.Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(errors).accessDeniedHandler(errors))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -38,7 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/auth/register",
-                                "/api/auth/login"
+                                "/api/auth/login", "/api/auth/refresh", "/api/auth/logout"
                         ).permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -46,9 +51,12 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        // Closing is part of atomic proposal selection, never a standalone HTTP action.
+                        .requestMatchers(HttpMethod.PATCH, "/api/requests/*/close").denyAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationEntryPoint(errors).accessDeniedHandler(errors)
                         .jwt(jwt -> jwt
                                 .jwtAuthenticationConverter(
                                         authenticationConverter

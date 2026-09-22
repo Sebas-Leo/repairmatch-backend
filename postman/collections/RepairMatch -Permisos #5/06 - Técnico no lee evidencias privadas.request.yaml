@@ -1,0 +1,13 @@
+$kind: http-request
+name: "06 - Técnico no lee evidencias privadas"
+url: "{{baseUrl}}/api/requests/{{requestId}}/evidences"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{technicianToken}}"
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));\npm.test(\"No revela evidencia privada\", () => pm.expect(pm.response.text()).not.to.include(\"private.jpg\"));"
+order: 6000

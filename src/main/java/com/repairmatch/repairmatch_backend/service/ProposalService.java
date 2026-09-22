@@ -13,16 +13,22 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
+import com.repairmatch.repairmatch_backend.model.Role;
+import com.repairmatch.repairmatch_backend.security.AccountAccess;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Service
 @RequiredArgsConstructor
 public class ProposalService {
 
+    private final AccountAccess accountAccess;
     private final RequestRepository requestRepository;
     private final ProposalRepository proposalRepository;
 
     @Transactional(readOnly = true)
-    public List<ProposalResponseDto> compareByRequest(Long requestId, UUID currentUserId) {
+    @PreAuthorize("hasRole('CLIENT')")
+    public List<ProposalResponseDto> compareByRequest(Long requestId) {
+        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,

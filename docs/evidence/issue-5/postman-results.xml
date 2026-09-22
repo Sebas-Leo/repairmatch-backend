@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="RepairMatch -Permisos #5 (YAML)" tests="12" time="3.466">
+  <testsuite name="01 - Login cliente propietario" id="e01d5e40-db3a-4fa5-abca-754ad3550279" timestamp="2026-09-22T19:38:26.468Z" tests="1" failures="0" errors="0" time="2.455">
+    <testcase name="Estado 200" time="2.455" classname="01LoginClientePropietario"/>
+  </testsuite>
+  <testsuite name="02 - Login otro cliente" id="6e882ffa-de34-44e9-bded-1c38c335f741" timestamp="2026-09-22T19:38:26.468Z" tests="1" failures="0" errors="0" time="0.273">
+    <testcase name="Estado 200" time="0.273" classname="02LoginOtroCliente"/>
+  </testsuite>
+  <testsuite name="03 - Login técnico" id="2a9bf7ef-39c2-418e-866f-37cf77c37466" timestamp="2026-09-22T19:38:26.468Z" tests="1" failures="0" errors="0" time="0.228">
+    <testcase name="Estado 200" time="0.228" classname="03LoginTecnico"/>
+  </testsuite>
+  <testsuite name="04 - Propietario consulta evidencias" id="86f0db93-7b8c-44eb-80ea-f796fa73edd6" timestamp="2026-09-22T19:38:26.468Z" tests="2" failures="0" errors="0" time="0.202">
+    <testcase name="Estado 200" time="0.202" classname="04PropietarioConsultaEvidencias"/>
+    <testcase name="Evidencia propia" time="0.202" classname="04PropietarioConsultaEvidencias"/>
+  </testsuite>
+  <testsuite name="05 - Otro cliente no lee evidencias" id="61bdc338-8936-4ca2-981f-37169c68c6ac" timestamp="2026-09-22T19:38:26.468Z" tests="2" failures="0" errors="0" time="0.067">
+    <testcase name="Estado 403" time="0.067" classname="05OtroClienteNoLeeEvidencias"/>
+    <testcase name="No revela evidencia privada" time="0.067" classname="05OtroClienteNoLeeEvidencias"/>
+  </testsuite>
+  <testsuite name="06 - Técnico no lee evidencias privadas" id="b0c1202f-1c0f-430e-80f1-84de41895074" timestamp="2026-09-22T19:38:26.468Z" tests="2" failures="0" errors="0" time="0.025">
+    <testcase name="Estado 403" time="0.025" classname="06TecnicoNoLeeEvidenciasPrivadas"/>
+    <testcase name="No revela evidencia privada" time="0.025" classname="06TecnicoNoLeeEvidenciasPrivadas"/>
+  </testsuite>
+  <testsuite name="07 - Sin token no accede" id="7168f603-201d-46e1-ae6e-2f7e6c0a16b7" timestamp="2026-09-22T19:38:26.468Z" tests="2" failures="0" errors="0" time="0.045">
+    <testcase name="Estado 401" time="0.045" classname="07SinTokenNoAccede"/>
+    <testcase name="No revela evidencia privada" time="0.045" classname="07SinTokenNoAccede"/>
+  </testsuite>
+  <testsuite name="08 - Otro cliente no adjunta evidencias" id="bfa04121-f548-46ce-8a58-15feca0b14ae" timestamp="2026-09-22T19:38:26.468Z" tests="1" failures="0" errors="0" time="0.055">
+    <testcase name="Estado 403" time="0.055" classname="08OtroClienteNoAdjuntaEvidencias"/>
+  </testsuite>
+  <testsuite name="09 - Propietario adjunta evidencia" id="8c5acd62-b879-4d7e-8b1e-2cec92795bf9" timestamp="2026-09-22T19:38:26.468Z" tests="2" failures="0" errors="0" time="0.031">
+    <testcase name="Estado 201" time="0.031" classname="09PropietarioAdjuntaEvidencia"/>
+    <testcase name="El intento ajeno no creó evidencia" time="0.031" classname="09PropietarioAdjuntaEvidencia"/>
+  </testsuite>
+  <testsuite name="10 - Otro cliente no cancela solicitud" id="22c5c192-3fac-4547-9bcc-f269f81df205" timestamp="2026-09-22T19:38:26.468Z" tests="1" failures="0" errors="0" time="0.017">
+    <testcase name="Estado 403" time="0.017" classname="10OtroClienteNoCancelaSolicitud"/>
+  </testsuite>
+  <testsuite name="11 - Propietario no cierra fuera de selección" id="711aa0f8-dc04-4898-9448-90d8fc735f76" timestamp="2026-09-22T19:38:26.468Z" tests="1" failures="0" errors="0" time="0.014">
+    <testcase name="Estado 403" time="0.014" classname="11PropietarioNoCierraFueraDeSeleccion"/>
+  </testsuite>
+  <testsuite name="12 - Propietario cancela solicitud" id="10c90996-d514-4ace-b533-8def367bd117" timestamp="2026-09-22T19:38:26.468Z" tests="2" failures="0" errors="0" time="0.054">
+    <testcase name="Estado 200" time="0.054" classname="12PropietarioCancelaSolicitud"/>
+    <testcase name="Cancelación aplicada" time="0.054" classname="12PropietarioCancelaSolicitud"/>
+  </testsuite>
+</testsuites>

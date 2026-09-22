@@ -17,6 +17,7 @@ import com.repairmatch.repairmatch_backend.dto.LoginResponseDto;
 public class AuthController {
 
     private final UserService userService;
+    private final com.repairmatch.repairmatch_backend.service.RefreshTokenService refreshTokens;
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(
@@ -34,5 +35,16 @@ public class AuthController {
             @Valid @RequestBody LoginRequestDto request
     ) {
         return ResponseEntity.ok(userService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDto> refresh(@Valid @RequestBody com.repairmatch.repairmatch_backend.dto.RefreshRequestDto request) {
+        return ResponseEntity.ok(refreshTokens.rotate(request.refreshToken()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody com.repairmatch.repairmatch_backend.dto.RefreshRequestDto request) {
+        refreshTokens.revoke(request.refreshToken());
+        return ResponseEntity.noContent().build();
     }
 }

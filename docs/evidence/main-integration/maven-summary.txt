@@ -1,0 +1,9 @@
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 23.40 s -- in com.repairmatch.repairmatch_backend.IdentityIntegrationTests
+[INFO] Tests run: 34, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.42 s -- in com.repairmatch.repairmatch_backend.PermissionIntegrationTests
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.416 s -- in com.repairmatch.repairmatch_backend.ProposalComparisonIntegrationTests
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.007 s -- in com.repairmatch.repairmatch_backend.RefreshIntegrationTests
+[INFO] Tests run: 44, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.090 s -- in com.repairmatch.repairmatch_backend.RegistrationIntegrationTests
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.916 s -- in com.repairmatch.repairmatch_backend.RepairmatchBackendApplicationTests
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.084 s -- in com.repairmatch.repairmatch_backend.RequestIntegrationTests
+[INFO] Tests run: 104, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS

@@ -1,0 +1,13 @@
+$kind: http-request
+name: "12 - Propietario cancela solicitud"
+url: "{{baseUrl}}/api/requests/{{requestId}}/cancel"
+method: PATCH
+auth:
+  type: bearer
+  credentials:
+    token: "{{ownerToken}}"
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));\npm.test(\"Cancelación aplicada\", () => pm.expect(pm.response.json().status).to.eql(\"CANCELADA\"));"
+order: 12000
