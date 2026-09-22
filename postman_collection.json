@@ -878,6 +878,611 @@
               "body": "{\n  \"status\": \"Respuesta de ejemplo; ejecutar para obtener el recurso real\"\n}"
             }
           ]
+        },
+        {
+          "name": "13 - Cliente crea solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Propietario desde JWT\", () => { const b=pm.response.json(); pm.expect(b.status).to.eql(\"PUBLICADA\"); pm.collectionVariables.set(\"createdRequestId\",b.id); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests",
+            "description": "13 - Cliente crea solicitud. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applianceTypeId\": 1,\n  \"originalDescription\": \"Solicitud de integración\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests",
+                "description": "13 - Cliente crea solicitud. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applianceTypeId\": 1,\n  \"originalDescription\": \"Solicitud de integración\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"Respuesta de ejemplo; ejecutar para obtener el recurso real\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "14 - Tecnico no crea solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests",
+            "description": "14 - Tecnico no crea solicitud. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{technicianToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applianceTypeId\": 1,\n  \"originalDescription\": \"Intento rechazado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests",
+                "description": "14 - Tecnico no crea solicitud. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{technicianToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applianceTypeId\": 1,\n  \"originalDescription\": \"Intento rechazado\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "15 - Propietario lista sus solicitudes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Incluye solicitud creada\", () => pm.expect(pm.response.json().map(r=>String(r.id))).to.include(String(pm.collectionVariables.get(\"createdRequestId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests",
+            "description": "15 - Propietario lista sus solicitudes. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests",
+                "description": "15 - Propietario lista sus solicitudes. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[]"
+            }
+          ]
+        },
+        {
+          "name": "16 - Otro cliente no lista solicitudes ajenas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Listado privado\", () => pm.expect(pm.response.json()).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests",
+            "description": "16 - Otro cliente no lista solicitudes ajenas. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests",
+                "description": "16 - Otro cliente no lista solicitudes ajenas. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[]"
+            }
+          ]
+        },
+        {
+          "name": "17 - Propietario consulta solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Solicitud propia\", () => pm.expect(String(pm.response.json().id)).to.eql(String(pm.collectionVariables.get(\"requestId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}",
+            "description": "17 - Propietario consulta solicitud. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}",
+                "description": "17 - Propietario consulta solicitud. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[]"
+            }
+          ]
+        },
+        {
+          "name": "18 - Otro cliente no consulta solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}",
+            "description": "18 - Otro cliente no consulta solicitud. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}",
+                "description": "18 - Otro cliente no consulta solicitud. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests/{{requestId}}\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "19 - Propietario consulta propuestas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Lista de propuestas\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+            "description": "19 - Propietario consulta propuestas. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+                "description": "19 - Propietario consulta propuestas. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[]"
+            }
+          ]
+        },
+        {
+          "name": "20 - Otro cliente no consulta propuestas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+            "description": "20 - Otro cliente no consulta propuestas. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+                "description": "20 - Otro cliente no consulta propuestas. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests/{{requestId}}/proposals\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "21 - Tecnico no consulta propuestas ajenas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+            "description": "21 - Tecnico no consulta propuestas ajenas. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{technicianToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+                "description": "21 - Tecnico no consulta propuestas ajenas. Verifica el contrato y el estado HTTP 403. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{technicianToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/requests/{{requestId}}/proposals\"\n}"
+            }
+          ]
         }
       ]
     },

@@ -62,7 +62,7 @@ class PermissionIntegrationTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"read", "add", "cancel", "close"})
+    @ValueSource(strings = {"read", "add", "cancel", "close", "request", "proposals"})
     void rejectsOtherClientWithoutChangingResources(String operation) throws Exception {
         mvc.perform(operation(operation).header("Authorization", "Bearer " + otherToken)
                         .param("currentUserId", owner.getId().toString())
@@ -79,7 +79,7 @@ class PermissionIntegrationTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"read", "add", "cancel", "close"})
+    @ValueSource(strings = {"read", "add", "cancel", "close", "request", "proposals"})
     void rejectsTechnician(String operation) throws Exception {
         mvc.perform(operation(operation).header("Authorization", "Bearer " + technicianToken))
                 .andExpect(status().isForbidden());
@@ -87,7 +87,7 @@ class PermissionIntegrationTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"read", "add", "cancel", "close"})
+    @ValueSource(strings = {"read", "add", "cancel", "close", "request", "proposals"})
     void rejectsUnauthenticatedAccess(String operation) throws Exception {
         mvc.perform(operation(operation)).andExpect(status().isUnauthorized());
         unchanged();
@@ -134,20 +134,22 @@ class PermissionIntegrationTests {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    void accountRoleChangeInvalidatesClientPermission() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"read", "request", "proposals", "list", "create"})
+    void accountRoleChangeInvalidatesClientPermission(String operation) throws Exception {
         owner.setRole(Role.TECHNICIAN);
         users.saveAndFlush(owner);
-        mvc.perform(operation("read").header("Authorization", "Bearer " + ownerToken))
+        mvc.perform(operation(operation).header("Authorization", "Bearer " + ownerToken))
                 .andExpect(status().isForbidden());
         unchanged();
     }
 
-    @Test
-    void validTokenForDeletedAccountIsRejected() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"read", "request", "proposals", "list", "create"})
+    void validTokenForDeletedAccountIsRejected(String operation) throws Exception {
         users.deleteById(other.getId());
         users.flush();
-        mvc.perform(operation("read").header("Authorization", "Bearer " + otherToken))
+        mvc.perform(operation(operation).header("Authorization", "Bearer " + otherToken))
                 .andExpect(status().isUnauthorized());
         unchanged();
     }
@@ -168,6 +170,11 @@ class PermissionIntegrationTests {
     private MockHttpServletRequestBuilder operation(String operation) {
         String url = "/api/requests/" + request.getId();
         return switch (operation) {
+            case "request" -> get(url);
+            case "proposals" -> get(url + "/proposals");
+            case "list" -> get("/api/requests");
+            case "create" -> post("/api/requests").contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"applianceTypeId\":" + request.getApplianceType().getId() + ",\"originalDescription\":\"Test\"}");
             case "read" -> get(url + "/evidences");
             case "add" -> post(url + "/evidences").contentType(MediaType.APPLICATION_JSON)
                     .content("{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}");

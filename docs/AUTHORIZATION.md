@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-Política elaborada a partir del README y los contratos actuales del proyecto. Solo existen identidad, solicitudes y evidencias en esta rama. Propuestas, servicios, reseñas y perfiles técnicos siguen pendientes, según Ariana. Las reglas para esos módulos son un contrato propuesto; no se presentan como controles ya implementados ni como un acuerdo aprobado por todos los responsables. El #5 debe permanecer abierto hasta integrar y verificar esos módulos.
+Política elaborada a partir del README y los contratos actuales del proyecto. Esta rama integra identidad, solicitudes, evidencias y la comparación de propuestas incorporada en main mediante los PR #32 y #33. El resto del ciclo de propuestas, servicios, reseñas y perfiles técnicos continúa pendiente de integración. Las reglas para esos módulos son un contrato propuesto; no se presentan como controles ya implementados ni como un acuerdo aprobado por todos los responsables. El #5 debe permanecer abierto hasta integrar y verificar esos módulos.
 
 ## Reglas compartidas
 
@@ -24,7 +24,10 @@ Política elaborada a partir del README y los contratos actuales del proyecto. S
 | Adjuntar evidencia | CLIENT propietario | Propiedad obtenida de Request.client | Implementado #5 |
 | Cancelar solicitud | CLIENT propietario | Se rechazan CERRADA, CANCELADA y EXPIRADA | Implementado #5 |
 | PATCH /api/requests/{id}/close | Ningún consumidor HTTP | Cierre exclusivamente dentro de selección y creación atómicas del servicio | Bloqueado #5 |
-| Crear o editar solicitud | CLIENT propietario | Propietario asignado desde JWT, no desde el cuerpo | Endpoint pendiente |
+| Crear solicitud | CLIENT | Propietario asignado desde JWT, no desde el cuerpo | Integrado con main |
+| Consultar solicitud y listar propias | CLIENT propietario | Identidad, rol actual y propiedad comprobados en el servicio | Integrado con main |
+| Comparar propuestas de solicitud | CLIENT propietario | Otros clientes y técnicos reciben 403 | Integrado con main |
+| Editar solicitud | CLIENT propietario | Propiedad desde JWT | Endpoint pendiente |
 | Buscar solicitudes compatibles | TECHNICIAN con perfil compatible | Tipo de electrodoméstico y zona/radio, con datos mínimos para ofertar | Módulo pendiente |
 | Ver evidencia desde compatibilidad | Solo lo que acuerde el módulo | No se otorga acceso a toda evidencia por ser técnico | Pendiente de acuerdo |
 | Crear propuesta | TECHNICIAN compatible | Técnico obtenido desde la identidad y perfil; solicitud elegible | Módulo pendiente |
@@ -72,8 +75,12 @@ node scripts/run-permissions-postman.cjs
 
 Conservar las variables de token vacías al guardar la colección. La configuración compartida no contiene JWT reales. Las evidencias de ejecución no sustituyen el acuerdo ni la revisión del equipo.
 
-Resultados actuales: 67 pruebas Java aprobadas (20 de permisos), 12 solicitudes YAML y 18 aserciones aprobadas. Ver [evidencias](evidence/issue-5/README.md). El cierre del #5 sigue pendiente de los otros módulos y del acuerdo compartido.
+Resultados históricos de la primera entrega: 67 pruebas Java aprobadas (20 de permisos), 12 solicitudes YAML y 18 aserciones aprobadas. Ver [evidencias](evidence/issue-5/README.md). El cierre del #5 sigue pendiente de los otros módulos y del acuerdo compartido.
 
 ## Ajuste de rúbrica
 
 Los métodos sensibles incorporan @PreAuthorize además de las comprobaciones de propiedad persistida. Los errores de API y de los filtros de seguridad usan ErrorResponseDto. La entrega incluye postman_collection.json en la raíz, regenerable desde los YAML. Consultar docs/RUBRIC_IDENTITY.md.
+
+## Verificación después de integrar main
+
+Se conservan los nuevos endpoints de solicitudes y comparación de propuestas. La identidad se obtiene del SecurityContext dentro de los servicios. No se acepta un identificador de usuario proporcionado al método como autorización. La colección de permisos agrega 9 casos para estos endpoints. Consultar docs/evidence/main-integration/ para los resultados actualizados.

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="RepairMatch API — entrega DBP" tests="39" time="3.195">
+  <testsuite name="RepairMatch -Permisos #5 / 01 - Login cliente propietario" id="66be1f84-f6dc-4458-a0a5-868a93d9616b" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="1.229">
+    <testcase name="Estado 200" time="1.229" classname="RepairMatchPermisos501LoginClientePropietario"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 02 - Login otro cliente" id="e3a43e47-1164-4965-88d5-36c7286040e0" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.183">
+    <testcase name="Estado 200" time="0.183" classname="RepairMatchPermisos502LoginOtroCliente"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 03 - Login técnico" id="69e8f83e-aa8d-456e-a9e0-f8f8cb5dce1f" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.161">
+    <testcase name="Estado 200" time="0.161" classname="RepairMatchPermisos503LoginTecnico"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 04 - Propietario consulta evidencias" id="86674148-439c-4859-92f5-e58b85ce94a8" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.116">
+    <testcase name="Estado 200" time="0.116" classname="RepairMatchPermisos504PropietarioConsultaEvidencias"/>
+    <testcase name="Evidencia propia" time="0.116" classname="RepairMatchPermisos504PropietarioConsultaEvidencias"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 05 - Otro cliente no lee evidencias" id="1324e12b-a7ba-4c35-b816-1233847048c1" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.047">
+    <testcase name="Estado 403" time="0.047" classname="RepairMatchPermisos505OtroClienteNoLeeEvidencias"/>
+    <testcase name="No revela evidencia privada" time="0.047" classname="RepairMatchPermisos505OtroClienteNoLeeEvidencias"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 06 - Técnico no lee evidencias privadas" id="0ae318dd-47b6-499e-805e-0cddb64c87cd" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.013">
+    <testcase name="Estado 403" time="0.013" classname="RepairMatchPermisos506TecnicoNoLeeEvidenciasPrivadas"/>
+    <testcase name="No revela evidencia privada" time="0.013" classname="RepairMatchPermisos506TecnicoNoLeeEvidenciasPrivadas"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 07 - Sin token no accede" id="773837f7-9825-47ff-b54f-29cf0d5434e9" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.010">
+    <testcase name="Estado 401" time="0.010" classname="RepairMatchPermisos507SinTokenNoAccede"/>
+    <testcase name="No revela evidencia privada" time="0.010" classname="RepairMatchPermisos507SinTokenNoAccede"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 08 - Otro cliente no adjunta evidencias" id="a5becae4-2390-4adf-a542-a2cc1d531413" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.043">
+    <testcase name="Estado 403" time="0.043" classname="RepairMatchPermisos508OtroClienteNoAdjuntaEvidencias"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 09 - Propietario adjunta evidencia" id="122c08eb-8df1-4b8c-a72f-e14c28b3aa50" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.028">
+    <testcase name="Estado 201" time="0.028" classname="RepairMatchPermisos509PropietarioAdjuntaEvidencia"/>
+    <testcase name="El intento ajeno no creó evidencia" time="0.028" classname="RepairMatchPermisos509PropietarioAdjuntaEvidencia"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 10 - Otro cliente no cancela solicitud" id="33357308-b3a1-4499-aca5-ef0a3f2efe47" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.017">
+    <testcase name="Estado 403" time="0.017" classname="RepairMatchPermisos510OtroClienteNoCancelaSolicitud"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 11 - Propietario no cierra fuera de selección" id="dff4eb3e-1942-4033-89a7-3558ea4c9c8e" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.007">
+    <testcase name="Estado 403" time="0.007" classname="RepairMatchPermisos511PropietarioNoCierraFueraDeSeleccion"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 12 - Propietario cancela solicitud" id="02b44c8c-e55c-4a7c-849a-bf8d6e7b851a" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.047">
+    <testcase name="Estado 200" time="0.047" classname="RepairMatchPermisos512PropietarioCancelaSolicitud"/>
+    <testcase name="Cancelación aplicada" time="0.047" classname="RepairMatchPermisos512PropietarioCancelaSolicitud"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 13 - Cliente crea solicitud" id="63f7cd1b-3d22-4475-9b76-c2eee42988e3" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.036">
+    <testcase name="Estado 201" time="0.036" classname="RepairMatchPermisos513ClienteCreaSolicitud"/>
+    <testcase name="Propietario desde JWT" time="0.036" classname="RepairMatchPermisos513ClienteCreaSolicitud"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 14 - Tecnico no crea solicitud" id="dbbb7a76-1f19-4343-92b2-22d614f3a0f2" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.010">
+    <testcase name="Estado 403" time="0.010" classname="RepairMatchPermisos514TecnicoNoCreaSolicitud"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 15 - Propietario lista sus solicitudes" id="450fc280-6906-4b24-a794-66f499f9bdc1" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.061">
+    <testcase name="Estado 200" time="0.061" classname="RepairMatchPermisos515PropietarioListaSusSolicitudes"/>
+    <testcase name="Incluye solicitud creada" time="0.061" classname="RepairMatchPermisos515PropietarioListaSusSolicitudes"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 16 - Otro cliente no lista solicitudes ajenas" id="1be48916-ce97-4a04-ba75-6ae126efc341" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="Estado 200" time="0.012" classname="RepairMatchPermisos516OtroClienteNoListaSolicitudesAjenas"/>
+    <testcase name="Listado privado" time="0.012" classname="RepairMatchPermisos516OtroClienteNoListaSolicitudesAjenas"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 17 - Propietario consulta solicitud" id="23024a13-e40d-4852-86b4-4b4aadf846a9" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.014">
+    <testcase name="Estado 200" time="0.014" classname="RepairMatchPermisos517PropietarioConsultaSolicitud"/>
+    <testcase name="Solicitud propia" time="0.014" classname="RepairMatchPermisos517PropietarioConsultaSolicitud"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 18 - Otro cliente no consulta solicitud" id="50b525b3-d2c7-44ba-b627-c67333102c3b" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.010">
+    <testcase name="Estado 403" time="0.010" classname="RepairMatchPermisos518OtroClienteNoConsultaSolicitud"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 19 - Propietario consulta propuestas" id="5423304c-b784-49a1-8982-bb7d169b4259" timestamp="2026-09-22T21:44:02.158Z" tests="2" failures="0" errors="0" time="0.023">
+    <testcase name="Estado 200" time="0.023" classname="RepairMatchPermisos519PropietarioConsultaPropuestas"/>
+    <testcase name="Lista de propuestas" time="0.023" classname="RepairMatchPermisos519PropietarioConsultaPropuestas"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 20 - Otro cliente no consulta propuestas" id="de1457c4-9cd5-4c7c-8dc2-e22bfeede595" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.017">
+    <testcase name="Estado 403" time="0.017" classname="RepairMatchPermisos520OtroClienteNoConsultaPropuestas"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Permisos #5 / 21 - Tecnico no consulta propuestas ajenas" id="f554d364-67ec-4cbc-95a4-9dcc0defab76" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.008">
+    <testcase name="Estado 403" time="0.008" classname="RepairMatchPermisos521TecnicoNoConsultaPropuestasAjenas"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #3 / 01 - Registrar cliente" id="81a2c16d-a0e5-462d-8f6f-aaba29245b51" timestamp="2026-09-22T21:44:02.158Z" tests="4" failures="0" errors="0" time="0.220">
+    <testcase name="Estado 201" time="0.220" classname="RepairMatchRegistro301RegistrarCliente"/>
+    <testcase name="No expone contraseñas" time="0.220" classname="RepairMatchRegistro301RegistrarCliente"/>
+    <testcase name="Respuesta JSON" time="0.220" classname="RepairMatchRegistro301RegistrarCliente"/>
+    <testcase name="Cuenta y rol correctos" time="0.220" classname="RepairMatchRegistro301RegistrarCliente"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #3 / 02 - Rechazar correo duplicado" id="eddb7fa4-c944-4eee-8a88-8df6652ae502" timestamp="2026-09-22T21:44:02.158Z" tests="3" failures="0" errors="0" time="0.011">
+    <testcase name="Estado 409" time="0.011" classname="RepairMatchRegistro302RechazarCorreoDuplicado"/>
+    <testcase name="No expone contraseñas" time="0.011" classname="RepairMatchRegistro302RechazarCorreoDuplicado"/>
+    <testcase name="Respuesta JSON" time="0.011" classname="RepairMatchRegistro302RechazarCorreoDuplicado"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #3 / 03 - Registrar técnico" id="bbf32e4b-1754-487e-b21c-3e01bdb01a8a" timestamp="2026-09-22T21:44:02.158Z" tests="4" failures="0" errors="0" time="0.156">
+    <testcase name="Estado 201" time="0.156" classname="RepairMatchRegistro303RegistrarTecnico"/>
+    <testcase name="No expone contraseñas" time="0.156" classname="RepairMatchRegistro303RegistrarTecnico"/>
+    <testcase name="Respuesta JSON" time="0.156" classname="RepairMatchRegistro303RegistrarTecnico"/>
+    <testcase name="Cuenta y rol correctos" time="0.156" classname="RepairMatchRegistro303RegistrarTecnico"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #3 / 04 - Rechazar correo inválido" id="2bca7793-9591-4d75-8b9e-d6c8d662c6dc" timestamp="2026-09-22T21:44:02.158Z" tests="3" failures="0" errors="0" time="0.024">
+    <testcase name="Estado 400" time="0.024" classname="RepairMatchRegistro304RechazarCorreoInvalido"/>
+    <testcase name="No expone contraseñas" time="0.024" classname="RepairMatchRegistro304RechazarCorreoInvalido"/>
+    <testcase name="Respuesta JSON" time="0.024" classname="RepairMatchRegistro304RechazarCorreoInvalido"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #3 / 05 - Rechazar nombre vacío" id="b97a99c6-0d15-4301-9b79-2409940557f4" timestamp="2026-09-22T21:44:02.158Z" tests="3" failures="0" errors="0" time="0.009">
+    <testcase name="Estado 400" time="0.009" classname="RepairMatchRegistro305RechazarNombreVacio"/>
+    <testcase name="No expone contraseñas" time="0.009" classname="RepairMatchRegistro305RechazarNombreVacio"/>
+    <testcase name="Respuesta JSON" time="0.009" classname="RepairMatchRegistro305RechazarNombreVacio"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #3 / 06 - Rechazar contraseña corta" id="c3d203b7-19dd-4b52-90db-15161859bffe" timestamp="2026-09-22T21:44:02.158Z" tests="3" failures="0" errors="0" time="0.010">
+    <testcase name="Estado 400" time="0.010" classname="RepairMatchRegistro306RechazarContrasenaCorta"/>
+    <testcase name="No expone contraseñas" time="0.010" classname="RepairMatchRegistro306RechazarContrasenaCorta"/>
+    <testcase name="Respuesta JSON" time="0.010" classname="RepairMatchRegistro306RechazarContrasenaCorta"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #3 / 07 - Rechazar rol desconocido" id="addf94a3-c033-481f-81d0-ac34366daf4c" timestamp="2026-09-22T21:44:02.158Z" tests="3" failures="0" errors="0" time="0.011">
+    <testcase name="Estado 400" time="0.011" classname="RepairMatchRegistro307RechazarRolDesconocido"/>
+    <testcase name="No expone contraseñas" time="0.011" classname="RepairMatchRegistro307RechazarRolDesconocido"/>
+    <testcase name="Respuesta JSON" time="0.011" classname="RepairMatchRegistro307RechazarRolDesconocido"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #3 / 08 - Rechazar contraseña mayor a 72 bytes" id="9888698b-7abc-4aa7-a5b6-6500e71a5ec2" timestamp="2026-09-22T21:44:02.158Z" tests="3" failures="0" errors="0" time="0.012">
+    <testcase name="Estado 400" time="0.012" classname="RepairMatchRegistro308RechazarContrasenaMayorA72Bytes"/>
+    <testcase name="No expone contraseñas" time="0.012" classname="RepairMatchRegistro308RechazarContrasenaMayorA72Bytes"/>
+    <testcase name="Respuesta JSON" time="0.012" classname="RepairMatchRegistro308RechazarContrasenaMayorA72Bytes"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 01 - Registrar usuario de prueba" id="65ccb9c1-468c-4c3b-abfc-26c93fb57218" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.163">
+    <testcase name="Crea el usuario sin exponer la contraseña" time="0.163" classname="RepairMatchRegistro401RegistrarUsuarioDePrueba"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 02 - Iniciar sesión correctamente" id="9f4149fd-c6b3-4e4e-bae2-1b616142a57a" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.157">
+    <testcase name="Login correcto" time="0.157" classname="RepairMatchRegistro402IniciarSesionCorrectamente"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 03 - Consultar perfil autenticado" id="9ccbd525-a205-408b-83c3-2a5568563676" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.015">
+    <testcase name="Devuelve el perfil autenticado" time="0.015" classname="RepairMatchRegistro403ConsultarPerfilAutenticado"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 04 - Rechazar consulta sin token" id="371c5c07-5956-4b4a-a3e6-f06bdf76f497" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.006">
+    <testcase name="Rechaza el acceso no autorizado" time="0.006" classname="RepairMatchRegistro404RechazarConsultaSinToken"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 05 - Rechazar contraseña incorrecta" id="da3c8592-4dcc-4ef7-82e6-e224db58a284" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.168">
+    <testcase name="Rechaza el acceso no autorizado" time="0.168" classname="RepairMatchRegistro405RechazarContrasenaIncorrecta"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 06 - Rechazar token inválido" id="3cafa170-2666-4f4c-a5b7-daa3131a8115" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.010">
+    <testcase name="Rechaza el acceso no autorizado" time="0.010" classname="RepairMatchRegistro406RechazarTokenInvalido"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 07 - Renovar tokens" id="8434f02b-24f9-454f-86b4-32e38fd2511a" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.090">
+    <testcase name="Estado 200" time="0.090" classname="RepairMatchRegistro407RenovarTokens"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 08 - Rechazar reutilización de refresh" id="766be597-eb3a-4430-91d3-119c70585270" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.014">
+    <testcase name="Estado 401" time="0.014" classname="RepairMatchRegistro408RechazarReutilizacionDeRefresh"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 09 - Cerrar sesión de renovación" id="879ab268-b8a9-4714-8873-f66b696bcb96" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.014">
+    <testcase name="Estado 204" time="0.014" classname="RepairMatchRegistro409CerrarSesionDeRenovacion"/>
+  </testsuite>
+  <testsuite name="RepairMatch -Registro #4 / 10 - Rechazar refresh revocado" id="ff366080-500c-45eb-b1fa-083bc5d9fed9" timestamp="2026-09-22T21:44:02.158Z" tests="1" failures="0" errors="0" time="0.013">
+    <testcase name="Estado 401" time="0.013" classname="RepairMatchRegistro410RechazarRefreshRevocado"/>
+  </testsuite>
+</testsuites>

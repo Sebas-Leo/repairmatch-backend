@@ -1,0 +1,14 @@
+$kind: http-request
+name: 18 - Otro cliente no consulta solicitud
+url: "{{baseUrl}}/api/requests/{{requestId}}"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{otherToken}}"
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |
+      pm.test("Estado 403", () => pm.response.to.have.status(403));
+order: 18000

@@ -1,0 +1,15 @@
+$kind: http-request
+name: 15 - Propietario lista sus solicitudes
+url: "{{baseUrl}}/api/requests"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{ownerToken}}"
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Estado 200", () => pm.response.to.have.status(200));
+      pm.test("Incluye solicitud creada", () => pm.expect(pm.response.json().map(r=>String(r.id))).to.include(String(pm.collectionVariables.get("createdRequestId"))));
+order: 15000

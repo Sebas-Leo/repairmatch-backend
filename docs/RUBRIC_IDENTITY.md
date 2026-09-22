@@ -22,4 +22,4 @@ EnableMethodSecurity y PreAuthorize protegen los métodos de lectura/escritura d
 
 La colección postman_collection.json en la raíz se genera con node scripts/export-postman.cjs a partir de las colecciones YAML. Incluye descripciones, variables, autorización y ejemplos ilustrativos; los resultados reales se guardan como evidencias. Requiere instalar las dependencias de verificación en target como indica docs/AUTHORIZATION.md. La colección contiene todos los endpoints actualmente implementados, no los módulos futuros.
 
-El #5 sigue parcial hasta que existan propuestas, servicios y reseñas y se acuerden sus políticas. Estos cambios no completan los requisitos globales de eventos, correo, despliegue ni el informe de 1000–2000 palabras, que corresponden al equipo.
+El #5 sigue parcial: ya se integra la comparación de propuestas para el cliente propietario, pero faltan el resto del ciclo de propuestas, servicios y reseñas y el acuerdo de sus políticas. Estos cambios no completan los requisitos globales de eventos, correo, despliegue ni el informe de 1000–2000 palabras, que corresponden al equipo.

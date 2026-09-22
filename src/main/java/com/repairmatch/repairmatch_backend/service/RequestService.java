@@ -1,20 +1,22 @@
 package com.repairmatch.repairmatch_backend.service;
 
 import com.repairmatch.repairmatch_backend.dto.CreateEvidenceDto;
+import com.repairmatch.repairmatch_backend.dto.CreateRequestDto;
 import com.repairmatch.repairmatch_backend.dto.EvidenceResponseDto;
 import com.repairmatch.repairmatch_backend.dto.RequestResponseDto;
 import com.repairmatch.repairmatch_backend.model.Evidence;
 import com.repairmatch.repairmatch_backend.model.EvidenceId;
 import com.repairmatch.repairmatch_backend.model.Request;
+import com.repairmatch.repairmatch_backend.model.Role;
+import com.repairmatch.repairmatch_backend.model.User;
+import com.repairmatch.repairmatch_backend.repository.ApplianceTypeRepository;
 import com.repairmatch.repairmatch_backend.repository.EvidenceRepository;
 import com.repairmatch.repairmatch_backend.repository.RequestRepository;
+import com.repairmatch.repairmatch_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import com.repairmatch.repairmatch_backend.exception.*;
-import com.repairmatch.repairmatch_backend.model.Role;
 import com.repairmatch.repairmatch_backend.security.AccountAccess;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import com.repairmatch.repairmatch_backend.exception.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,12 +30,52 @@ public class RequestService {
 
     private final RequestRepository requestRepository;
     private final EvidenceRepository evidenceRepository;
+    private final UserRepository userRepository;
     private final AccountAccess accountAccess;
+    private final ApplianceTypeRepository applianceTypeRepository;
+
+    @Transactional
+    @PreAuthorize("hasRole('CLIENT')")
+    public RequestResponseDto createRequest(CreateRequestDto dto) {
+        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
+        User client = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AuthenticationRequiredException("El usuario autenticado no existe"));
+
+        var applianceType = applianceTypeRepository.findById(dto.getApplianceTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException("El tipo de electrodoméstico especificado no existe"
+                ));
+
+        Request request = Request.builder()
+                .client(client)
+                .applianceType(applianceType)
+                .originalDescription(dto.getOriginalDescription().strip())
+                .brand(stripNullable(dto.getBrand()))
+                .model(stripNullable(dto.getModel()))
+                .build();
+
+        return mapToResponseDto(requestRepository.save(request));
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('CLIENT')")
+    public RequestResponseDto getRequest(Long requestId) {
+        return mapToResponseDto(loadOwnedRequest(requestId));
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('CLIENT')")
+    public List<RequestResponseDto> getOwnRequests() {
+        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
+        return requestRepository.findByClientIdOrderByCreatedAtDesc(currentUserId)
+                .stream()
+                .map(this::mapToResponseDto)
+                .toList();
+    }
 
     @Transactional
     @PreAuthorize("hasRole('CLIENT')")
     public EvidenceResponseDto addEvidence(Long requestId, CreateEvidenceDto dto) {
-        Request request = getOwnedRequest(requestId);
+        Request request = loadOwnedRequest(requestId);
 
         List<Evidence> existingEvidences = evidenceRepository.findByRequestId(requestId);
         int nextEvidenceNumber = existingEvidences.size() + 1;
@@ -59,7 +101,7 @@ public class RequestService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('CLIENT')")
     public List<EvidenceResponseDto> getEvidencesByRequestId(Long requestId) {
-        getOwnedRequest(requestId);
+        loadOwnedRequest(requestId);
 
         return evidenceRepository.findByRequestId(requestId).stream()
                 .map(evidence -> EvidenceResponseDto.builder()
@@ -74,12 +116,13 @@ public class RequestService {
     @Transactional
     @PreAuthorize("hasRole('CLIENT')")
     public RequestResponseDto cancelRequest(Long requestId) {
-        Request request = getOwnedRequest(requestId);
+        Request request = loadOwnedRequest(requestId);
 
         if (request.getStatus() == Request.RequestStatus.CERRADA ||
                 request.getStatus() == Request.RequestStatus.CANCELADA ||
                 request.getStatus() == Request.RequestStatus.EXPIRADA) {
-            throw new InvalidStateException( "No se puede cancelar una solicitud en estado: " + request.getStatus());
+            throw new InvalidStateException("No se puede cancelar una solicitud en estado: " + request.getStatus()
+            );
         }
 
         request.setStatus(Request.RequestStatus.CANCELADA);
@@ -89,8 +132,7 @@ public class RequestService {
 
     @Transactional
     public void transitionToHasProposals(Long requestId) {
-        Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("La solicitud especificada no existe"));
+        Request request = loadRequest(requestId);
 
         if (request.getStatus() == Request.RequestStatus.PUBLICADA) {
             request.setStatus(Request.RequestStatus.CON_PROPUESTAS);
@@ -101,10 +143,11 @@ public class RequestService {
     @Transactional
     @PreAuthorize("hasRole('CLIENT')")
     public void closeRequest(Long requestId) {
-        Request request = getOwnedRequest(requestId);
+        Request request = loadOwnedRequest(requestId);
 
         if (request.getStatus() != Request.RequestStatus.CON_PROPUESTAS) {
-            throw new InvalidStateException( "Solo se pueden cerrar solicitudes con propuestas activas");
+            throw new InvalidStateException("Solo se pueden cerrar solicitudes con propuestas activas"
+            );
         }
 
         request.setStatus(Request.RequestStatus.CERRADA);
@@ -113,8 +156,7 @@ public class RequestService {
 
     @Transactional
     public void expireRequest(Long requestId) {
-        Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("La solicitud especificada no existe"));
+        Request request = loadRequest(requestId);
 
         if (request.getStatus() == Request.RequestStatus.PUBLICADA ||
                 request.getStatus() == Request.RequestStatus.CON_PROPUESTAS) {
@@ -123,24 +165,34 @@ public class RequestService {
         }
     }
 
-    private Request getOwnedRequest(Long requestId) {
-        UUID userId = accountAccess.requireRole(Role.CLIENT);
-        Request request = requestRepository.findById(requestId).orElseThrow(() ->
-                new ResourceNotFoundException( "La solicitud no existe"));
-        accountAccess.requireOwner(userId, request.getClient().getId());
-        return request;
-    }
-
     private RequestResponseDto mapToResponseDto(Request request) {
         return RequestResponseDto.builder()
                 .id(request.getId())
                 .clientId(request.getClient().getId())
                 .applianceTypeId(request.getApplianceType().getId())
+                .applianceTypeName(request.getApplianceType().getName())
                 .originalDescription(request.getOriginalDescription())
                 .brand(request.getBrand())
                 .model(request.getModel())
                 .status(request.getStatus().name())
                 .createdAt(request.getCreatedAt())
                 .build();
+    }
+
+    private Request loadOwnedRequest(Long requestId) {
+        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
+        Request request = loadRequest(requestId);
+        accountAccess.requireOwner(currentUserId, request.getClient().getId());
+        return request;
+    }
+
+    private Request loadRequest(Long requestId) {
+        return requestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("La solicitud especificada no existe"
+                ));
+    }
+
+    private String stripNullable(String value) {
+        return value == null ? null : value.strip();
     }
 }

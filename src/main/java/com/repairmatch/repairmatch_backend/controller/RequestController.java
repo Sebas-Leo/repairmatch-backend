@@ -1,6 +1,7 @@
 package com.repairmatch.repairmatch_backend.controller;
 
 import com.repairmatch.repairmatch_backend.dto.CreateEvidenceDto;
+import com.repairmatch.repairmatch_backend.dto.CreateRequestDto;
 import com.repairmatch.repairmatch_backend.dto.EvidenceResponseDto;
 import com.repairmatch.repairmatch_backend.dto.RequestResponseDto;
 import com.repairmatch.repairmatch_backend.service.RequestService;
@@ -19,18 +20,47 @@ public class RequestController {
 
     private final RequestService requestService;
 
+    @PostMapping
+    public ResponseEntity<RequestResponseDto> createRequest(
+            @Valid @RequestBody CreateRequestDto dto
+    ) {
+        RequestResponseDto response = requestService.createRequest(
+                dto
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    public List<RequestResponseDto> getOwnRequests() {
+        return requestService.getOwnRequests();
+    }
+
+    @GetMapping("/{requestId}")
+    public RequestResponseDto getRequest(
+            @PathVariable Long requestId
+    ) {
+        return requestService.getRequest(requestId);
+    }
+
     @PostMapping("/{requestId}/evidences")
     public ResponseEntity<EvidenceResponseDto> addEvidence(
             @PathVariable Long requestId,
             @Valid @RequestBody CreateEvidenceDto dto) {
 
-        EvidenceResponseDto response = requestService.addEvidence(requestId, dto);
+        EvidenceResponseDto response = requestService.addEvidence(
+                requestId,
+                dto
+        );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{requestId}/evidences")
-    public ResponseEntity<List<EvidenceResponseDto>> getEvidencesByRequestId(@PathVariable Long requestId) {
-        List<EvidenceResponseDto> response = requestService.getEvidencesByRequestId(requestId);
+    public ResponseEntity<List<EvidenceResponseDto>> getEvidencesByRequestId(
+            @PathVariable Long requestId
+    ) {
+        List<EvidenceResponseDto> response = requestService.getEvidencesByRequestId(
+                requestId
+        );
         return ResponseEntity.ok(response);
     }
 
@@ -38,7 +68,9 @@ public class RequestController {
     public ResponseEntity<RequestResponseDto> cancelRequest(
             @PathVariable Long requestId) {
 
-        RequestResponseDto response = requestService.cancelRequest(requestId);
+        RequestResponseDto response = requestService.cancelRequest(
+                requestId
+        );
         return ResponseEntity.ok(response);
     }
 
@@ -49,4 +81,5 @@ public class RequestController {
         requestService.closeRequest(requestId);
         return ResponseEntity.noContent().build();
     }
+
 }
