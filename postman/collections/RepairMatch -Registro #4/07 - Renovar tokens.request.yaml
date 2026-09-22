@@ -1,0 +1,21 @@
+$kind: http-request
+name: 07 - Renovar tokens
+url: "{{baseUrl}}/api/auth/refresh"
+method: POST
+body:
+  type: json
+  content: '{"refreshToken":"{{refreshToken}}"}'
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: pm.collectionVariables.set("previousRefreshToken",
+      pm.collectionVariables.get("refreshToken"));
+  - type: afterResponse
+    language: text/javascript
+    code: >-
+      pm.test("Estado 200", () => pm.response.to.have.status(200));
+
+      if (pm.response.code === 200) { const b = pm.response.json();
+      pm.collectionVariables.set("accessToken", b.accessToken);
+      pm.collectionVariables.set("refreshToken", b.refreshToken); }
+order: 5000000000007000

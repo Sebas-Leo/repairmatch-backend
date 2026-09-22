@@ -1,6 +1,7 @@
 package com.repairmatch.repairmatch_backend.config;
 
 import org.springframework.context.annotation.Bean;
+import com.repairmatch.repairmatch_backend.security.SecurityErrorHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,7 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityErrorHandler errors)
             throws Exception {
 
         JwtGrantedAuthoritiesConverter authoritiesConverter =
@@ -30,7 +31,9 @@ public class SecurityConfig {
         );
 
         http
+                .cors(org.springframework.security.config.Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(errors).accessDeniedHandler(errors))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -38,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/auth/register",
-                                "/api/auth/login"
+                                "/api/auth/login", "/api/auth/refresh", "/api/auth/logout"
                         ).permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -51,6 +54,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationEntryPoint(errors).accessDeniedHandler(errors)
                         .jwt(jwt -> jwt
                                 .jwtAuthenticationConverter(
                                         authenticationConverter

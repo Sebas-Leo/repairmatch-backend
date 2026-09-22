@@ -1,0 +1,1422 @@
+{
+  "info": {
+    "name": "RepairMatch API — entrega DBP",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Colección generada desde postman/collections. Contiene los endpoints disponibles y ejemplos ilustrativos, no respuestas de producción. Configurar baseUrl. JWT y refresh tokens deben permanecer vacíos al versionar. Ver docs/RUBRIC_IDENTITY.md y docs/AUTHORIZATION.md."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "clientEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "technicianEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "identityEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "previousRefreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "RepairMatch -Registro #3",
+      "description": "Ejecutar en orden. Los casos de permisos requieren los datos H2 descritos en docs/AUTHORIZATION.md.",
+      "item": [
+        {
+          "name": "01 - Registrar cliente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"clientEmail\", \"cliente-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));",
+                  "pm.test(\"Cuenta y rol correctos\", () => { const b = pm.response.json(); pm.expect(b).to.have.all.keys(\"id\", \"name\", \"email\", \"role\"); pm.expect(b.id).to.match(/^[0-9a-f-]{36}$/i); pm.expect(b.role).to.eql(\"CLIENT\"); pm.expect(b.email).to.eql(pm.collectionVariables.get(\"clientEmail\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "02 - Rechazar correo duplicado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 409. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 409",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 409. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 409,\n  \"error\": \"Conflict\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/auth/register\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "03 - Registrar técnico",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"technicianEmail\", \"tecnico-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));",
+                  "pm.test(\"Cuenta y rol correctos\", () => { const b = pm.response.json(); pm.expect(b).to.have.all.keys(\"id\", \"name\", \"email\", \"role\"); pm.expect(b.id).to.match(/^[0-9a-f-]{36}$/i); pm.expect(b.role).to.eql(\"TECHNICIAN\"); pm.expect(b.email).to.eql(pm.collectionVariables.get(\"technicianEmail\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{technicianEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"TECHNICIAN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{technicianEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"TECHNICIAN\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "04 - Rechazar correo inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"incorrecto\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"incorrecto\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/auth/register\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "05 - Rechazar nombre vacío",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"   \",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"   \",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/auth/register\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "06 - Rechazar contraseña corta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"123\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"123\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/auth/register\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "07 - Rechazar rol desconocido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"ADMIN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"ADMIN\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/auth/register\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "08 - Rechazar contraseña mayor a 72 bytes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"bytes@example.com\",\n  \"password\": \"ááááááááááááááááááááááááááááááááááááá\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "description": "Issue #3. Ejecutar la colección completa en orden.. Verifica el contrato y el estado HTTP 400. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"bytes@example.com\",\n  \"password\": \"ááááááááááááááááááááááááááááááááááááá\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/auth/register\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RepairMatch -Registro #4",
+      "description": "Ejecutar en orden. Los casos de permisos requieren los datos H2 descritos en docs/AUTHORIZATION.md.",
+      "item": [
+        {
+          "name": "01 - Registrar usuario de prueba",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"identityEmail\", \"identity-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Crea el usuario sin exponer la contraseña\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "\r",
+                  "    const usuario = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(usuario).to.have.all.keys(\r",
+                  "        \"id\", \"name\", \"email\", \"role\"\r",
+                  "    );\r",
+                  "    pm.expect(usuario.id).to.be.a(\"string\").and.not.empty;\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "01 - Registrar usuario de prueba. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Usuario Prueba\",\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"PruebaLocal2026!\",\r\n  \"role\": \"CLIENT\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "description": "01 - Registrar usuario de prueba. Verifica el contrato y el estado HTTP 201. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Usuario Prueba\",\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"PruebaLocal2026!\",\r\n  \"role\": \"CLIENT\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "02 - Iniciar sesión correctamente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login correcto\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 200) {\r",
+                  "    const respuesta = pm.response.json();\r",
+                  "    pm.collectionVariables.set(\"accessToken\", respuesta.accessToken);\r",
+                  "} else {\r",
+                  "    pm.collectionVariables.unset(\"accessToken\");\r",
+                  "}",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"refreshToken\", pm.response.json().refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "02 - Iniciar sesión correctamente. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"PruebaLocal2026!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "description": "02 - Iniciar sesión correctamente. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"PruebaLocal2026!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<token generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<token de renovación>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "03 - Consultar perfil autenticado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Devuelve el perfil autenticado\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "\r",
+                  "    const perfil = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(perfil).to.have.all.keys(\r",
+                  "        \"id\", \"name\", \"email\", \"role\"\r",
+                  "    );\r",
+                  "    pm.expect(perfil.email).to.eql(pm.collectionVariables.get(\"identityEmail\"));\r",
+                  "    pm.expect(perfil.role).to.eql(\"CLIENT\");\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/me",
+            "description": "03 - Consultar perfil autenticado. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/users/me",
+                "description": "03 - Consultar perfil autenticado. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "04 - Rechazar consulta sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Rechaza el acceso no autorizado\", function () {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/me",
+            "description": "04 - Rechazar consulta sin token. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/users/me",
+                "description": "04 - Rechazar consulta sin token. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/users/me\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "05 - Rechazar contraseña incorrecta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Rechaza el acceso no autorizado\", function () {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "05 - Rechazar contraseña incorrecta. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"Incorrecta123!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "description": "05 - Rechazar contraseña incorrecta. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"Incorrecta123!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/auth/login\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "06 - Rechazar token inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Rechaza el acceso no autorizado\", function () {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/me",
+            "description": "06 - Rechazar token inválido. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "token-invalido",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/users/me",
+                "description": "06 - Rechazar token inválido. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "token-invalido",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/users/me\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "07 - Renovar tokens",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"previousRefreshToken\", pm.collectionVariables.get(\"refreshToken\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) { const b = pm.response.json(); pm.collectionVariables.set(\"accessToken\", b.accessToken); pm.collectionVariables.set(\"refreshToken\", b.refreshToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/refresh",
+            "description": "07 - Renovar tokens. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/refresh",
+                "description": "07 - Renovar tokens. Verifica el contrato y el estado HTTP 200. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<token generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<token de renovación>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "08 - Rechazar reutilización de refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 401\", () => pm.response.to.have.status(401));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/refresh",
+            "description": "08 - Rechazar reutilización de refresh. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{previousRefreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/refresh",
+                "description": "08 - Rechazar reutilización de refresh. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"refreshToken\":\"{{previousRefreshToken}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/auth/refresh\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "09 - Cerrar sesión de renovación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 204\", () => pm.response.to.have.status(204));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/logout",
+            "description": "09 - Cerrar sesión de renovación. Verifica el contrato y el estado HTTP 204. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 204",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/logout",
+                "description": "09 - Cerrar sesión de renovación. Verifica el contrato y el estado HTTP 204. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "10 - Rechazar refresh revocado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 401\", () => pm.response.to.have.status(401));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/refresh",
+            "description": "10 - Rechazar refresh revocado. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/refresh",
+                "description": "10 - Rechazar refresh revocado. Verifica el contrato y el estado HTTP 401. Usar únicamente cuentas de demostración.",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-22T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo ilustrativo de rechazo; consultar las evidencias para resultados reales.\",\n  \"path\": \"/api/auth/refresh\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

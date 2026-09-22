@@ -1,7 +1,7 @@
 $kind: http-request
-name: "01 - Registrar usuario de prueba"
+name: 01 - Registrar usuario de prueba
 description: ""
-url: http://localhost:8080/api/auth/register
+url: "{{baseUrl}}/api/auth/register"
 method: POST
 body:
   type: json
@@ -9,7 +9,7 @@ body:
 
     \  \"name\": \"Usuario Prueba\",\r
 
-    \  \"email\": \"prueba.jwt@example.com\",\r
+    \  \"email\": \"{{identityEmail}}\",\r
 
     \  \"password\": \"PruebaLocal2026!\",\r
 
@@ -17,6 +17,10 @@ body:
 
     }"
 scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: pm.collectionVariables.set("identityEmail", "identity-" +
+      pm.variables.replaceIn("{{$guid}}") + "@example.com");
   - type: afterResponse
     code: "pm.test(\"Crea el usuario sin exponer la contraseña\", function () {\r
 

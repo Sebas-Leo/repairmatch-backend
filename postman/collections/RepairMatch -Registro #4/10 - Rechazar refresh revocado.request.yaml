@@ -1,0 +1,13 @@
+$kind: http-request
+name: 10 - Rechazar refresh revocado
+url: "{{baseUrl}}/api/auth/refresh"
+method: POST
+body:
+  type: json
+  content: '{"refreshToken":"{{refreshToken}}"}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |
+      pm.test("Estado 401", () => pm.response.to.have.status(401));
+order: 5000000000010000

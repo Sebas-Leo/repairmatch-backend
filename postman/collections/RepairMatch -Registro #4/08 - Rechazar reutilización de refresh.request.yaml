@@ -1,0 +1,13 @@
+$kind: http-request
+name: 08 - Rechazar reutilización de refresh
+url: "{{baseUrl}}/api/auth/refresh"
+method: POST
+body:
+  type: json
+  content: '{"refreshToken":"{{previousRefreshToken}}"}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |
+      pm.test("Estado 401", () => pm.response.to.have.status(401));
+order: 5000000000008000

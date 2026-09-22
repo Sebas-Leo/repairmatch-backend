@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import com.repairmatch.repairmatch_backend.exception.EmailAlreadyExistsException;
+import com.repairmatch.repairmatch_backend.exception.*;
 import com.repairmatch.repairmatch_backend.dto.LoginRequestDto;
 import com.repairmatch.repairmatch_backend.dto.LoginResponseDto;
 
@@ -26,7 +26,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final RefreshTokenService refreshTokens;
+    private final org.springframework.security.authentication.AuthenticationManager authenticationManager;
     private final ModelMapper modelMapper;
 
 
@@ -42,10 +43,7 @@ public class UserService {
         }
 
         if (request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "La contraseña no puede superar 72 bytes en UTF-8"
-            );
+            throw new InvalidPasswordException();
         }
 
         String passwordHash = passwordEncoder.encode(request.getPassword());
@@ -62,44 +60,29 @@ public class UserService {
         return modelMapper.map(savedUser, UserResponseDto.class);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public LoginResponseDto login(LoginRequestDto request) {
         String email = request.getEmail()
                 .strip()
                 .toLowerCase(Locale.ROOT);
 
         if (request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Credenciales inválidas"
-            );
+            throw new InvalidCredentialsException();
         }
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED,
-                        "Credenciales inválidas"
-                ));
-
-        if (!passwordEncoder.matches(
-                request.getPassword(),
-                user.getPasswordHash()
-        )) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Credenciales inválidas"
-            );
+        try {
+            authenticationManager.authenticate(
+                    org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated(email,request.getPassword()));
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            throw new InvalidCredentialsException();
         }
-
-        return jwtService.generateToken(user);
+        User user=userRepository.findByEmail(email).orElseThrow(InvalidCredentialsException::new);
+        return refreshTokens.startSession(user);
     }
     @Transactional(readOnly = true)
     public UserResponseDto getCurrentUser(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED,
-                        "La cuenta autenticada ya no está disponible"
-                ));
+                .orElseThrow(() -> new AccountUnavailableException());
 
         return modelMapper.map(user, UserResponseDto.class);
     }

@@ -205,11 +205,11 @@ class RegistrationIntegrationTests {
 
     @Test
     void rejectsPasswordLongerThan72Utf8Bytes() throws Exception {
-        // 37 caracteres, pero 74 bytes en UTF-8.
+        // Contraseña fuerte, pero 74 bytes en UTF-8.
         assertBadRequestWithoutSaving(registrationJson(
                 "Usuario Prueba",
                 uniqueEmail(),
-                "á".repeat(37),
+                "á".repeat(35) + "Aa1!",
                 "CLIENT"
         ));
     }
@@ -217,7 +217,7 @@ class RegistrationIntegrationTests {
     @Test
     void acceptsPasswordOfExactly72Utf8Bytes() throws Exception {
         String email = uniqueEmail();
-        String password = "á".repeat(36);
+        String password = "á".repeat(34) + "Aa1!";
 
         mockMvc.perform(
                         post("/api/auth/register")
@@ -307,6 +307,12 @@ class RegistrationIntegrationTests {
         assertBadRequestWithoutSaving(body.replace("\"CLIENT\"", roleJson));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"abcdefgh", "ABCDEFGH1!", "abcdefgh1!", "Abcdefgh!", "Abcdefgh1"})
+    void rejectsWeakPasswords(String password) throws Exception {
+        assertBadRequestWithoutSaving(registrationJson("Usuario", uniqueEmail(), password, "CLIENT"));
+    }
+
     private void assertBadRequestWithoutSaving(String body) throws Exception {
         long countBefore = userRepository.count();
 
@@ -316,6 +322,11 @@ class RegistrationIntegrationTests {
                                 .content(body)
                 )
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(jsonPath("$.path").value("/api/auth/register"))
                 .andExpect(jsonPath("$.password").doesNotExist())
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
 

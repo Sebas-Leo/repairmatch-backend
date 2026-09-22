@@ -1,7 +1,7 @@
 $kind: http-request
-name: "06 - Rechazar token inválido"
+name: 06 - Rechazar token inválido
 description: ""
-url: http://localhost:8080/api/users/me
+url: "{{baseUrl}}/api/users/me"
 method: GET
 auth:
   type: bearer
