@@ -1,5 +1,5 @@
 $kind: http-request
-name: http://localhost:8080/api/auth/login
+name: "02 - Iniciar sesión correctamente"
 description: ""
 url: http://localhost:8080/api/auth/login
 method: POST
