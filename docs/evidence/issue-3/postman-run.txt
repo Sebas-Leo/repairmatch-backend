@@ -1,0 +1,75 @@
+(node:12440) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+newman
+
+RepairMatch -Registro #3 (YAML)
+
+→ 01 - Registrar cliente
+  POST http://127.0.0.1:18083/api/auth/register [201 Created, 488B, 2.3s]
+  √  Estado 201
+  √  No expone contraseñas
+  √  Respuesta JSON
+  √  Cuenta y rol correctos
+
+→ 02 - Rechazar correo duplicado
+  POST http://127.0.0.1:18083/api/auth/register [409 Conflict, 454B, 62ms]
+  √  Estado 409
+  √  No expone contraseñas
+  √  Respuesta JSON
+
+→ 03 - Registrar técnico
+  POST http://127.0.0.1:18083/api/auth/register [201 Created, 492B, 211ms]
+  √  Estado 201
+  √  No expone contraseñas
+  √  Respuesta JSON
+  √  Cuenta y rol correctos
+
+→ 04 - Rechazar correo inválido
+  POST http://127.0.0.1:18083/api/auth/register [400 Bad Request, 489B, 34ms]
+  √  Estado 400
+  √  No expone contraseñas
+  √  Respuesta JSON
+
+→ 05 - Rechazar nombre vacío
+  POST http://127.0.0.1:18083/api/auth/register [400 Bad Request, 473B, 12ms]
+  √  Estado 400
+  √  No expone contraseñas
+  √  Respuesta JSON
+
+→ 06 - Rechazar contraseña corta
+  POST http://127.0.0.1:18083/api/auth/register [400 Bad Request, 502B, 12ms]
+  √  Estado 400
+  √  No expone contraseñas
+  √  Respuesta JSON
+
+→ 07 - Rechazar rol desconocido
+  POST http://127.0.0.1:18083/api/auth/register [400 Bad Request, 467B, 15ms]
+  √  Estado 400
+  √  No expone contraseñas
+  √  Respuesta JSON
+
+→ 08 - Rechazar contraseña mayor a 72 bytes
+  POST http://127.0.0.1:18083/api/auth/register [400 Bad Request, 451B, 19ms]
+  √  Estado 400
+  √  No expone contraseñas
+  √  Respuesta JSON
+
+┌─────────────────────────┬────────────────────┬───────────────────┐
+│                         │           executed │            failed │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│              iterations │                  1 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│                requests │                  8 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│            test-scripts │                  8 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│      prerequest-scripts │                  2 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│              assertions │                 26 │                 0 │
+├─────────────────────────┴────────────────────┴───────────────────┤
+│ total run duration: 3.4s                                         │
+├──────────────────────────────────────────────────────────────────┤
+│ total data received: 1.18kB (approx)                             │
+├──────────────────────────────────────────────────────────────────┤
+│ average response time: 339ms [min: 12ms, max: 2.3s, s.d.: 763ms] │
+└──────────────────────────────────────────────────────────────────┘

@@ -1,8 +1,12 @@
 $kind: http-request
-name: http://localhost:8080/api/users/me
+name: "06 - Rechazar token inválido"
 description: ""
 url: http://localhost:8080/api/users/me
 method: GET
+auth:
+  type: bearer
+  credentials:
+    token: token-invalido
 scripts:
   - type: afterResponse
     code: "pm.test(\"Rechaza el acceso no autorizado\", function () {\r
@@ -11,4 +15,4 @@ scripts:
 
       });"
     language: text/javascript
-order: 3936686766303679
+order: 4146765872658379

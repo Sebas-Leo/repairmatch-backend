@@ -1,0 +1,16 @@
+$kind: http-request
+name: "01 - Registrar cliente"
+description: "Issue #3. Ejecutar la colección completa en orden."
+url: "{{baseUrl}}/api/auth/register"
+method: POST
+body:
+  type: json
+  content: "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}"
+scripts:
+  - type: beforeRequest
+    code: "pm.collectionVariables.set(\"clientEmail\", \"cliente-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");"
+    language: text/javascript
+  - type: afterResponse
+    code: "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));\npm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });\npm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));\npm.test(\"Cuenta y rol correctos\", () => { const b = pm.response.json(); pm.expect(b).to.have.all.keys(\"id\", \"name\", \"email\", \"role\"); pm.expect(b.id).to.match(/^[0-9a-f-]{36}$/i); pm.expect(b.role).to.eql(\"CLIENT\"); pm.expect(b.email).to.eql(pm.collectionVariables.get(\"clientEmail\")); });"
+    language: text/javascript
+order: 1000

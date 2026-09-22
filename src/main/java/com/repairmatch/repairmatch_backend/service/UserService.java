@@ -5,6 +5,7 @@ import com.repairmatch.repairmatch_backend.dto.UserResponseDto;
 import com.repairmatch.repairmatch_backend.model.User;
 import com.repairmatch.repairmatch_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final ModelMapper modelMapper;
 
 
     @Transactional
@@ -57,12 +59,7 @@ public class UserService {
 
         User savedUser = userRepository.saveAndFlush(user);
 
-        return new UserResponseDto(
-                savedUser.getId(),
-                savedUser.getName(),
-                savedUser.getEmail(),
-                savedUser.getRole()
-        );
+        return modelMapper.map(savedUser, UserResponseDto.class);
     }
 
     @Transactional(readOnly = true)
@@ -104,11 +101,6 @@ public class UserService {
                         "La cuenta autenticada ya no está disponible"
                 ));
 
-        return new UserResponseDto(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole()
-        );
+        return modelMapper.map(user, UserResponseDto.class);
     }
 }

@@ -2,11 +2,11 @@
 
 Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que necesitan reparar un electrodoméstico con técnicos adecuados: el cliente publica una solicitud, recibe propuestas, selecciona un técnico, completa el servicio y deja una reseña.
 
-**Estado: planificación del backend; automatización del trabajo en equipo incorporada.** Este repositorio todavía no contiene una aplicación Spring Boot, migraciones de base de datos, pruebas del backend ni una colección de Postman. Las responsabilidades y decisiones de implementación descritas son propuestas para coordinar con el equipo, no funcionalidades terminadas.
+**Estado: base Spring Boot y registro de cuentas implementados en esta rama.** Incluye pruebas de integración, BCrypt y una colección Postman. Consulta el [contrato y verificación del registro](docs/REGISTRATION.md). Los demás módulos descritos siguen siendo propuestas o entregas independientes; no se incluyen migraciones versionadas.
 
 ## Flujo de trabajo y seguimiento del avance
 
-Consulta la [guía de trabajo del equipo](docs/TEAM_WORKFLOW.md) y el [tablero compartido de avance](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). Las tareas, sus aprobaciones, las solicitudes de integración (pull requests o PR) revisadas y las evidencias de verificación permiten identificar las contribuciones. GitHub Actions comprueba los datos de los PR y actualiza el tablero; **todavía no ejecuta el backend Java ni pruebas de Postman**. Los estados y las listas de verificación son declarados por el equipo; los PR y las integraciones registradas son evidencias observables, no calificaciones ni pruebas de que una funcionalidad esté terminada.
+Consulta la [guía de trabajo del equipo](docs/TEAM_WORKFLOW.md) y el [tablero compartido de avance](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). Las tareas, sus aprobaciones, las solicitudes de integración (pull requests o PR) revisadas y las evidencias de verificación permiten identificar las contribuciones. GitHub Actions comprueba los datos de los PR y actualiza el tablero; ejecuta la verificación Maven del backend; la ejecución de Postman se describe en la guía de registro. Los estados y las listas de verificación son declarados por el equipo; los PR y las integraciones registradas son evidencias observables, no calificaciones ni pruebas de que una funcionalidad esté terminada.
 
 ## Alcance y primer hito
 
@@ -40,21 +40,21 @@ Utilizar un **monolito modular**: una aplicación Spring Boot y una base de dato
 
 | Tecnología | Uso | Estado |
 | --- | --- | --- |
-| Java, Spring Boot, REST | Aplicación backend y API HTTP | Tecnologías requeridas; proyecto base pendiente |
-| Spring Data JPA, PostgreSQL | Persistencia y restricciones relacionales | Incluidas en el informe; configuración pendiente |
+| Java, Spring Boot, REST | Aplicación backend y API HTTP | Base implementada; versiones en `pom.xml` |
+| Spring Data JPA, PostgreSQL | Persistencia y restricciones relacionales | Configuradas; pruebas aisladas con H2 |
 | Spring Security | Autenticación y autorización | Incluida en el informe; mecanismo de autenticación por definir |
-| Postman | Solicitudes, entornos compartidos y validación de la API | Requerido para la entrega actual; colección pendiente |
+| Postman | Solicitudes, entornos compartidos y validación de la API | Colección de registro en `postman/` |
 | Maven | Compilación reproducible y gestión de dependencias | Herramienta de apoyo recomendada |
 | JUnit y Mockito | Pruebas automatizadas de reglas de negocio y aislamiento de dependencias | Herramientas de apoyo recomendadas |
 | OpenAPI | Contratos compartidos y documentación consultable de la API | Herramienta de apoyo recomendada |
 
-Las versiones compatibles de Java, Spring Boot y las herramientas se elegirán al crear el proyecto base. Este documento todavía no define una versión ni una configuración ejecutable. La validación con Postman complementa las pruebas automatizadas, no las reemplaza. Las transacciones y la concurrencia también deben verificarse con PostgreSQL.
+La base requiere Java 17; `pom.xml` y Maven Wrapper fijan las versiones. Consulta la guía de registro para ejecutar la aplicación y verificarla. La validación con Postman complementa las pruebas automatizadas, no las reemplaza. Las transacciones y la concurrencia también deben verificarse con PostgreSQL.
 
 ## Reglas del dominio
 
 El informe original define el siguiente modelo y sus reglas semánticas (páginas 3 y 4). Los identificadores técnicos se conservan en inglés para facilitar su relación con la implementación:
 
-- **Técnico es una especialización de Usuario:** todo técnico es usuario, pero no todo usuario es técnico. El mapeo concreto en JPA está pendiente de acuerdo.
+- **Técnico es una especialización de Usuario:** todo técnico es usuario, pero no todo usuario es técnico. El registro crea `User` con rol `TECHNICIAN`; el perfil lo implementa el responsable del módulo de técnicos. El contrato de identidad y los puntos de coordinación están en [REGISTRATION.md](docs/REGISTRATION.md).
 - Una `Request` pertenece al usuario que la publica y a un `ApplianceType`. Un técnico puede atender varios tipos de electrodomésticos y cada tipo puede ser atendido por varios técnicos.
 - No se incorpora una entidad persistente `Appliance` en el producto mínimo viable (MVP). La marca, el modelo, el síntoma y los demás datos del equipo pertenecen a la solicitud.
 - `Evidence` es una entidad débil de la solicitud, identificada por **(`requestId`, `evidenceNumber`)**. Su número parcial es local a cada solicitud; no puede existir de forma independiente.
@@ -84,7 +84,7 @@ La regla detallada de la **página 4** utiliza **tipo de electrodoméstico compa
 
 ## Rutas propuestas de la API
 
-Estas rutas son una base para acordar los contratos; **no son endpoints implementados**. El equipo debe definir los datos de entrada y salida, la paginación, el formato de errores, los permisos y los nombres definitivos.
+`POST /api/auth/register` está implementado en esta rama. El issue #4 de autenticación e identidad está cerrado mediante el [PR #31](https://github.com/Sebas-Leo/repairmatch-backend/pull/31), según el estado compartido por Ariana; revisar su integración en esta rama antes del #5. Las demás rutas de la tabla son contratos de sus respectivos módulos y no se dan por implementadas por esta entrega del #3. El equipo debe definir los datos de entrada y salida, la paginación, el formato de errores, los permisos y los nombres definitivos.
 
 | Módulo | Rutas propuestas |
 | --- | --- |
