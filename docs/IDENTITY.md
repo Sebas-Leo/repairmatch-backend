@@ -78,7 +78,7 @@ Casos cubiertos:
 ## Postman
 
 Las peticiones están en:
-postman/RepairMatch - Identidad JWT
+postman/collections/RepairMatch -Registro #4
 
 Se guardan en el formato local de Postman, con archivos YAML.
 Debe conservarse también la carpeta `.resources`.

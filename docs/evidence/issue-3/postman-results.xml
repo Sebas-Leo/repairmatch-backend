@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="RepairMatch -Registro #3 (YAML)" tests="8" time="2.718">
+  <testsuite name="01 - Registrar cliente" id="786259d4-5244-4fd4-8c59-f2ac1e369ca8" timestamp="2026-09-22T18:38:26.784Z" tests="4" failures="0" errors="0" time="2.353">
+    <testcase name="Estado 201" time="2.353" classname="01RegistrarCliente"/>
+    <testcase name="No expone contraseñas" time="2.353" classname="01RegistrarCliente"/>
+    <testcase name="Respuesta JSON" time="2.353" classname="01RegistrarCliente"/>
+    <testcase name="Cuenta y rol correctos" time="2.353" classname="01RegistrarCliente"/>
+  </testsuite>
+  <testsuite name="02 - Rechazar correo duplicado" id="e8580f5d-0bf9-4671-bcad-a85d9e7dc24e" timestamp="2026-09-22T18:38:26.784Z" tests="3" failures="0" errors="0" time="0.062">
+    <testcase name="Estado 409" time="0.062" classname="02RechazarCorreoDuplicado"/>
+    <testcase name="No expone contraseñas" time="0.062" classname="02RechazarCorreoDuplicado"/>
+    <testcase name="Respuesta JSON" time="0.062" classname="02RechazarCorreoDuplicado"/>
+  </testsuite>
+  <testsuite name="03 - Registrar técnico" id="347cb01d-14aa-452e-9b5c-b14f1415f80f" timestamp="2026-09-22T18:38:26.784Z" tests="4" failures="0" errors="0" time="0.211">
+    <testcase name="Estado 201" time="0.211" classname="03RegistrarTecnico"/>
+    <testcase name="No expone contraseñas" time="0.211" classname="03RegistrarTecnico"/>
+    <testcase name="Respuesta JSON" time="0.211" classname="03RegistrarTecnico"/>
+    <testcase name="Cuenta y rol correctos" time="0.211" classname="03RegistrarTecnico"/>
+  </testsuite>
+  <testsuite name="04 - Rechazar correo inválido" id="8cdecab6-260f-4d16-8228-1d3fd4abd387" timestamp="2026-09-22T18:38:26.784Z" tests="3" failures="0" errors="0" time="0.034">
+    <testcase name="Estado 400" time="0.034" classname="04RechazarCorreoInvalido"/>
+    <testcase name="No expone contraseñas" time="0.034" classname="04RechazarCorreoInvalido"/>
+    <testcase name="Respuesta JSON" time="0.034" classname="04RechazarCorreoInvalido"/>
+  </testsuite>
+  <testsuite name="05 - Rechazar nombre vacío" id="a16d99f9-45f4-43ea-b7e8-fd74cd40123b" timestamp="2026-09-22T18:38:26.784Z" tests="3" failures="0" errors="0" time="0.012">
+    <testcase name="Estado 400" time="0.012" classname="05RechazarNombreVacio"/>
+    <testcase name="No expone contraseñas" time="0.012" classname="05RechazarNombreVacio"/>
+    <testcase name="Respuesta JSON" time="0.012" classname="05RechazarNombreVacio"/>
+  </testsuite>
+  <testsuite name="06 - Rechazar contraseña corta" id="1ff9506d-58d9-4f85-a934-1c4af2a9690a" timestamp="2026-09-22T18:38:26.784Z" tests="3" failures="0" errors="0" time="0.012">
+    <testcase name="Estado 400" time="0.012" classname="06RechazarContrasenaCorta"/>
+    <testcase name="No expone contraseñas" time="0.012" classname="06RechazarContrasenaCorta"/>
+    <testcase name="Respuesta JSON" time="0.012" classname="06RechazarContrasenaCorta"/>
+  </testsuite>
+  <testsuite name="07 - Rechazar rol desconocido" id="6a30d05f-a8de-4c25-81ff-fd70bea972c8" timestamp="2026-09-22T18:38:26.784Z" tests="3" failures="0" errors="0" time="0.015">
+    <testcase name="Estado 400" time="0.015" classname="07RechazarRolDesconocido"/>
+    <testcase name="No expone contraseñas" time="0.015" classname="07RechazarRolDesconocido"/>
+    <testcase name="Respuesta JSON" time="0.015" classname="07RechazarRolDesconocido"/>
+  </testsuite>
+  <testsuite name="08 - Rechazar contraseña mayor a 72 bytes" id="43c09ceb-0eef-46e8-90f3-2b987efaf3d0" timestamp="2026-09-22T18:38:26.784Z" tests="3" failures="0" errors="0" time="0.019">
+    <testcase name="Estado 400" time="0.019" classname="08RechazarContrasenaMayorA72Bytes"/>
+    <testcase name="No expone contraseñas" time="0.019" classname="08RechazarContrasenaMayorA72Bytes"/>
+    <testcase name="Respuesta JSON" time="0.019" classname="08RechazarContrasenaMayorA72Bytes"/>
+  </testsuite>
+</testsuites>
