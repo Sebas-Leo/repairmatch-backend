@@ -1,0 +1,25 @@
+$kind: http-request
+name: 13 - Cliente crea solicitud
+url: "{{baseUrl}}/api/requests"
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: "{{ownerToken}}"
+body:
+  type: json
+  content: |-
+    {
+      "applianceTypeId": 1,
+      "originalDescription": "Solicitud de integración"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: >-
+      pm.test("Estado 201", () => pm.response.to.have.status(201));
+
+      pm.test("Propietario desde JWT", () => { const b=pm.response.json();
+      pm.expect(b.status).to.eql("PUBLICADA");
+      pm.collectionVariables.set("createdRequestId",b.id); });
+order: 13000

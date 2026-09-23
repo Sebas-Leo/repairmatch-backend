@@ -18,7 +18,7 @@ Ejemplo con datos ficticios:
 {"name":"Usuario Demo","email":"demo@example.com","password":"PruebaLocal2026!","role":"CLIENT"}
 ~~~
 
-Para una cuenta técnica, usar TECHNICIAN. Respuestas: 201 para cuenta creada, 409 para correo duplicado y 400 para campos inválidos o JSON ilegible. Los errores usan ProblemDetail; la validación de campos agrega errors.
+Para una cuenta técnica, usar TECHNICIAN. Respuestas: 201 para cuenta creada, 409 para correo duplicado y 400 para campos inválidos o JSON ilegible. Los errores usan ErrorResponseDto; la validación de campos agrega errors.
 
 - name: obligatorio, no vacío, máximo 100 caracteres; se recortan espacios exteriores.
 - email: obligatorio, formato de correo, máximo 254 caracteres; se convierte a minúsculas antes de buscar/guardar. Los espacios exteriores se rechazan en la validación de entrada.
@@ -38,7 +38,7 @@ Las pruebas usan src/test/resources/application.properties y H2 en memoria en mo
 
 ## Postman reproducible, sin datos de producción
 
-La colección contiene 8 solicitudes YAML en postman/collections/RepairMatch -Registro #3. Abrirla en la vista local de Postman y ejecutarla completa en orden con Collection Runner. La variable baseUrl se define en .resources/definition.yaml y apunta a http://localhost:8080; cambiarla si la API usa otro puerto. No requiere archivos JSON ni variables globales.
+La colección contiene 8 solicitudes YAML en postman/collections/RepairMatch -Registro #3. Abrirla en la vista local de Postman y ejecutarla completa en orden con Collection Runner. La variable baseUrl se define en .resources/definition.yaml y apunta a http://localhost:8080; cambiarla si la API usa otro puerto. La entrega incluye también postman_collection.json en la raíz, generado desde los YAML para cumplir la rúbrica. No requiere variables globales.
 
 Para levantar una API de pruebas con H2, en una terminal separada:
 
@@ -89,4 +89,4 @@ npm install --prefix target/postman-runner --no-save --package-lock=false newman
 node scripts/run-registration-postman.cjs http://127.0.0.1:18083
 ~~~
 
-Las dependencias y reportes se guardan en target, que Git ignora. El script lee los YAML originales y ejecuta sus verificaciones en Newman; no requiere exportar ni mantener un JSON de colección.
+Las dependencias y reportes se guardan en target, que Git ignora. El script lee los YAML originales y ejecuta sus verificaciones en Newman; ejecuta directamente los YAML. Para regenerar el JSON de entrega: node scripts/export-postman.cjs.

@@ -9,11 +9,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/requests")
@@ -24,77 +22,64 @@ public class RequestController {
 
     @PostMapping
     public ResponseEntity<RequestResponseDto> createRequest(
-            @Valid @RequestBody CreateRequestDto dto,
-            Authentication authentication
+            @Valid @RequestBody CreateRequestDto dto
     ) {
         RequestResponseDto response = requestService.createRequest(
-                dto,
-                currentUserId(authentication)
+                dto
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    public List<RequestResponseDto> getOwnRequests(Authentication authentication) {
-        return requestService.getOwnRequests(currentUserId(authentication));
+    public List<RequestResponseDto> getOwnRequests() {
+        return requestService.getOwnRequests();
     }
 
     @GetMapping("/{requestId}")
     public RequestResponseDto getRequest(
-            @PathVariable Long requestId,
-            Authentication authentication
+            @PathVariable Long requestId
     ) {
-        return requestService.getRequest(requestId, currentUserId(authentication));
+        return requestService.getRequest(requestId);
     }
 
     @PostMapping("/{requestId}/evidences")
     public ResponseEntity<EvidenceResponseDto> addEvidence(
             @PathVariable Long requestId,
-            @Valid @RequestBody CreateEvidenceDto dto,
-            Authentication authentication) {
+            @Valid @RequestBody CreateEvidenceDto dto) {
 
         EvidenceResponseDto response = requestService.addEvidence(
                 requestId,
-                dto,
-                currentUserId(authentication)
+                dto
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{requestId}/evidences")
     public ResponseEntity<List<EvidenceResponseDto>> getEvidencesByRequestId(
-            @PathVariable Long requestId,
-            Authentication authentication
+            @PathVariable Long requestId
     ) {
         List<EvidenceResponseDto> response = requestService.getEvidencesByRequestId(
-                requestId,
-                currentUserId(authentication)
+                requestId
         );
         return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{requestId}/cancel")
     public ResponseEntity<RequestResponseDto> cancelRequest(
-            @PathVariable Long requestId,
-            Authentication authentication) {
+            @PathVariable Long requestId) {
 
         RequestResponseDto response = requestService.cancelRequest(
-                requestId,
-                currentUserId(authentication)
+                requestId
         );
         return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{requestId}/close")
     public ResponseEntity<Void> closeRequest(
-            @PathVariable Long requestId,
-            Authentication authentication) {
+            @PathVariable Long requestId) {
 
-        requestService.closeRequest(requestId, currentUserId(authentication));
+        requestService.closeRequest(requestId);
         return ResponseEntity.noContent().build();
     }
 
-    private UUID currentUserId(Authentication authentication) {
-        return UUID.fromString(authentication.getName());
-    }
 }

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.repairmatch.repairmatch_backend.PermissionIntegrationTests
+-------------------------------------------------------------------------------
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 16.45 s -- in com.repairmatch.repairmatch_backend.PermissionIntegrationTests
