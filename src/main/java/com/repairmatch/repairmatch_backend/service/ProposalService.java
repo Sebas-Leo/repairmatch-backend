@@ -29,7 +29,7 @@ public class ProposalService {
     @PreAuthorize("hasRole('CLIENT')")
     public List<ProposalResponseDto> compareByRequest(Long requestId) {
         UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
-        Request request = requestRepository.findById(requestId)
+        Request request = requestRepository.findWithDetailsById(requestId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "La solicitud especificada no existe"
