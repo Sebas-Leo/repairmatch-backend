@@ -2,8 +2,7 @@
 
 ## Configuración local
 
-1. Crear un archivo `.env` en la raíz del proyecto:
-   DB_PASSWORD=contraseña_local
+1. Copiar `.env.example` a `.env` y reemplazar `DB_PASSWORD` por una contraseña local.
 
 2. Iniciar PostgreSQL:
    docker compose up -d postgres
@@ -18,7 +17,9 @@
 La API utiliza el puerto 8080.
 PostgreSQL en Docker utiliza localhost:5433.
 
-No subir `.env`, claves reales ni tokens al repositorio.
+No subir `.env`, claves reales ni tokens al repositorio. La clave JWT que estuvo
+versionada debe reemplazarse en todos los entornos donde se haya usado: los tokens
+emitidos con esa clave dejan de ser confiables.
 Spring Boot no carga automáticamente el archivo `.env` de Docker Compose.
 
 ## Inicio de sesión
