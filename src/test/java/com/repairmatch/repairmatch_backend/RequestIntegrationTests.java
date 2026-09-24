@@ -139,6 +139,34 @@ class RequestIntegrationTests {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void evidenceNumbersRemainDistinctAfterGapAndAreReturnedInOrder() throws Exception {
+        User owner = saveUser(Role.CLIENT);
+        Request request = saveRequest(owner);
+        evidenceRepository.save(Evidence.builder()
+                .id(new EvidenceId(request.getId(), 1)).request(request)
+                .mediaUrl("https://example.com/first.jpg").build());
+        evidenceRepository.save(Evidence.builder()
+                .id(new EvidenceId(request.getId(), 3)).request(request)
+                .mediaUrl("https://example.com/third.jpg").build());
+
+        mockMvc.perform(post("/api/requests/{requestId}/evidences", request.getId())
+                        .header("Authorization", bearer(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"mediaUrl":"https://example.com/fourth.jpg","mediaType":"image/jpeg"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.evidenceNumber").value(4));
+
+        mockMvc.perform(get("/api/requests/{requestId}/evidences", request.getId())
+                        .header("Authorization", bearer(owner)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].evidenceNumber").value(1))
+                .andExpect(jsonPath("$[1].evidenceNumber").value(3))
+                .andExpect(jsonPath("$[2].evidenceNumber").value(4));
+    }
+
     private User saveUser(Role role) {
         return userRepository.save(new User(
                 role.name(), UUID.randomUUID() + "@example.com", "encoded-password", role));

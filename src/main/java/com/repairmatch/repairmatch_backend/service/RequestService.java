@@ -75,10 +75,11 @@ public class RequestService {
     @Transactional
     @PreAuthorize("hasRole('CLIENT')")
     public EvidenceResponseDto addEvidence(Long requestId, CreateEvidenceDto dto) {
-        Request request = loadOwnedRequest(requestId);
-
-        List<Evidence> existingEvidences = evidenceRepository.findByRequestId(requestId);
-        int nextEvidenceNumber = existingEvidences.size() + 1;
+        // Serialize numbering for one request, including when no evidence exists yet.
+        Request request = requestRepository.findLockedById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("La solicitud especificada no existe"));
+        accountAccess.requireOwner(accountAccess.requireRole(Role.CLIENT), request.getClient().getId());
+        int nextEvidenceNumber = evidenceRepository.maxEvidenceNumber(requestId) + 1;
 
         EvidenceId evidenceId = new EvidenceId(requestId, nextEvidenceNumber);
         Evidence evidence = Evidence.builder()
@@ -88,7 +89,7 @@ public class RequestService {
                 .mediaType(dto.getMediaType())
                 .build();
 
-        Evidence saved = evidenceRepository.save(evidence);
+        Evidence saved = evidenceRepository.saveAndFlush(evidence);
 
         return EvidenceResponseDto.builder()
                 .requestId(saved.getId().getRequestId())
@@ -103,7 +104,7 @@ public class RequestService {
     public List<EvidenceResponseDto> getEvidencesByRequestId(Long requestId) {
         loadOwnedRequest(requestId);
 
-        return evidenceRepository.findByRequestId(requestId).stream()
+        return evidenceRepository.findById_RequestIdOrderById_EvidenceNumberAsc(requestId).stream()
                 .map(evidence -> EvidenceResponseDto.builder()
                         .requestId(evidence.getId().getRequestId())
                         .evidenceNumber(evidence.getId().getEvidenceNumber())
@@ -187,7 +188,7 @@ public class RequestService {
     }
 
     private Request loadRequest(Long requestId) {
-        return requestRepository.findById(requestId)
+        return requestRepository.findWithDetailsById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("La solicitud especificada no existe"
                 ));
     }
