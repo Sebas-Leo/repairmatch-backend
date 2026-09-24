@@ -40,6 +40,13 @@ public class Request {
     @Column(nullable = false, length = 30)
     private RequestStatus status;
 
+    // Coordenadas geográficas para el matching del técnico
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
