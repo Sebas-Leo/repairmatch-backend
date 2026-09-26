@@ -1,8 +1,25 @@
-# RepairMatch Backend
+# [Nombre Descriptivo del Proyecto - RepairMatch]
+**Curso:** CS 2031 Desarrollo Basado en Plataforma  
+**Integrantes:**  
+- Ariana Belen Blanco Anicama  
+- Camila Araceli Alfaro Chuquino  
+- Jairo Andre Cunya Villalta  
+- Royer Sebastian Ramos Vargas  
+- Adrian Luis Pacheco Sulluchuco## Flujo de trabajo y seguimiento del avance
 
-Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que necesitan reparar un electrodoméstico con técnicos adecuados: el cliente publica una solicitud, recibe propuestas, selecciona un técnico, completa el servicio y deja una reseña.
+---
 
-**Estado: base Spring Boot y registro de cuentas implementados en esta rama.** Incluye pruebas de integración, BCrypt y una colección Postman. Consulta el [contrato y verificación del registro](docs/REGISTRATION.md). Los demás módulos descritos siguen siendo propuestas o entregas independientes; no se incluyen migraciones versionadas.
+## Índice
+1. [Introducción](#introducción)
+2. [Identificación del Problema o Necesidad](#identificación-del-problema-o-necesidad)
+3. [Descripción de la Solución](#descripción-de-la-solución)
+4. [Modelo de Entidades](#modelo-de-entidades)
+5. [Manejo de Errores](#manejo-de-errores)
+6. [Medidas de Seguridad Implementadas](#medidas-de-seguridad-implementadas)
+7. [Eventos y Asincronía](#eventos-y-asincronía)
+8. [GitHub & Management](#github--management)
+9. [Conclusión](#conclusión)
+10. [Apéndices y Referencias](#apéndices-y-referencias)
 
 ## Flujo de trabajo y seguimiento del avance
 
