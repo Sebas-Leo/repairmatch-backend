@@ -97,7 +97,19 @@ La digitalización de este proceso mediante una API REST estructurada permite es
 
 ### Diagrama de Entidades
 *(Diagrama Relacional del Modelo de Dominio)*
-
+```mermaid
+erDiagram
+    USERS ||--o| TECHNICIANS : "es un"
+    USERS ||--o{ REFRESH_TOKENS : "posee"
+    USERS ||--o{ REQUESTS : "publica"
+    APPLIANCE_TYPES ||--o{ REQUESTS : "pertenece a"
+    TECHNICIANS }|--|{ APPLIANCE_TYPES : "atiende"
+    REQUESTS ||--o{ EVIDENCES : "contiene"
+    REQUESTS ||--o{ PROPOSALS : "recibe"
+    TECHNICIANS ||--o{ PROPOSALS : "envía"
+    PROPOSALS ||--o| SERVICES : "origina"
+    SERVICES ||--o| REVIEWS : "recibe"
+```
 ### Descripción de Entidades
 
 1. **`User`**: Almacena las credenciales principales (email único, hash de contraseña cifrado con BCrypt) y asigna el rol del sistema (`CLIENT` o `TECHNICIAN`).
