@@ -22,7 +22,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "proposals",
-        indexes = @Index(name = "idx_proposals_request", columnList = "request_id")
+        indexes = @Index(name = "idx_proposals_request", columnList = "request_id"),
+        uniqueConstraints = @jakarta.persistence.UniqueConstraint(columnNames = {"request_id", "technician_id"})
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -66,6 +67,14 @@ public class Proposal {
         this.availableAt = availableAt;
         this.conditions = conditions;
     }
+
+    public enum Status { PENDING, ACCEPTED, REJECTED }
+
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    @Column(nullable = false)
+    private Status status = Status.PENDING;
+
+    public void setStatus(Status status) { this.status = status; }
 
     @PrePersist
     void onCreate() {

@@ -47,13 +47,15 @@ public class TechnicianServiceImpl implements TechnicianService {
         Technician technician = technicianRepository.findByIdWithApplianceTypes(technicianId)
                 .orElseThrow(() -> new TechnicianNotFoundException("Técnico no encontrado con ID: " + technicianId));
 
-        return mapToProfileDto(technician);
+        TechnicianProfileResponseDto profile = mapToProfileDto(technician);
+        profile.setEmail(null); profile.setPhone(null); profile.setLatitude(null); profile.setLongitude(null);
+        return profile;
     }
 
     @Override
     @Transactional
-    public TechnicianProfileResponseDto updateProfile(String userEmail, TechnicianProfileUpdateRequestDto dto) {
-        Technician technician = getOrCreateTechnician(userEmail);
+    public TechnicianProfileResponseDto updateProfile(UUID userId, TechnicianProfileUpdateRequestDto dto) {
+        Technician technician = getOrCreateTechnician(userId);
 
         if (dto.getExperienceYears() != null) {
             technician.setExperienceYears(dto.getExperienceYears());
@@ -67,6 +69,7 @@ public class TechnicianServiceImpl implements TechnicianService {
 
         if (dto.getApplianceTypeIds() != null) {
             Set<ApplianceType> types = new HashSet<>(applianceTypeRepository.findAllById(dto.getApplianceTypeIds()));
+            if (types.size() != new HashSet<>(dto.getApplianceTypeIds()).size()) throw new ResourceNotFoundException("Unknown appliance type");
             technician.setApplianceTypes(types);
         }
 
@@ -76,8 +79,8 @@ public class TechnicianServiceImpl implements TechnicianService {
 
     @Override
     @Transactional
-    public TechnicianProfileResponseDto updateServiceArea(String userEmail, ServiceAreaUpdateRequestDto dto) {
-        Technician technician = getOrCreateTechnician(userEmail);
+    public TechnicianProfileResponseDto updateServiceArea(UUID userId, ServiceAreaUpdateRequestDto dto) {
+        Technician technician = getOrCreateTechnician(userId);
 
         technician.setLatitude(dto.getLatitude());
         technician.setLongitude(dto.getLongitude());
@@ -89,8 +92,8 @@ public class TechnicianServiceImpl implements TechnicianService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MatchingRequestResponseDto> getMatchingRequests(String userEmail) {
-        Technician technician = technicianRepository.findByUserEmail(userEmail)
+    public List<MatchingRequestResponseDto> getMatchingRequests(UUID userId) {
+        Technician technician = technicianRepository.findById(userId)
                 .orElseThrow(() -> new TechnicianNotFoundException("Perfil de técnico no configurado"));
 
         if (technician.getLatitude() == null || technician.getLongitude() == null || technician.getMaxRadiusKm() == null) {
@@ -109,29 +112,8 @@ public class TechnicianServiceImpl implements TechnicianService {
         List<MatchingRequestResponseDto> compatible = new ArrayList<>();
 
         for (Request req : allRequests) {
-            // Filtrar únicamente solicitudes abiertas
-            if (req.getStatus() != RequestStatus.PUBLICADA && req.getStatus() != RequestStatus.CON_PROPUESTAS) {
-                continue;
-            }
-
-            // Validar compatibilidad de tipo de electrodoméstico
-            if (req.getApplianceType() == null || !supportedTypeIds.contains(req.getApplianceType().getId())) {
-                continue;
-            }
-
-            // Validar coordenadas de la solicitud
-            if (req.getLatitude() == null || req.getLongitude() == null) {
-                continue;
-            }
-
-            // Calcular distancia mediante Haversine
-            double distance = calculateDistanceKm(
-                    technician.getLatitude(), technician.getLongitude(),
-                    req.getLatitude(), req.getLongitude()
-            );
-
-            // Filtrar dentro del radio de cobertura
-            if (distance <= technician.getMaxRadiusKm()) {
+            if (new com.repairmatch.repairmatch_backend.service.CompatibilityPolicy().matches(technician, req)) {
+                double distance = calculateDistanceKm(technician.getLatitude(), technician.getLongitude(), req.getLatitude(), req.getLongitude());
                 MatchingRequestResponseDto item = new MatchingRequestResponseDto();
                 item.setRequestId(req.getId());
                 item.setApplianceTypeName(req.getApplianceType().getName());
@@ -150,22 +132,12 @@ public class TechnicianServiceImpl implements TechnicianService {
 
     @Override
     public double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double originLat = Math.toRadians(lat1);
-        double destLat = Math.toRadians(lat2);
-
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(originLat) * Math.cos(destLat)
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return EARTH_RADIUS_KM * c;
+        return com.repairmatch.repairmatch_backend.service.CompatibilityPolicy.distanceKm(lat1, lon1, lat2, lon2);
     }
 
-    private Technician getOrCreateTechnician(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con email: " + email));
+    private Technician getOrCreateTechnician(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con email: " + userId));
 
         if (user.getRole() != Role.TECHNICIAN) {
             throw new IncompleteProfileException("El usuario autenticado no posee rol de técnico");

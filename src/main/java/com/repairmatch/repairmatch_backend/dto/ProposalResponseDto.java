@@ -18,4 +18,5 @@ public class ProposalResponseDto {
     private LocalDateTime availableAt;
     private String conditions;
     private LocalDateTime createdAt;
+    private String status;
 }

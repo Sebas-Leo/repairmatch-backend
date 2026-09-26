@@ -17,6 +17,16 @@ import java.util.UUID;
 public class AccountAccess {
     private final UserRepository userRepository;
 
+    public UUID requireIdentity() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!(auth instanceof JwtAuthenticationToken token)) throw new AuthenticationRequiredException("Authentication required");
+        try {
+            User user = userRepository.findById(UUID.fromString(token.getToken().getSubject()))
+                    .orElseThrow(() -> new AuthenticationRequiredException("Account unavailable"));
+            return requireRole(user.getRole());
+        } catch (IllegalArgumentException ex) { throw new AuthenticationRequiredException("Invalid identity"); }
+    }
+
     public UUID requireRole(Role requiredRole) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication instanceof JwtAuthenticationToken token) || !token.isAuthenticated()) {

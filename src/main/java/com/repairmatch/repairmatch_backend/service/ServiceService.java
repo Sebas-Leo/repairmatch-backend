@@ -1,69 +1,76 @@
 package com.repairmatch.repairmatch_backend.service;
 
-import com.repairmatch.repairmatch_backend.dto.ReviewRequestDTO;
-import com.repairmatch.repairmatch_backend.dto.ServiceResponseDTO;
-import com.repairmatch.repairmatch_backend.model.ReviewEntity;
-import com.repairmatch.repairmatch_backend.model.ServiceEntity;
-import com.repairmatch.repairmatch_backend.repository.ReviewRepository;
-import com.repairmatch.repairmatch_backend.repository.ServiceRepository;
+import com.repairmatch.repairmatch_backend.dto.*;
+import com.repairmatch.repairmatch_backend.exception.*;
+import com.repairmatch.repairmatch_backend.model.*;
+import com.repairmatch.repairmatch_backend.repository.*;
+import com.repairmatch.repairmatch_backend.security.AccountAccess;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.*;
 
-import java.util.List;
-
-@Service
+@Service @RequiredArgsConstructor
 public class ServiceService {
-
     private final ServiceRepository serviceRepository;
     private final ReviewRepository reviewRepository;
+    private final TechnicianRepository technicianRepository;
+    private final AccountAccess accountAccess;
 
-    public ServiceService(ServiceRepository serviceRepository, ReviewRepository reviewRepository) {
-        this.serviceRepository = serviceRepository;
-        this.reviewRepository = reviewRepository;
+    @Transactional(readOnly = true)
+    public List<ServiceResponseDTO> getOwnServices() {
+        UUID user = accountAccess.requireIdentity();
+        return serviceRepository.findOwn(user).stream().map(ServiceResponseDTO::new).toList();
     }
 
+    @Transactional(readOnly = true)
     public ServiceResponseDTO getServiceById(Long id) {
-        ServiceEntity service = serviceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + id));
+        ServiceEntity service = serviceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+        requireParticipant(service);
         return new ServiceResponseDTO(service);
     }
 
-    public ServiceResponseDTO updateServiceStatus(Long id, ServiceEntity.ServiceStatus newStatus) {
-        ServiceEntity service = serviceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + id));
-
-        service.setStatus(newStatus);
-        ServiceEntity updated = serviceRepository.save(service);
-        return new ServiceResponseDTO(updated);
+    @Transactional
+    public ServiceResponseDTO updateServiceStatus(Long id, ServiceEntity.ServiceStatus next) {
+        ServiceEntity service = serviceRepository.findLockedById(id).orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+        requireParticipant(service);
+        var current = service.getStatus();
+        if (next == ServiceEntity.ServiceStatus.CANCELADO) {
+            if (current != ServiceEntity.ServiceStatus.PROGRAMADO) throw new InvalidStateException("Only scheduled services can be cancelled");
+        } else {
+            UUID technician = accountAccess.requireRole(Role.TECHNICIAN);
+            accountAccess.requireOwner(technician, service.getProposal().getTechnician().getId());
+            boolean valid = current == ServiceEntity.ServiceStatus.PROGRAMADO && next == ServiceEntity.ServiceStatus.EN_ATENCION
+                    || current == ServiceEntity.ServiceStatus.EN_ATENCION && next == ServiceEntity.ServiceStatus.COMPLETADO;
+            if (!valid) throw new InvalidStateException("Invalid service transition");
+        }
+        service.setStatus(next);
+        return new ServiceResponseDTO(service);
     }
 
-    public void createReview(Long serviceId, Long clientId, ReviewRequestDTO reviewDTO) {
-        ServiceEntity service = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + serviceId));
-
-        if (service.getStatus() != ServiceEntity.ServiceStatus.COMPLETADO) {
-            throw new RuntimeException("Solo se pueden calificar servicios que estén en estado COMPLETADO");
-        }
-
-        if (reviewRepository.findByServiceId(serviceId).isPresent()) {
-            throw new RuntimeException("Este servicio ya cuenta con una reseña registrada");
-        }
-
+    @Transactional
+    public void createReview(Long serviceId, ReviewRequestDTO dto) {
+        UUID client = accountAccess.requireRole(Role.CLIENT);
+        ServiceEntity service = serviceRepository.findLockedById(serviceId).orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+        accountAccess.requireOwner(client, service.getRequest().getClient().getId());
+        if (service.getStatus() != ServiceEntity.ServiceStatus.COMPLETADO) throw new InvalidStateException("Only completed services can be reviewed");
+        if (reviewRepository.findByServiceId(serviceId).isPresent()) throw new InvalidStateException("Service already reviewed");
         ReviewEntity review = new ReviewEntity();
-        review.setServiceId(serviceId);
-        review.setClientId(clientId);
-        review.setTechnicianId(1L); // Asignamos el técnico 1 para que coincida con tu endpoint de reputación
-        review.setRating(reviewDTO.getRating());
-        review.setComment(reviewDTO.getComment());
-
-        reviewRepository.save(review);
+        review.setService(service); review.setRating(dto.getRating()); review.setComment(dto.getComment().strip());
+        reviewRepository.saveAndFlush(review);
     }
 
-    public double getTechnicianReputation(Long technicianId) {
-        List<ReviewEntity> reviews = reviewRepository.findByTechnicianId(technicianId);
-        if (reviews.isEmpty()) {
-            return 0.0;
-        }
-        double sum = reviews.stream().mapToInt(ReviewEntity::getRating).sum();
-        return sum / reviews.size();
+    @Transactional(readOnly = true)
+    public Map<String, Object> getTechnicianReputation(UUID technicianId) {
+        if (!technicianRepository.existsById(technicianId)) throw new ResourceNotFoundException("Technician not found");
+        Double average = reviewRepository.averageForTechnician(technicianId);
+        return Map.of("technicianId", technicianId, "averageRating", average == null ? 0.0 : average,
+                "reviewCount", reviewRepository.countByServiceProposalTechnicianId(technicianId));
+    }
+
+    private void requireParticipant(ServiceEntity service) {
+        UUID user = accountAccess.requireIdentity();
+        if (!user.equals(service.getRequest().getClient().getId()) && !user.equals(service.getProposal().getTechnician().getId()))
+            throw new ForbiddenOperationException("Only service participants may access this resource");
     }
 }

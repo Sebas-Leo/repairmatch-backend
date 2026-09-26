@@ -21,6 +21,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RequiredArgsConstructor
 public class ProposalService {
 
+    private final com.repairmatch.repairmatch_backend.repository.TechnicianRepository technicianRepository;
+    private final com.repairmatch.repairmatch_backend.repository.UserRepository userRepository;
+    private final com.repairmatch.repairmatch_backend.repository.ServiceRepository serviceRepository;
+    private final CompatibilityPolicy compatibilityPolicy;
     private final AccountAccess accountAccess;
     private final RequestRepository requestRepository;
     private final ProposalRepository proposalRepository;
@@ -49,6 +53,41 @@ public class ProposalService {
                 .toList();
     }
 
+    @Transactional
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ProposalResponseDto submit(Long requestId, com.repairmatch.repairmatch_backend.dto.CreateProposalDto dto) {
+        UUID id = accountAccess.requireRole(Role.TECHNICIAN);
+        Request request = requestRepository.findLockedById(requestId).orElseThrow(() -> new com.repairmatch.repairmatch_backend.exception.ResourceNotFoundException("Request not found"));
+        if (!CompatibilityPolicy.isOpen(request)) throw new com.repairmatch.repairmatch_backend.exception.InvalidStateException("Request no longer accepts proposals");
+        var technician = technicianRepository.findByIdWithApplianceTypes(id).orElseThrow(() -> new com.repairmatch.repairmatch_backend.exception.IncompleteProfileException("Configure the technician profile first"));
+        if (!compatibilityPolicy.matches(technician, request)) throw new com.repairmatch.repairmatch_backend.exception.ForbiddenOperationException("Technician is not compatible with this request");
+        if (proposalRepository.existsByRequestIdAndTechnicianId(requestId, id)) throw new com.repairmatch.repairmatch_backend.exception.InvalidStateException("Only one proposal per technician and request is allowed");
+        Proposal proposal = proposalRepository.saveAndFlush(new Proposal(request, technician.getUser(), dto.diagnosticCost(), dto.availableAt(), dto.conditions().strip()));
+        request.setStatus(Request.RequestStatus.CON_PROPUESTAS);
+        return toResponse(proposal);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('CLIENT')")
+    public com.repairmatch.repairmatch_backend.dto.ServiceResponseDTO accept(Long proposalId) {
+        UUID client = accountAccess.requireRole(Role.CLIENT);
+        Proposal selected = proposalRepository.findById(proposalId).orElseThrow(() -> new com.repairmatch.repairmatch_backend.exception.ResourceNotFoundException("Proposal not found"));
+        Request request = requestRepository.findLockedById(selected.getRequest().getId()).orElseThrow(() -> new com.repairmatch.repairmatch_backend.exception.ResourceNotFoundException("Request not found"));
+        accountAccess.requireOwner(client, request.getClient().getId());
+        if (!CompatibilityPolicy.isOpen(request) || selected.getStatus() != Proposal.Status.PENDING)
+            throw new com.repairmatch.repairmatch_backend.exception.InvalidStateException("Proposal cannot be accepted");
+        if (!selected.getAvailableAt().isAfter(java.time.LocalDateTime.now()))
+            throw new com.repairmatch.repairmatch_backend.exception.InvalidStateException("Proposal availability has passed");
+        // Locking the request serializes every decision, including cancellation and competing acceptances.
+        for (Proposal proposal : proposalRepository.findByRequestIdOrderByDiagnosticCostAscAvailableAtAsc(request.getId()))
+            proposal.setStatus(proposal.getId().equals(proposalId) ? Proposal.Status.ACCEPTED : Proposal.Status.REJECTED);
+        request.setStatus(Request.RequestStatus.CERRADA);
+        var service = new com.repairmatch.repairmatch_backend.model.ServiceEntity();
+        service.setProposal(selected); service.setRequest(request);
+        serviceRepository.saveAndFlush(service);
+        return new com.repairmatch.repairmatch_backend.dto.ServiceResponseDTO(service);
+    }
+
     private ProposalResponseDto toResponse(Proposal proposal) {
         return new ProposalResponseDto(
                 proposal.getId(),
@@ -58,7 +97,7 @@ public class ProposalService {
                 proposal.getDiagnosticCost(),
                 proposal.getAvailableAt(),
                 proposal.getConditions(),
-                proposal.getCreatedAt()
+                proposal.getCreatedAt(), proposal.getStatus().name()
         );
     }
 }

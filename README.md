@@ -2,7 +2,7 @@
 
 Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que necesitan reparar un electrodoméstico con técnicos adecuados: el cliente publica una solicitud, recibe propuestas, selecciona un técnico, completa el servicio y deja una reseña.
 
-**Estado: base Spring Boot y registro de cuentas implementados en esta rama.** Incluye pruebas de integración, BCrypt y una colección Postman. Consulta el [contrato y verificación del registro](docs/REGISTRATION.md). Los demás módulos descritos siguen siendo propuestas o entregas independientes; no se incluyen migraciones versionadas.
+**Entrega local en integración: recorrido completo del backend MVP.** Consultá [LOCAL_BACKEND.md](docs/LOCAL_BACKEND.md) para iniciar la API, ejecutar el escenario HTTP/Postman y revisar políticas, permisos y límites. Las secciones de planificación que siguen conservan el contexto original del equipo: sus estados históricos no sustituyen la verificación actual. No se incluyen migraciones versionadas de producción.
 
 ## Flujo de trabajo y seguimiento del avance
 

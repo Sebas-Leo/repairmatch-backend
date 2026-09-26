@@ -51,6 +51,7 @@ public class RequestService {
                 .originalDescription(dto.getOriginalDescription().strip())
                 .brand(stripNullable(dto.getBrand()))
                 .model(stripNullable(dto.getModel()))
+                .latitude(dto.getLatitude()).longitude(dto.getLongitude())
                 .build();
 
         return mapToResponseDto(requestRepository.save(request));
@@ -117,7 +118,7 @@ public class RequestService {
     @Transactional
     @PreAuthorize("hasRole('CLIENT')")
     public RequestResponseDto cancelRequest(Long requestId) {
-        Request request = loadOwnedRequest(requestId);
+        Request request = loadLockedOwnedRequest(requestId);
 
         if (request.getStatus() == Request.RequestStatus.CERRADA ||
                 request.getStatus() == Request.RequestStatus.CANCELADA ||
@@ -133,7 +134,7 @@ public class RequestService {
 
     @Transactional
     public void transitionToHasProposals(Long requestId) {
-        Request request = loadRequest(requestId);
+        Request request = requestRepository.findLockedById(requestId).orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
         if (request.getStatus() == Request.RequestStatus.PUBLICADA) {
             request.setStatus(Request.RequestStatus.CON_PROPUESTAS);
@@ -144,7 +145,7 @@ public class RequestService {
     @Transactional
     @PreAuthorize("hasRole('CLIENT')")
     public void closeRequest(Long requestId) {
-        Request request = loadOwnedRequest(requestId);
+        Request request = loadLockedOwnedRequest(requestId);
 
         if (request.getStatus() != Request.RequestStatus.CON_PROPUESTAS) {
             throw new InvalidStateException("Solo se pueden cerrar solicitudes con propuestas activas"
@@ -157,7 +158,7 @@ public class RequestService {
 
     @Transactional
     public void expireRequest(Long requestId) {
-        Request request = loadRequest(requestId);
+        Request request = requestRepository.findLockedById(requestId).orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
         if (request.getStatus() == Request.RequestStatus.PUBLICADA ||
                 request.getStatus() == Request.RequestStatus.CON_PROPUESTAS) {
@@ -176,8 +177,24 @@ public class RequestService {
                 .brand(request.getBrand())
                 .model(request.getModel())
                 .status(request.getStatus().name())
+                .latitude(request.getLatitude()).longitude(request.getLongitude())
                 .createdAt(request.getCreatedAt())
                 .build();
+    }
+
+    @Transactional
+    public RequestResponseDto updateLocation(Long requestId, com.repairmatch.repairmatch_backend.dto.RequestLocationDto dto) {
+        Request request = loadLockedOwnedRequest(requestId);
+        if (request.getStatus() != Request.RequestStatus.PUBLICADA) throw new InvalidStateException("Location cannot change after proposals arrive");
+        request.setLatitude(dto.latitude()); request.setLongitude(dto.longitude());
+        return mapToResponseDto(request);
+    }
+
+    private Request loadLockedOwnedRequest(Long id) {
+        UUID owner = accountAccess.requireRole(Role.CLIENT);
+        Request request = requestRepository.findLockedById(id).orElseThrow(() -> new ResourceNotFoundException("Request not found"));
+        accountAccess.requireOwner(owner, request.getClient().getId());
+        return request;
     }
 
     private Request loadOwnedRequest(Long requestId) {
