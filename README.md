@@ -4,6 +4,8 @@ Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que ne
 
 **Estado: base Spring Boot y registro de cuentas implementados en esta rama.** Incluye pruebas de integración, BCrypt y una colección Postman. Consulta el [contrato y verificación del registro](docs/REGISTRATION.md). Los demás módulos descritos siguen siendo propuestas o entregas independientes; no se incluyen migraciones versionadas.
 
+Para ejecutar la API y una base PostgreSQL aislada con Docker, consulta [la guía de ejecución local](docs/LOCAL_RUNTIME.md).
+
 ## Flujo de trabajo y seguimiento del avance
 
 Consulta la [guía de trabajo del equipo](docs/TEAM_WORKFLOW.md) y el [tablero compartido de avance](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). Las tareas, sus aprobaciones, las solicitudes de integración (pull requests o PR) revisadas y las evidencias de verificación permiten identificar las contribuciones. GitHub Actions comprueba los datos de los PR y actualiza el tablero; ejecuta la verificación Maven del backend; la ejecución de Postman se describe en la guía de registro. Los estados y las listas de verificación son declarados por el equipo; los PR y las integraciones registradas son evidencias observables, no calificaciones ni pruebas de que una funcionalidad esté terminada.
