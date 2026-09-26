@@ -1,7 +1,0 @@
-$kind: collection
-variables:
-  baseUrl: http://localhost:8080
-  identityEmail: ""
-  accessToken: ""
-  refreshToken: ""
-  previousRefreshToken: ""
