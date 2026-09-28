@@ -1,8 +1,0 @@
-$kind: collection
-name: "RepairMatch -Permisos #5"
-variables:
-  baseUrl: "http://127.0.0.1:18085"
-  requestId: "1"
-  ownerToken: ""
-  otherToken: ""
-  technicianToken: ""
