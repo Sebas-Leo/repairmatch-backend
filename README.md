@@ -2,7 +2,9 @@
 
 Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que necesitan reparar un electrodoméstico con técnicos adecuados: el cliente publica una solicitud, recibe propuestas, selecciona un técnico, completa el servicio y deja una reseña.
 
-**Entrega local en integración: recorrido completo del backend MVP.** Consultá [LOCAL_BACKEND.md](docs/LOCAL_BACKEND.md) para iniciar la API, ejecutar el escenario HTTP/Postman y revisar políticas, permisos y límites. Las secciones de planificación que siguen conservan el contexto original del equipo: sus estados históricos no sustituyen la verificación actual. No se incluyen migraciones versionadas de producción.
+Para la exposición académica, consulta el [informe de presentación](docs/PRESENTATION_REPORT.md). El README sigue siendo la guía compartida del proyecto.
+
+**Recorrido del MVP:** consulta [LOCAL_BACKEND.md](docs/LOCAL_BACKEND.md) para iniciar la API, ejecutar el escenario HTTP/Postman y revisar políticas, permisos y límites. Las secciones de planificación que siguen conservan el contexto original del equipo: sus estados históricos no sustituyen la verificación actual. No se incluyen migraciones versionadas de producción.
 
 ## Flujo de trabajo y seguimiento del avance
 
