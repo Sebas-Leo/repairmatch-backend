@@ -4,9 +4,12 @@ Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que ne
 
 Para la exposición académica, consulta el [informe de presentación](docs/PRESENTATION_REPORT.md). El README sigue siendo la guía compartida del proyecto.
 
+La [guía de despliegue académico](docs/AWS_DEPLOY.md) documenta la imagen, el perfil `prod`, las variables requeridas y las limitaciones de una base sin migraciones versionadas.
+
 **Recorrido del MVP:** consulta [LOCAL_BACKEND.md](docs/LOCAL_BACKEND.md) para iniciar la API, ejecutar el escenario HTTP/Postman y revisar políticas, permisos y límites. Las secciones de planificación que siguen conservan el contexto original del equipo: sus estados históricos no sustituyen la verificación actual. No se incluyen migraciones versionadas de producción.
 
 Para ejecutar la API y una base PostgreSQL aislada con Docker, consulta [la guía de ejecución local](docs/LOCAL_RUNTIME.md).
+
 
 ## Flujo de trabajo y seguimiento del avance
 

@@ -1,6 +1,6 @@
 # Backend MVP: ejecución y verificación local
 
-Esta entrega conecta identidad, solicitudes, compatibilidad, propuestas, contratación, servicios y reseñas. Los cambios quedan en local; no equivalen a una integración o aprobación en GitHub.
+Esta entrega conecta identidad, solicitudes, compatibilidad, propuestas, contratación, servicios y reseñas. El recorrido MVP está integrado en main mediante el PR #42; usar una base desechable para las verificaciones.
 
 ## Arranque
 

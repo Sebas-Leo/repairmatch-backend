@@ -11,11 +11,11 @@ RepairMatch es una API para conectar clientes que necesitan reparar electrodomé
 | Entrega | Estado al corte | Evidencia |
 | --- | --- | --- |
 | Base Spring Boot, identidad y módulos ya integrados | En `main` | Código, pruebas de CI y [README](../README.md) |
-| Recorrido MVP completo | Implementado en la rama del [PR #42](https://github.com/Sebas-Leo/repairmatch-backend/pull/42), pendiente de revisión e integración | Maven `verify`: 110 pruebas correctas; Node: 8 pruebas correctas; [guía de ejecución](https://github.com/Sebas-Leo/repairmatch-backend/blob/feat/local-backend-completion/docs/LOCAL_BACKEND.md) |
+| Recorrido MVP completo | Integrado mediante el [PR #42](https://github.com/Sebas-Leo/repairmatch-backend/pull/42) | Maven `verify`: 110 pruebas correctas; Node: 8 pruebas correctas; [guía de ejecución](LOCAL_BACKEND.md) |
 | Imagen Java 17 | Integrada mediante el [PR #46](https://github.com/Sebas-Leo/repairmatch-backend/pull/46) | Construcción Docker y arranque comprobados con PostgreSQL temporal |
-| API y PostgreSQL con Compose local | Pendiente de revisión en el [PR #41](https://github.com/Sebas-Leo/repairmatch-backend/pull/41) | CI correcto; instrucciones en el propio PR |
+| API y PostgreSQL con Compose local | Integrado mediante el [PR #41](https://github.com/Sebas-Leo/repairmatch-backend/pull/41) | CI correcto; instrucciones en el propio PR |
 
-Que un PR tenga pruebas correctas **no equivale a estar fusionado**. Para exponer funcionalidades del MVP todavía no integradas, usar explícitamente la rama `feat/local-backend-completion` y explicar esa diferencia.
+El MVP y Compose están integrados en `main`. Registrar el commit utilizado en la demostración y ejecutar las verificaciones sobre ese commit.
 
 ## Arquitectura y reglas de negocio
 
@@ -31,20 +31,20 @@ La aplicación es un monolito modular con Java 17, Spring Boot, API REST, Spring
 | Servicios y reseñas | El servicio tiene transiciones autorizadas; solo el cliente contratante reseña una vez tras completarlo. |
 | Reputación | Se deriva de las reseñas de servicios reales, no de un campo editable del perfil. |
 
-Estas reglas describen el MVP del PR #42 y deben presentarse como integradas en `main` únicamente después de que ese PR sea fusionado y verificado allí.
+Estas reglas corresponden al MVP integrado mediante el PR #42.
 
 ## Guion de demostración
 
 1. Mostrar la rama y el commit que se va a presentar; no llamar `main` a una rama pendiente.
 2. Ejecutar `./mvnw.cmd --batch-mode --no-transfer-progress verify` y registrar el resultado real.
 3. Iniciar una base PostgreSQL **desechable** y la API con credenciales de prueba proporcionadas por variables de entorno. `JWT_SECRET` debe ser una clave Base64 de al menos 32 bytes decodificados.
-4. En la rama del PR #42, ejecutar `node scripts/smoke-backend.cjs http://127.0.0.1:8080`. El script comprueba el flujo HTTP y varios rechazos de autorización, duplicados y estados inválidos; escribe datos sintéticos, por lo que no debe apuntar a una base real.
+4. En `main`, ejecutar `node scripts/smoke-backend.cjs http://127.0.0.1:8080`. El script comprueba el flujo HTTP y varios rechazos de autorización, duplicados y estados inválidos; escribe datos sintéticos, por lo que no debe apuntar a una base real.
 5. Si se demuestra concurrencia, usar únicamente la base desechable y el procedimiento de `scripts/check-selection-postgres.cjs` documentado en la guía del PR #42.
 6. Cerrar la demostración mostrando qué PR está integrado, cuál sigue pendiente y qué evidencia respalda cada afirmación.
 
 ## Límites para el despliegue
 
-El Dockerfile del PR #46 produce una imagen ejecutable, pero eso **no demuestra por sí solo** un despliegue listo para producción. La configuración actual usa actualización automática del esquema; no hay migraciones versionadas ni una política verificada de migración de datos existentes. Antes de un entorno persistente se necesitan respaldo, migración explícita, secretos externos y comprobación de salud operativa. No incluir credenciales reales en Postman, capturas o repositorio.
+La imagen usa Java 17 y un usuario no privilegiado. El perfil `prod` valida el esquema, desactiva Swagger y expone salud operativa. La [guía de despliegue académico](AWS_DEPLOY.md) documenta las variables y el arranque; no se ha realizado un despliegue AWS. No hay migraciones versionadas ni una política verificada de migración de datos existentes. Antes de un entorno persistente se necesitan respaldo, migración explícita, secretos externos y comprobación de salud operativa. No incluir credenciales reales en Postman, capturas o repositorio.
 
 No se incluyen frontend, pagos, diagnóstico por IA, notificaciones, geocodificación ni almacenamiento remoto de evidencias. Tampoco se declara una licencia de software: el repositorio no contiene un archivo `LICENSE`.
 
