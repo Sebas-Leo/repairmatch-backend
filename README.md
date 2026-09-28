@@ -4,6 +4,8 @@ Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que ne
 
 Para la exposición académica, consulta el [informe de presentación](docs/PRESENTATION_REPORT.md). El README sigue siendo la guía compartida del proyecto.
 
+La [guía de despliegue académico](docs/AWS_DEPLOY.md) documenta la imagen, el perfil `prod`, las variables requeridas y las limitaciones de una base sin migraciones versionadas.
+
 **Estado: base Spring Boot y registro de cuentas implementados en esta rama.** Incluye pruebas de integración, BCrypt y una colección Postman. Consulta el [contrato y verificación del registro](docs/REGISTRATION.md). Los demás módulos descritos siguen siendo propuestas o entregas independientes; no se incluyen migraciones versionadas.
 
 ## Flujo de trabajo y seguimiento del avance

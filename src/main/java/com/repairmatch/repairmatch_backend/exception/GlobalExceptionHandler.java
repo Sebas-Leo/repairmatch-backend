@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -35,6 +36,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponseDto> status(ResponseStatusException ex, HttpServletRequest request) {
         return response(ex.getStatusCode(), ex.getReason() == null ? "Solicitud rechazada" : ex.getReason(), request, Map.of());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDto> notFound(NoResourceFoundException ex, HttpServletRequest request) {
+        return response(HttpStatus.NOT_FOUND, "Ruta no encontrada", request, Map.of());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
