@@ -6,6 +6,8 @@ Para la exposición académica, consulta el [informe de presentación](docs/PRES
 
 **Recorrido del MVP:** consulta [LOCAL_BACKEND.md](docs/LOCAL_BACKEND.md) para iniciar la API, ejecutar el escenario HTTP/Postman y revisar políticas, permisos y límites. Las secciones de planificación que siguen conservan el contexto original del equipo: sus estados históricos no sustituyen la verificación actual. No se incluyen migraciones versionadas de producción.
 
+Para ejecutar la API y una base PostgreSQL aislada con Docker, consulta [la guía de ejecución local](docs/LOCAL_RUNTIME.md).
+
 ## Flujo de trabajo y seguimiento del avance
 
 Consulta la [guía de trabajo del equipo](docs/TEAM_WORKFLOW.md) y el [tablero compartido de avance](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). Las tareas, sus aprobaciones, las solicitudes de integración (pull requests o PR) revisadas y las evidencias de verificación permiten identificar las contribuciones. GitHub Actions comprueba los datos de los PR y actualiza el tablero; ejecuta la verificación Maven del backend; la ejecución de Postman se describe en la guía de registro. Los estados y las listas de verificación son declarados por el equipo; los PR y las integraciones registradas son evidencias observables, no calificaciones ni pruebas de que una funcionalidad esté terminada.
