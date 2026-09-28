@@ -1,6 +1,6 @@
 # AWS Academy Learner Lab: despliegue del backend
 
-RepairMatch es solo una API Spring Boot. El recorrido propuesto para el laboratorio es PostgreSQL en RDS, imagen en ECR y servicio ECS Fargate detrás de un Application Load Balancer (ALB). No se necesita frontend. Esta guía prepara el despliegue; **no afirma que ya se haya desplegado en AWS**. La colección del recorrido completo está en el [PR #42](https://github.com/Sebas-Leo/repairmatch-backend/pull/42) hasta que se integre.
+RepairMatch es solo una API Spring Boot. El recorrido propuesto para el laboratorio es PostgreSQL en RDS, imagen en ECR y servicio ECS Fargate detrás de un Application Load Balancer (ALB). No se necesita frontend. Esta guía prepara el despliegue; **no afirma que ya se haya desplegado en AWS**. La colección del recorrido completo está integrada en [Postman MVP](../postman/RepairMatch-MVP.postman_collection.json).
 
 ## Antes de encender el Lab
 

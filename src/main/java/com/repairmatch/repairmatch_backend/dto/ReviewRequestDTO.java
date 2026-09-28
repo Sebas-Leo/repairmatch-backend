@@ -12,6 +12,7 @@ public class ReviewRequestDTO {
     private Integer rating;
 
     @NotBlank(message = "El comentario no puede estar vacío")
+    @jakarta.validation.constraints.Size(max = 2000)
     private String comment;
 
     public Integer getRating() { return rating; }
