@@ -15,5 +15,22 @@ services:
       timeout: 5s
       retries: 10
 
+  api:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    command: ["java", "-jar", "/app/app.jar"]
+    volumes:
+      - ./target/repairmatch-backend-0.0.1-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/repairmatch
+      DB_USER: repairmatch
+      DB_PASSWORD: ${DB_PASSWORD:?Debes configurar DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Debes configurar JWT_SECRET}
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
