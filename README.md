@@ -2,6 +2,8 @@
 
 Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que necesitan reparar un electrodoméstico con técnicos adecuados: el cliente publica una solicitud, recibe propuestas, selecciona un técnico, completa el servicio y deja una reseña.
 
+Para la exposición académica, consulta el [informe de presentación](docs/PRESENTATION_REPORT.md). El README sigue siendo la guía compartida del proyecto.
+
 **Estado: base Spring Boot y registro de cuentas implementados en esta rama.** Incluye pruebas de integración, BCrypt y una colección Postman. Consulta el [contrato y verificación del registro](docs/REGISTRATION.md). Los demás módulos descritos siguen siendo propuestas o entregas independientes; no se incluyen migraciones versionadas.
 
 Para ejecutar la API y una base PostgreSQL aislada con Docker, consulta [la guía de ejecución local](docs/LOCAL_RUNTIME.md).
