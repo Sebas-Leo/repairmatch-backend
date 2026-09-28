@@ -17,6 +17,10 @@ import java.util.List;
 @RequestMapping("/api/requests")
 @RequiredArgsConstructor
 public class RequestController {
+    @PatchMapping("/{requestId}/location")
+    public com.repairmatch.repairmatch_backend.dto.RequestResponseDto updateLocation(@PathVariable Long requestId, @jakarta.validation.Valid @RequestBody com.repairmatch.repairmatch_backend.dto.RequestLocationDto dto) {
+        return requestService.updateLocation(requestId, dto);
+    }
 
     private final RequestService requestService;
 

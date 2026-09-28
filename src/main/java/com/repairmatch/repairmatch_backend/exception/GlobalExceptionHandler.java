@@ -52,6 +52,11 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.UNAUTHORIZED, "Autenticación requerida", request, Map.of());
     }
 
+    @ExceptionHandler({org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class, org.springframework.web.bind.MissingServletRequestParameterException.class})
+    public ResponseEntity<ErrorResponseDto> invalidParameter(Exception ex, HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "Invalid request parameter", request, Map.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> unexpected(Exception ex, HttpServletRequest request) {
         org.slf4j.LoggerFactory.getLogger(getClass()).error("Error interno de API: {}", ex.getClass().getName());

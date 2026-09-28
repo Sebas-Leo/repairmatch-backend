@@ -4,7 +4,7 @@ Proyecto de backend para **DBP, 2026-II**. RepairMatch conecta a personas que ne
 
 Para la exposición académica, consulta el [informe de presentación](docs/PRESENTATION_REPORT.md). El README sigue siendo la guía compartida del proyecto.
 
-**Estado: base Spring Boot y registro de cuentas implementados en esta rama.** Incluye pruebas de integración, BCrypt y una colección Postman. Consulta el [contrato y verificación del registro](docs/REGISTRATION.md). Los demás módulos descritos siguen siendo propuestas o entregas independientes; no se incluyen migraciones versionadas.
+**Recorrido del MVP:** consulta [LOCAL_BACKEND.md](docs/LOCAL_BACKEND.md) para iniciar la API, ejecutar el escenario HTTP/Postman y revisar políticas, permisos y límites. Las secciones de planificación que siguen conservan el contexto original del equipo: sus estados históricos no sustituyen la verificación actual. No se incluyen migraciones versionadas de producción.
 
 Para ejecutar la API y una base PostgreSQL aislada con Docker, consulta [la guía de ejecución local](docs/LOCAL_RUNTIME.md).
 
