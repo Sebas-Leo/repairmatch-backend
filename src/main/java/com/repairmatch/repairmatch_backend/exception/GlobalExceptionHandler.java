@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> framework(Exception ex, HttpServletRequest request) {
         HttpStatusCode status = ex instanceof org.springframework.web.ErrorResponse er ? er.getStatusCode() : HttpStatus.BAD_REQUEST;
         String message = switch (status.value()) {
-            case 404 -> "Recurso no encontrado";
+            case 404 -> "Ruta no encontrada";
             case 405 -> "Método HTTP no permitido para este recurso";
             case 406 -> "Formato de respuesta no soportado";
             case 415 -> "Content-Type no soportado. Usa application/json";

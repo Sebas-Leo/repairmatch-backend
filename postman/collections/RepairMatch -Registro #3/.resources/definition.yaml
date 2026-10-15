@@ -1,6 +1,0 @@
-$kind: collection
-name: "RepairMatch -Registro #3"
-variables:
-  baseUrl: "http://localhost:8080"
-  clientEmail: ""
-  technicianEmail: ""

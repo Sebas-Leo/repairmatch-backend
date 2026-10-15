@@ -1,0 +1,3324 @@
+{
+  "info": {
+    "name": "RepairMatch - Registro #3, identidad #4 y permisos #5",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "39 casos originales y 5 solicitudes de preparación. Importar y ejecutar Run en orden. Backend iniciado en baseUrl; applianceTypeId debe existir (1 en el servidor de demostración). No requiere entorno ni tokens manuales. Ver postman/README.md."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "applianceTypeId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "clientEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "technicianEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "identityEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "previousRefreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "requestId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ownerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "otherToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "technicianToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ownerPermissionEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "otherPermissionEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "technicianPermissionEmail",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "RepairMatch -Registro #3",
+      "description": "Ejecutar todos los casos en orden. Los usuarios, tokens y recursos se preparan automáticamente. Ver postman/README.md.",
+      "item": [
+        {
+          "name": "01 - Registrar cliente",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"clientEmail\", \"cliente-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));",
+                  "pm.test(\"Cuenta y rol correctos\", () => { const b = pm.response.json(); pm.expect(b).to.have.all.keys(\"id\", \"name\", \"email\", \"role\"); pm.expect(b.id).to.match(/^[0-9a-f-]{36}$/i); pm.expect(b.role).to.eql(\"CLIENT\"); pm.expect(b.email).to.eql(pm.collectionVariables.get(\"clientEmail\")); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "02 - Rechazar correo duplicado",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 409. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 409",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 409. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 409,\n  \"error\": \"Conflict\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/auth/register\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "03 - Registrar técnico",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{technicianEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"TECHNICIAN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"technicianEmail\", \"tecnico-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));",
+                  "pm.test(\"Cuenta y rol correctos\", () => { const b = pm.response.json(); pm.expect(b).to.have.all.keys(\"id\", \"name\", \"email\", \"role\"); pm.expect(b.id).to.match(/^[0-9a-f-]{36}$/i); pm.expect(b.role).to.eql(\"TECHNICIAN\"); pm.expect(b.email).to.eql(pm.collectionVariables.get(\"technicianEmail\")); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{technicianEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"TECHNICIAN\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "04 - Rechazar correo inválido",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"incorrecto\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"incorrecto\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/auth/register\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "05 - Rechazar nombre vacío",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"   \",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"   \",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/auth/register\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "06 - Rechazar contraseña corta",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"123\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"123\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/auth/register\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "07 - Rechazar rol desconocido",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"ADMIN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"PruebaLocal123!\",\n  \"role\": \"ADMIN\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/auth/register\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "08 - Rechazar contraseña mayor a 72 bytes",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"bytes@example.com\",\n  \"password\": \"ááááááááááááááááááááááááááááááááááááá\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"No expone contraseñas\", () => { const b = pm.response.json(); pm.expect(b).not.to.have.property(\"password\"); pm.expect(b).not.to.have.property(\"passwordHash\"); });",
+                  "pm.test(\"Respuesta JSON\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 400",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ariana Demo\",\n  \"email\": \"bytes@example.com\",\n  \"password\": \"ááááááááááááááááááááááááááááááááááááá\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 400. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/auth/register\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RepairMatch -Registro #4",
+      "description": "Ejecutar todos los casos en orden. Los usuarios, tokens y recursos se preparan automáticamente. Ver postman/README.md.",
+      "item": [
+        {
+          "name": "01 - Registrar usuario de prueba",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Usuario Prueba\",\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"PruebaLocal2026!\",\r\n  \"role\": \"CLIENT\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"identityEmail\", \"identity-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Crea el usuario sin exponer la contraseña\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "\r",
+                  "    const usuario = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(usuario).to.have.all.keys(\r",
+                  "        \"id\", \"name\", \"email\", \"role\"\r",
+                  "    );\r",
+                  "    pm.expect(usuario.id).to.be.a(\"string\").and.not.empty;\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Usuario Prueba\",\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"PruebaLocal2026!\",\r\n  \"role\": \"CLIENT\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "02 - Iniciar sesión correctamente",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"PruebaLocal2026!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login correcto\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 200) {\r",
+                  "    const respuesta = pm.response.json();\r",
+                  "    pm.collectionVariables.set(\"accessToken\", respuesta.accessToken);\r",
+                  "} else {\r",
+                  "    pm.collectionVariables.unset(\"accessToken\");\r",
+                  "}",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"refreshToken\", pm.response.json().refreshToken);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"PruebaLocal2026!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<generado al ejecutar>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "03 - Consultar perfil autenticado",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Comprueba la identidad obtenida del token autenticado. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Devuelve el perfil autenticado\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "\r",
+                  "    const perfil = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(perfil).to.have.all.keys(\r",
+                  "        \"id\", \"name\", \"email\", \"role\"\r",
+                  "    );\r",
+                  "    pm.expect(perfil.email).to.eql(pm.collectionVariables.get(\"identityEmail\"));\r",
+                  "    pm.expect(perfil.role).to.eql(\"CLIENT\");\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/users/me",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Comprueba la identidad obtenida del token autenticado. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "04 - Rechazar consulta sin token",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/me",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "description": "Comprueba la identidad obtenida del token autenticado. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Rechaza el acceso no autorizado\", function () {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/users/me",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [],
+                "description": "Comprueba la identidad obtenida del token autenticado. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/users/me\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "05 - Rechazar contraseña incorrecta",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"Incorrecta123!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Rechaza el acceso no autorizado\", function () {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"{{identityEmail}}\",\r\n  \"password\": \"Incorrecta123!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/auth/login\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "06 - Rechazar token inválido",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "token-invalido",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Comprueba la identidad obtenida del token autenticado. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Rechaza el acceso no autorizado\", function () {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/users/me",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "token-invalido",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Comprueba la identidad obtenida del token autenticado. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/users/me\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "07 - Renovar tokens",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/refresh",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"previousRefreshToken\", pm.collectionVariables.get(\"refreshToken\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) { const b = pm.response.json(); pm.collectionVariables.set(\"accessToken\", b.accessToken); pm.collectionVariables.set(\"refreshToken\", b.refreshToken); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/refresh",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<generado al ejecutar>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "08 - Rechazar reutilización de refresh",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/refresh",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{previousRefreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 401\", () => pm.response.to.have.status(401));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/refresh",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"refreshToken\":\"{{previousRefreshToken}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/auth/refresh\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "09 - Cerrar sesión de renovación",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/logout",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 204. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 204\", () => pm.response.to.have.status(204));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 204",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/logout",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 204. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "10 - Rechazar refresh revocado",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/refresh",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 401\", () => pm.response.to.have.status(401));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/refresh",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/auth/refresh\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RepairMatch -Permisos #5",
+      "description": "Ejecutar todos los casos en orden. Los usuarios, tokens y recursos se preparan automáticamente. Ver postman/README.md.",
+      "item": [
+        {
+          "name": "Preparación - Registrar owner",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo permisos owner\",\n  \"email\": \"{{ownerPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"ownerPermissionEmail\", \"owner-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");",
+                  "pm.collectionVariables.unset(\"ownerToken\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Demo permisos owner\",\n  \"email\": \"{{ownerPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Preparación - Registrar other",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo permisos other\",\n  \"email\": \"{{otherPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\",\n  \"role\": \"CLIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"otherPermissionEmail\", \"other-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");",
+                  "pm.collectionVariables.unset(\"otherToken\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Demo permisos other\",\n  \"email\": \"{{otherPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\",\n  \"role\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Preparación - Registrar technician",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo permisos technician\",\n  \"email\": \"{{technicianPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\",\n  \"role\": \"TECHNICIAN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"technicianPermissionEmail\", \"technician-\" + pm.variables.replaceIn(\"{{$guid}}\") + \"@example.com\");",
+                  "pm.collectionVariables.unset(\"technicianToken\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/register",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Demo permisos technician\",\n  \"email\": \"{{technicianPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\",\n  \"role\": \"TECHNICIAN\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Usuario Demo\",\n  \"email\": \"demo@example.com\",\n  \"role\": \"CLIENT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "01 - Login cliente propietario",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ownerPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"ownerToken\", pm.response.json().accessToken); else pm.collectionVariables.unset(\"ownerToken\");"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{ownerPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<generado al ejecutar>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "02 - Login otro cliente",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{otherPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"otherToken\", pm.response.json().accessToken); else pm.collectionVariables.unset(\"otherToken\");"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{otherPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<generado al ejecutar>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "03 - Login técnico",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{technicianPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"technicianToken\", pm.response.json().accessToken); else pm.collectionVariables.unset(\"technicianToken\");"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/auth/login",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{technicianPermissionEmail}}\",\n  \"password\": \"PermisosDemo2026!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Valida registro, acceso o ciclo de renovación de credenciales. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"<generado al ejecutar>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 3600,\n  \"refreshToken\": \"<generado al ejecutar>\",\n  \"refreshExpiresIn\": 604800\n}"
+            }
+          ]
+        },
+        {
+          "name": "Preparación - Crear solicitud propia",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applianceTypeId\": {{applianceTypeId}},\n  \"originalDescription\": \"Solicitud para pruebas repetibles de permisos\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"requestId\"); pm.collectionVariables.unset(\"createdRequestId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"requestId\", String(pm.response.json().id));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applianceTypeId\": {{applianceTypeId}},\n  \"originalDescription\": \"Solicitud para pruebas repetibles de permisos\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"clientId\": \"00000000-0000-0000-0000-000000000001\",\n  \"applianceTypeName\": \"Lavadora\",\n  \"originalDescription\": \"Solicitud de demostración\",\n  \"status\": \"PUBLICADA\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Preparación - Adjuntar evidencia inicial",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mediaUrl\": \"https://example.com/private.jpg\",\n  \"mediaType\": \"image/jpeg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mediaUrl\": \"https://example.com/private.jpg\",\n  \"mediaType\": \"image/jpeg\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"requestId\": 1,\n  \"evidenceNumber\": 1,\n  \"mediaUrl\": \"https://example.com/private.jpg\",\n  \"mediaType\": \"image/jpeg\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "04 - Propietario consulta evidencias",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Evidencia propia\", () => { const b = pm.response.json(); pm.expect(b).to.have.lengthOf(1); pm.expect(b[0].mediaUrl).to.eql(\"https://example.com/private.jpg\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"requestId\": 1,\n    \"evidenceNumber\": 1,\n    \"mediaUrl\": \"https://example.com/private.jpg\",\n    \"mediaType\": \"image/jpeg\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "05 - Otro cliente no lee evidencias",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"No revela evidencia privada\", () => pm.expect(pm.response.text()).not.to.include(\"private.jpg\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests/{{requestId}}/evidences\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "06 - Técnico no lee evidencias privadas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{technicianToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"No revela evidencia privada\", () => pm.expect(pm.response.text()).not.to.include(\"private.jpg\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{technicianToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests/{{requestId}}/evidences\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "07 - Sin token no accede",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"No revela evidencia privada\", () => pm.expect(pm.response.text()).not.to.include(\"private.jpg\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 401",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [],
+                "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 401. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests/{{requestId}}/evidences\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "08 - Otro cliente no adjunta evidencias",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests/{{requestId}}/evidences\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "09 - Propietario adjunta evidencia",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"El intento ajeno no creó evidencia\", () => pm.expect(pm.response.json().evidenceNumber).to.eql(2));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/evidences",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Protege las evidencias privadas y verifica que solo el propietario pueda consultarlas o adjuntarlas. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"requestId\": 1,\n  \"evidenceNumber\": 1,\n  \"mediaUrl\": \"https://example.com/private.jpg\",\n  \"mediaType\": \"image/jpeg\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "10 - Otro cliente no cancela solicitud",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/cancel",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/cancel",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests/{{requestId}}/cancel\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "11 - Propietario no cierra fuera de selección",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/close",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/close",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests/{{requestId}}/close\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "12 - Propietario cancela solicitud",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/cancel",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Cancelación aplicada\", () => pm.expect(pm.response.json().status).to.eql(\"CANCELADA\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/cancel",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"clientId\": \"00000000-0000-0000-0000-000000000001\",\n  \"applianceTypeName\": \"Lavadora\",\n  \"originalDescription\": \"Solicitud de demostración\",\n  \"status\": \"CANCELADA\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "13 - Cliente crea solicitud",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applianceTypeId\": {{applianceTypeId}},\n  \"originalDescription\": \"Solicitud de integración\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Propietario desde JWT\", () => { const b=pm.response.json(); pm.expect(b.status).to.eql(\"PUBLICADA\"); pm.collectionVariables.set(\"createdRequestId\",b.id); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 201",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applianceTypeId\": {{applianceTypeId}},\n  \"originalDescription\": \"Solicitud de integración\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 201. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"clientId\": \"00000000-0000-0000-0000-000000000001\",\n  \"applianceTypeName\": \"Lavadora\",\n  \"originalDescription\": \"Solicitud de demostración\",\n  \"status\": \"PUBLICADA\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "14 - Tecnico no crea solicitud",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{technicianToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applianceTypeId\": {{applianceTypeId}},\n  \"originalDescription\": \"Intento rechazado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/requests",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{technicianToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applianceTypeId\": {{applianceTypeId}},\n  \"originalDescription\": \"Intento rechazado\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "15 - Propietario lista sus solicitudes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Incluye solicitud creada\", () => pm.expect(pm.response.json().map(r=>String(r.id))).to.include(String(pm.collectionVariables.get(\"createdRequestId\"))));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"clientId\": \"00000000-0000-0000-0000-000000000001\",\n    \"applianceTypeName\": \"Lavadora\",\n    \"originalDescription\": \"Solicitud de demostración\",\n    \"status\": \"PUBLICADA\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "16 - Otro cliente no lista solicitudes ajenas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Listado privado\", () => pm.expect(pm.response.json()).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"clientId\": \"00000000-0000-0000-0000-000000000001\",\n    \"applianceTypeName\": \"Lavadora\",\n    \"originalDescription\": \"Solicitud de demostración\",\n    \"status\": \"PUBLICADA\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "17 - Propietario consulta solicitud",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Solicitud propia\", () => pm.expect(String(pm.response.json().id)).to.eql(String(pm.collectionVariables.get(\"requestId\"))));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"clientId\": \"00000000-0000-0000-0000-000000000001\",\n  \"applianceTypeName\": \"Lavadora\",\n  \"originalDescription\": \"Solicitud de demostración\",\n  \"status\": \"PUBLICADA\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "18 - Otro cliente no consulta solicitud",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Comprueba propiedad, rol y estado de las solicitudes de reparación. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests/{{requestId}}\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "19 - Propietario consulta propuestas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ownerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Protege la comparación de propuestas frente a cuentas ajenas. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Lista de propuestas\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 200",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ownerToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Protege la comparación de propuestas frente a cuentas ajenas. Estado esperado: 200. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[]"
+            }
+          ]
+        },
+        {
+          "name": "20 - Otro cliente no consulta propuestas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{otherToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Protege la comparación de propuestas frente a cuentas ajenas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{otherToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Protege la comparación de propuestas frente a cuentas ajenas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests/{{requestId}}/proposals\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "21 - Tecnico no consulta propuestas ajenas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{technicianToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Protege la comparación de propuestas frente a cuentas ajenas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Estado 403\", () => pm.response.to.have.status(403));",
+                  ""
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo ilustrativo HTTP 403",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{technicianToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [],
+                "description": "Protege la comparación de propuestas frente a cuentas ajenas. Estado esperado: 403. Ejecutar en orden mediante Run. Los cuerpos ya contienen datos de demostración y variables automáticas."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"timestamp\": \"2026-09-25T00:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Ejemplo de rechazo esperado; el mensaje específico depende de la validación.\",\n  \"path\": \"/api/requests/{{requestId}}/proposals\",\n  \"fieldErrors\": {}\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
