@@ -23,6 +23,13 @@ public class RequestController {
     }
 
     private final RequestService requestService;
+    private final com.repairmatch.repairmatch_backend.service.ServiceService serviceService;
+
+    /** The service created when the owner accepted a proposal; 404 until then. */
+    @GetMapping("/{requestId}/service")
+    public com.repairmatch.repairmatch_backend.dto.ServiceResponseDTO getService(@PathVariable Long requestId) {
+        return serviceService.getServiceByRequest(requestId);
+    }
 
     @PostMapping
     public ResponseEntity<RequestResponseDto> createRequest(

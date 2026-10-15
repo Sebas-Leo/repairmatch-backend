@@ -15,6 +15,7 @@ public class ServiceService {
     private final ServiceRepository serviceRepository;
     private final ReviewRepository reviewRepository;
     private final TechnicianRepository technicianRepository;
+    private final RequestRepository requestRepository;
     private final AccountAccess accountAccess;
 
     @Transactional(readOnly = true)
@@ -48,8 +49,18 @@ public class ServiceService {
         return new ServiceResponseDTO(service);
     }
 
+    /** The service created by accepting a proposal of the caller's own request. */
+    @Transactional(readOnly = true)
+    public ServiceResponseDTO getServiceByRequest(Long requestId) {
+        UUID client = accountAccess.requireRole(Role.CLIENT);
+        Request request = requestRepository.findById(requestId).orElseThrow(() -> new ResourceNotFoundException("Request not found"));
+        accountAccess.requireOwner(client, request.getClient().getId());
+        return serviceRepository.findByRequestId(requestId).map(ServiceResponseDTO::new)
+                .orElseThrow(() -> new ResourceNotFoundException("No service exists for this request yet"));
+    }
+
     @Transactional
-    public void createReview(Long serviceId, ReviewRequestDTO dto) {
+    public ReviewResponseDto createReview(Long serviceId, ReviewRequestDTO dto) {
         UUID client = accountAccess.requireRole(Role.CLIENT);
         ServiceEntity service = serviceRepository.findLockedById(serviceId).orElseThrow(() -> new ResourceNotFoundException("Service not found"));
         accountAccess.requireOwner(client, service.getRequest().getClient().getId());
@@ -57,7 +68,24 @@ public class ServiceService {
         if (reviewRepository.findByServiceId(serviceId).isPresent()) throw new InvalidStateException("Service already reviewed");
         ReviewEntity review = new ReviewEntity();
         review.setService(service); review.setRating(dto.getRating()); review.setComment(dto.getComment().strip());
-        reviewRepository.saveAndFlush(review);
+        return ReviewResponseDto.from(reviewRepository.saveAndFlush(review));
+    }
+
+    /** The review of a service, readable by its two participants only. */
+    @Transactional(readOnly = true)
+    public ReviewResponseDto getReview(Long serviceId) {
+        ServiceEntity service = serviceRepository.findById(serviceId).orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+        requireParticipant(service);
+        return reviewRepository.findByServiceId(serviceId).map(ReviewResponseDto::from)
+                .orElseThrow(() -> new ResourceNotFoundException("This service has not been reviewed yet"));
+    }
+
+    /** Public reputation detail: every review of the technician's completed jobs, newest first. */
+    @Transactional(readOnly = true)
+    public List<ReviewResponseDto> getTechnicianReviews(UUID technicianId) {
+        accountAccess.requireIdentity();
+        if (!technicianRepository.existsById(technicianId)) throw new ResourceNotFoundException("Technician not found");
+        return reviewRepository.findForTechnician(technicianId).stream().map(ReviewResponseDto::from).toList();
     }
 
     @Transactional(readOnly = true)

@@ -17,5 +17,6 @@ public class ServiceController {
         return serviceService.updateServiceStatus(id, status);
     }
     @PostMapping("/{id}/review") @ResponseStatus(HttpStatus.CREATED)
-    public void createReview(@PathVariable Long id, @Valid @RequestBody ReviewRequestDTO dto) { serviceService.createReview(id, dto); }
+    public ReviewResponseDto createReview(@PathVariable Long id, @Valid @RequestBody ReviewRequestDTO dto) { return serviceService.createReview(id, dto); }
+    @GetMapping("/{id}/review") public ReviewResponseDto getReview(@PathVariable Long id) { return serviceService.getReview(id); }
 }

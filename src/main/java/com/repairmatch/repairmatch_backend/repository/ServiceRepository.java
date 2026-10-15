@@ -13,4 +13,5 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
     @EntityGraph(attributePaths = {"proposal", "proposal.technician", "request", "request.client"})
     @Query("select s from ServiceEntity s where s.request.client.id = :id or s.proposal.technician.id = :id order by s.createdAt desc")
     List<ServiceEntity> findOwn(@Param("id") UUID id);
+    Optional<ServiceEntity> findByRequestId(Long requestId);
 }
