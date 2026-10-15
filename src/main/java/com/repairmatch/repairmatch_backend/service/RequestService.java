@@ -11,6 +11,7 @@ import com.repairmatch.repairmatch_backend.model.Role;
 import com.repairmatch.repairmatch_backend.model.User;
 import com.repairmatch.repairmatch_backend.repository.ApplianceTypeRepository;
 import com.repairmatch.repairmatch_backend.repository.EvidenceRepository;
+import com.repairmatch.repairmatch_backend.repository.ProposalRepository;
 import com.repairmatch.repairmatch_backend.repository.RequestRepository;
 import com.repairmatch.repairmatch_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class RequestService {
 
     private final RequestRepository requestRepository;
     private final EvidenceRepository evidenceRepository;
+    private final ProposalRepository proposalRepository;
     private final UserRepository userRepository;
     private final AccountAccess accountAccess;
     private final ApplianceTypeRepository applianceTypeRepository;
@@ -101,9 +103,9 @@ public class RequestService {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT')")
+    @PreAuthorize("hasAnyRole('CLIENT','TECHNICIAN')")
     public List<EvidenceResponseDto> getEvidencesByRequestId(Long requestId) {
-        loadOwnedRequest(requestId);
+        requireEvidenceReadAccess(requestId);
 
         return evidenceRepository.findById_RequestIdOrderById_EvidenceNumberAsc(requestId).stream()
                 .map(evidence -> EvidenceResponseDto.builder()
@@ -195,6 +197,20 @@ public class RequestService {
         Request request = requestRepository.findLockedById(id).orElseThrow(() -> new ResourceNotFoundException("Request not found"));
         accountAccess.requireOwner(owner, request.getClient().getId());
         return request;
+    }
+
+    /** The owning client, or a technician who submitted a proposal on the request, may read its evidences. */
+    private void requireEvidenceReadAccess(Long requestId) {
+        UUID currentUserId = accountAccess.requireIdentity();
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AuthenticationRequiredException("Cuenta no disponible"));
+        Request request = loadRequest(requestId);
+        if (user.getRole() == Role.CLIENT) {
+            accountAccess.requireOwner(currentUserId, request.getClient().getId());
+        } else if (user.getRole() != Role.TECHNICIAN
+                || !proposalRepository.existsByRequestIdAndTechnicianId(requestId, currentUserId)) {
+            throw new ForbiddenOperationException("No tiene acceso a este recurso");
+        }
     }
 
     private Request loadOwnedRequest(Long requestId) {

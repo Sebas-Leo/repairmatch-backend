@@ -9,7 +9,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,17 +29,31 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponseDto> invalidJson(HttpMessageNotReadableException ex, HttpServletRequest request) {
-        return response(HttpStatus.BAD_REQUEST, "JSON inválido. Verifica los campos y el rol: CLIENT o TECHNICIAN", request, Map.of());
+        return response(HttpStatus.BAD_REQUEST, "JSON inválido. Verifica el formato y los valores de los campos (por ejemplo, role: CLIENT o TECHNICIAN)", request, Map.of());
+    }
+
+    /** Framework MVC errors (404 unknown path, 405, 415, 406, missing params...) keep their own status instead of falling into the 500 handler. */
+    @ExceptionHandler({
+            org.springframework.web.servlet.resource.NoResourceFoundException.class,
+            org.springframework.web.HttpRequestMethodNotSupportedException.class,
+            org.springframework.web.HttpMediaTypeNotSupportedException.class,
+            org.springframework.web.HttpMediaTypeNotAcceptableException.class,
+            org.springframework.web.method.annotation.HandlerMethodValidationException.class})
+    public ResponseEntity<ErrorResponseDto> framework(Exception ex, HttpServletRequest request) {
+        HttpStatusCode status = ex instanceof org.springframework.web.ErrorResponse er ? er.getStatusCode() : HttpStatus.BAD_REQUEST;
+        String message = switch (status.value()) {
+            case 404 -> "Ruta no encontrada";
+            case 405 -> "Método HTTP no permitido para este recurso";
+            case 406 -> "Formato de respuesta no soportado";
+            case 415 -> "Content-Type no soportado. Usa application/json";
+            default -> "Solicitud inválida";
+        };
+        return response(status, message, request, Map.of());
     }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponseDto> status(ResponseStatusException ex, HttpServletRequest request) {
         return response(ex.getStatusCode(), ex.getReason() == null ? "Solicitud rechazada" : ex.getReason(), request, Map.of());
-    }
-
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponseDto> notFound(NoResourceFoundException ex, HttpServletRequest request) {
-        return response(HttpStatus.NOT_FOUND, "Ruta no encontrada", request, Map.of());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -60,7 +73,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class, org.springframework.web.bind.MissingServletRequestParameterException.class})
     public ResponseEntity<ErrorResponseDto> invalidParameter(Exception ex, HttpServletRequest request) {
-        return response(HttpStatus.BAD_REQUEST, "Invalid request parameter", request, Map.of());
+        String name = ex instanceof org.springframework.web.method.annotation.MethodArgumentTypeMismatchException m ? m.getName()
+                : ((org.springframework.web.bind.MissingServletRequestParameterException) ex).getParameterName();
+        String message = "Invalid request parameter: " + name;
+        if (ex instanceof org.springframework.web.method.annotation.MethodArgumentTypeMismatchException m
+                && m.getRequiredType() != null && m.getRequiredType().isEnum()) {
+            message += " (allowed values: " + java.util.Arrays.stream(m.getRequiredType().getEnumConstants())
+                    .map(v -> ((Enum<?>) v).name()).collect(java.util.stream.Collectors.joining(", ")) + ")";
+        }
+        return response(HttpStatus.BAD_REQUEST, message, request, Map.of(name, "Invalid or missing value"));
     }
 
     @ExceptionHandler(Exception.class)
