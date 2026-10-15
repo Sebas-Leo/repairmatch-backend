@@ -9,7 +9,7 @@ Base URL (local): `http://localhost:8080/api`. All bodies are `application/json`
 - **Enums**: strings only (numbers are rejected). `Role`: `CLIENT | TECHNICIAN`. Request status: `PUBLICADA | CON_PROPUESTAS | CERRADA | CANCELADA | EXPIRADA`. Proposal status: `PENDING | ACCEPTED | REJECTED`. Service status: `PROGRAMADO | EN_ATENCION | COMPLETADO | CANCELADO`. Request/proposal `status` fields are plain strings with those values.
 - **Money**: `diagnosticCost` is a decimal number (max 10 integer + 2 fraction digits).
 - **IDs**: users/technicians are UUID strings; requests, proposals, services, appliance types are numbers.
-- **Lists**: plain JSON arrays, no envelope, no pagination, always scoped to the authenticated user (`GET /technicians/{uuid}/reviews` is the one public list). Only `GET /technicians/me/matching-requests` takes `page` (default 0) / `size` (default 20, max 100) and still returns a plain array.
+- **Lists**: plain JSON arrays, no envelope, no pagination, always scoped to the authenticated user (`GET /technicians/{uuid}/reviews` and `GET /appliance-types` are readable by any authenticated account). Only `GET /technicians/me/matching-requests` takes `page` (default 0) / `size` (default 20, max 100) and still returns a plain array.
 - **Messages are mixed Spanish/English** (server-side text). Show `message` as-is or map by `status`.
 
 ## Error shape (every error path)
@@ -73,7 +73,7 @@ Role: P = public, A = any authenticated, C = CLIENT, T = TECHNICIAN.
 | GET `/requests/{id}/service` | C owner | - | Service created by accepting a proposal on this request | 200, 403, 404 (unknown request, or no service yet) |
 | PATCH `/requests/{id}/location` | C owner | `{ latitude*, longitude* }` | Request (only while `PUBLICADA`) | 200, 400, 403, 404, 409 |
 | PATCH `/requests/{id}/cancel` | C owner | - | Request | 200, 403, 404, 409 |
-| PATCH `/requests/{id}/close` | - | blocked (closing happens only via accepting a proposal) | - | 403 always |
+| PATCH `/requests/{id}/close` | - | blocked (closing happens only via accepting a proposal) | - | 403 for any authenticated caller, 401 without a token |
 | POST `/requests/{id}/evidences` | C owner | `{ mediaUrl* (http/https URL, <=500), mediaType* (<=50, e.g. image/jpeg) }` | Evidence | 201, 400, 403, 404 |
 | GET `/requests/{id}/evidences` | C owner, or T with a proposal on the request | - | `[Evidence]` by `evidenceNumber` | 200, 403, 404 |
 
@@ -108,7 +108,7 @@ Role: P = public, A = any authenticated, C = CLIENT, T = TECHNICIAN.
 | POST `/services/{id}/review` | C owner | `{ rating* (1-5), comment* (<=2000) }` | Review (the created review) | 201, 400, 403, 404, 409 |
 | GET `/services/{id}/review` | participant | - | Review | 200, 403, 404 (unknown service, or not reviewed yet) |
 
-Status rules: `PROGRAMADO -> EN_ATENCION -> COMPLETADO` only by the service's technician; `CANCELADO` from `PROGRAMADO` by either participant (a client calling `EN_ATENCION`/`COMPLETADO` gets `403`); any other transition, including leaving a final state, is `409`. Reviews only on `COMPLETADO`, once per service (`409` when early or repeated), written by the client of that service only.
+Status rules: `PROGRAMADO -> EN_ATENCION -> COMPLETADO` only by the service's technician; `CANCELADO` from `PROGRAMADO` by either participant (a client sending any status other than `CANCELADO` gets `403`, because the technician-only check runs first); any other transition by a participant allowed to attempt it, including leaving a final state, is `409`. Reviews only on `COMPLETADO`, once per service (`409` when early or repeated), written by the client of that service only.
 
 `Proposal` = `{ id, requestId, technicianId, technicianName, diagnosticCost, availableAt, conditions, createdAt, status }`.
 `Service` = `{ id, proposalId, status, createdAt, requestId, clientId, technicianId, technicianName }`; the last four are derived through Service -> Proposal -> Technician / Request, so the UI can link a service to its request and technician without extra calls.

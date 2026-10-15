@@ -29,7 +29,7 @@ Política elaborada a partir del README y los contratos actuales del proyecto. E
 | Listar solicitudes propias y consultar su servicio | CLIENT propietario | GET /api/requests y GET /api/requests/{id}/service | Implementado |
 | Comparar propuestas de solicitud | CLIENT propietario | Otros clientes y técnicos reciben 403 | Integrado con main |
 | Editar solicitud | CLIENT propietario | Propiedad desde JWT | Endpoint pendiente |
-| Buscar solicitudes compatibles | TECHNICIAN con perfil compatible | Tipo de electrodoméstico y zona/radio (inclusivo), solo solicitudes abiertas; devuelve distancia, no coordenadas | Implementado |
+| Buscar solicitudes compatibles | TECHNICIAN con perfil compatible | Tipo de electrodoméstico y zona/radio (inclusivo), solo solicitudes abiertas; devuelve la distancia (km, redondeada a 0.01) y no las coordenadas; la ubicación es por tanto **aproximada, no secreta**: un técnico que cambie su centro de servicio y repita la consulta podría triangularla | Implementado |
 | Ver y editar el perfil propio de técnico | TECHNICIAN | GET/PUT /api/technicians/me/profile y PUT .../service-areas; la identidad sale del JWT | Implementado |
 | Crear propuesta | TECHNICIAN compatible | Técnico obtenido desde la identidad y perfil; solicitud abierta; una oferta por técnico y solicitud | Implementado |
 | Editar o retirar propuesta | Técnico autor | No existe la operación en el MVP | No implementado |
