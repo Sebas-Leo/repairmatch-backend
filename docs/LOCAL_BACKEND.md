@@ -73,7 +73,9 @@ Se conserva `ddl-auto=update` para desarrollo. **No es una migración versionada
 node --test tests/workflows.test.cjs
 ```
 
-Las pruebas estándar utilizan H2. `LocalBackendFlowIntegrationTests` comprueba el recorrido de propuesta, selección, servicio, reseña y reputación junto con permisos y un técnico incompatible. La validación de selección simultánea y rollback debe ejecutarse también contra PostgreSQL; consultar el resultado real de la sesión, no asumir que H2 demuestra el comportamiento de PostgreSQL.
+Las pruebas estándar utilizan H2. `LocalBackendFlowIntegrationTests` comprueba el recorrido de propuesta, selección, servicio, reseña y reputación junto con permisos y un técnico incompatible. Otras clases cubren por área: `RequestLifecycleIntegrationTests` (estados de la solicitud), `ProposalRulesIntegrationTests` (ofertas y compatibilidad), `TechnicianFlowIntegrationTests` (perfil propio, ofertas propias, oportunidades y su límite de radio), `ServiceReviewIntegrationTests` (ciclo del servicio, reseñas, reputación) y `SelectionIntegrityIntegrationTests` (selección repetida, reversión tras un fallo provocado y aceptaciones simultáneas sobre H2). La misma validación de selección simultánea y rollback debe ejecutarse también contra PostgreSQL; consultar el resultado real de la sesión, no asumir que H2 demuestra el comportamiento de PostgreSQL.
+
+Referencia de contrato para el frontend: `docs/API_CONTRACT.md`.
 
 Con la API y la base aislada de Docker en marcha, comprobar las garantías transaccionales reales:
 

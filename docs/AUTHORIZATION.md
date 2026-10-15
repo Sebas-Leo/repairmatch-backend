@@ -20,25 +20,26 @@ Política elaborada a partir del README y los contratos actuales del proyecto. E
 | --- | --- | --- | --- |
 | Registro y login | Público | Validaciones y credenciales del #3/#4 | Existente |
 | GET /api/users/me | Cuenta autenticada | Solo identidad del propio JWT | Existente #4 |
-| Leer evidencias de solicitud | CLIENT propietario | Un cliente ajeno y TECHNICIAN reciben 403 | Implementado #5 |
+| Leer evidencias de solicitud | CLIENT propietario, o TECHNICIAN con una propuesta en esa solicitud | Un cliente ajeno y un técnico sin propuesta reciben 403 | Implementado |
 | Adjuntar evidencia | CLIENT propietario | Propiedad obtenida de Request.client | Implementado #5 |
 | Cancelar solicitud | CLIENT propietario | Se rechazan CERRADA, CANCELADA y EXPIRADA | Implementado #5 |
 | PATCH /api/requests/{id}/close | Ningún consumidor HTTP | Cierre exclusivamente dentro de selección y creación atómicas del servicio | Bloqueado #5 |
 | Crear solicitud | CLIENT | Propietario asignado desde JWT, no desde el cuerpo | Integrado con main |
-| Consultar solicitud y listar propias | CLIENT propietario | Identidad, rol actual y propiedad comprobados en el servicio | Integrado con main |
+| Consultar solicitud | CLIENT propietario, o TECHNICIAN con una propuesta en esa solicitud | Identidad, rol actual y propiedad/propuesta comprobados en el servicio; al técnico se le oculta la ubicación exacta salvo que su propuesta sea la aceptada | Implementado |
+| Listar solicitudes propias y consultar su servicio | CLIENT propietario | GET /api/requests y GET /api/requests/{id}/service | Implementado |
 | Comparar propuestas de solicitud | CLIENT propietario | Otros clientes y técnicos reciben 403 | Integrado con main |
 | Editar solicitud | CLIENT propietario | Propiedad desde JWT | Endpoint pendiente |
-| Buscar solicitudes compatibles | TECHNICIAN con perfil compatible | Tipo de electrodoméstico y zona/radio, con datos mínimos para ofertar | Módulo pendiente |
-| Ver evidencia desde compatibilidad | Solo lo que acuerde el módulo | No se otorga acceso a toda evidencia por ser técnico | Pendiente de acuerdo |
-| Crear propuesta | TECHNICIAN compatible | Técnico obtenido desde la identidad y perfil; solicitud elegible | Módulo pendiente |
-| Editar o retirar propuesta | Técnico autor | Solo mientras el estado permita esa operación | Módulo pendiente |
-| Leer propuesta | Técnico autor o cliente dueño de su solicitud | Otros técnicos no acceden a ofertas ajenas | Módulo pendiente |
-| Aceptar propuesta | CLIENT dueño de la solicitud | Aceptar, cerrar solicitud y crear servicio en una operación atómica | Módulo pendiente |
-| Leer servicio | Cliente y técnico vinculados mediante propuesta/solicitud | Otros usuarios reciben rechazo | Módulo pendiente |
-| Cambiar estado del servicio | Participante habilitado para esa transición | Matriz de transiciones por acordar con el responsable; denegar las no definidas | Pendiente de acuerdo |
-| Crear reseña | Propuesta: CLIENT contratante | Servicio completado, una reseña por servicio, autor desde JWT | Módulo y acuerdo pendientes |
-| Modificar/eliminar reseña | Ninguna operación concedida por defecto | Si se incorpora, solo autor y bajo reglas acordadas | Pendiente de acuerdo |
-| Reputación | Cálculo del servidor | No editable directamente por cliente o técnico | Módulo pendiente |
+| Buscar solicitudes compatibles | TECHNICIAN con perfil compatible | Tipo de electrodoméstico y zona/radio (inclusivo), solo solicitudes abiertas; devuelve distancia, no coordenadas | Implementado |
+| Ver y editar el perfil propio de técnico | TECHNICIAN | GET/PUT /api/technicians/me/profile y PUT .../service-areas; la identidad sale del JWT | Implementado |
+| Crear propuesta | TECHNICIAN compatible | Técnico obtenido desde la identidad y perfil; solicitud abierta; una oferta por técnico y solicitud | Implementado |
+| Editar o retirar propuesta | Técnico autor | No existe la operación en el MVP | No implementado |
+| Leer propuestas | Técnico autor (GET /api/technicians/me/proposals) o cliente dueño de su solicitud (GET /api/requests/{id}/proposals) | Otros técnicos no acceden a ofertas ajenas | Implementado |
+| Aceptar propuesta | CLIENT dueño de la solicitud | Aceptar, cerrar solicitud y crear servicio en una operación atómica con bloqueo de la solicitud | Implementado |
+| Leer servicio | Cliente y técnico vinculados mediante propuesta/solicitud | Otros usuarios reciben 403 | Implementado |
+| Cambiar estado del servicio | Técnico asignado: EN_ATENCION y COMPLETADO; cualquier participante: CANCELADO desde PROGRAMADO | Las transiciones no definidas devuelven 409 | Implementado |
+| Crear y leer reseña | Crear: CLIENT contratante. Leer: ambos participantes | Servicio completado, una reseña por servicio, autor desde JWT | Implementado |
+| Modificar/eliminar reseña | Ninguna operación concedida | Si se incorpora, solo autor y bajo reglas acordadas | No implementado |
+| Reputación y reseñas de un técnico | Cualquier cuenta autenticada (lectura) | Cálculo del servidor desde Servicio -> Propuesta -> Técnico; no editable; sin identidad del cliente | Implementado |
 
 La cancelación y el cierre conservan sus condiciones de estado. Los métodos internos transitionToHasProposals y expireRequest no son rutas HTTP; deben invocarse únicamente desde procesos internos autorizados. closeRequest queda como operación de servicio para la futura selección transaccional; no debe llamarse como acción independiente. El #5 no implementa esa selección ni crea el servicio.
 
