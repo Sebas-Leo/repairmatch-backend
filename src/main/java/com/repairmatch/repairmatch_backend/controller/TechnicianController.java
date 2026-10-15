@@ -1,6 +1,7 @@
 package com.repairmatch.repairmatch_backend.controller;
 
 import com.repairmatch.repairmatch_backend.dto.*;
+import com.repairmatch.repairmatch_backend.service.ProposalService;
 import com.repairmatch.repairmatch_backend.service.TechnicianService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -18,19 +19,33 @@ public class TechnicianController {
     private final TechnicianService technicianService;
     private final com.repairmatch.repairmatch_backend.security.AccountAccess accountAccess;
     private final com.repairmatch.repairmatch_backend.service.ServiceService serviceService;
+    private final ProposalService proposalService;
 
-    public TechnicianController(TechnicianService technicianService, com.repairmatch.repairmatch_backend.security.AccountAccess accountAccess, com.repairmatch.repairmatch_backend.service.ServiceService serviceService) {
+    public TechnicianController(TechnicianService technicianService, com.repairmatch.repairmatch_backend.security.AccountAccess accountAccess, com.repairmatch.repairmatch_backend.service.ServiceService serviceService, ProposalService proposalService) {
         this.technicianService = technicianService;
-        this.accountAccess = accountAccess; this.serviceService = serviceService;
+        this.accountAccess = accountAccess; this.serviceService = serviceService; this.proposalService = proposalService;
     }
 
     @GetMapping("/{id}/reputation")
     public java.util.Map<String, Object> reputation(@PathVariable UUID id) { return serviceService.getTechnicianReputation(id); }
 
+    @GetMapping("/{id}/reviews")
+    public List<ReviewResponseDto> reviews(@PathVariable UUID id) { return serviceService.getTechnicianReviews(id); }
+
     @GetMapping("/{id}")
     public ResponseEntity<TechnicianProfileResponseDto> getTechnicianById(@PathVariable UUID id) {
         return ResponseEntity.ok(technicianService.getPublicProfile(id));
     }
+
+    @GetMapping("/me/profile")
+    @PreAuthorize("hasAuthority('ROLE_TECHNICIAN') or hasRole('TECHNICIAN')")
+    public ResponseEntity<TechnicianProfileResponseDto> getOwnProfile() {
+        return ResponseEntity.ok(technicianService.getOwnProfile(accountAccess.requireRole(com.repairmatch.repairmatch_backend.model.Role.TECHNICIAN)));
+    }
+
+    @GetMapping("/me/proposals")
+    @PreAuthorize("hasAuthority('ROLE_TECHNICIAN') or hasRole('TECHNICIAN')")
+    public List<ProposalResponseDto> getOwnProposals() { return proposalService.listOwn(); }
 
     @PutMapping("/me/profile")
     @PreAuthorize("hasAuthority('ROLE_TECHNICIAN') or hasRole('TECHNICIAN')")

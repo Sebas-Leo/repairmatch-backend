@@ -59,10 +59,23 @@ public class RequestService {
         return mapToResponseDto(requestRepository.save(request));
     }
 
+    /**
+     * The owning client sees the request as stored. A technician who submitted a proposal on it sees it too, but the
+     * exact coordinates are withheld until that technician's proposal is accepted (matching only exposes distance).
+     */
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT')")
+    @PreAuthorize("hasAnyRole('CLIENT','TECHNICIAN')")
     public RequestResponseDto getRequest(Long requestId) {
-        return mapToResponseDto(loadOwnedRequest(requestId));
+        Request request = requireRequestReadAccess(requestId);
+        RequestResponseDto dto = mapToResponseDto(request);
+        UUID currentUserId = accountAccess.requireIdentity();
+        if (!currentUserId.equals(request.getClient().getId())
+                && !proposalRepository.existsByRequestIdAndTechnicianIdAndStatus(
+                        requestId, currentUserId, com.repairmatch.repairmatch_backend.model.Proposal.Status.ACCEPTED)) {
+            dto.setLatitude(null);
+            dto.setLongitude(null);
+        }
+        return dto;
     }
 
     @Transactional(readOnly = true)
@@ -105,7 +118,7 @@ public class RequestService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('CLIENT','TECHNICIAN')")
     public List<EvidenceResponseDto> getEvidencesByRequestId(Long requestId) {
-        requireEvidenceReadAccess(requestId);
+        requireRequestReadAccess(requestId);
 
         return evidenceRepository.findById_RequestIdOrderById_EvidenceNumberAsc(requestId).stream()
                 .map(evidence -> EvidenceResponseDto.builder()
@@ -199,8 +212,8 @@ public class RequestService {
         return request;
     }
 
-    /** The owning client, or a technician who submitted a proposal on the request, may read its evidences. */
-    private void requireEvidenceReadAccess(Long requestId) {
+    /** Same read rule for the request and its evidences: owner, or a technician with a proposal on it. */
+    private Request requireRequestReadAccess(Long requestId) {
         UUID currentUserId = accountAccess.requireIdentity();
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AuthenticationRequiredException("Cuenta no disponible"));
@@ -211,12 +224,6 @@ public class RequestService {
                 || !proposalRepository.existsByRequestIdAndTechnicianId(requestId, currentUserId)) {
             throw new ForbiddenOperationException("No tiene acceso a este recurso");
         }
-    }
-
-    private Request loadOwnedRequest(Long requestId) {
-        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
-        Request request = loadRequest(requestId);
-        accountAccess.requireOwner(currentUserId, request.getClient().getId());
         return request;
     }
 

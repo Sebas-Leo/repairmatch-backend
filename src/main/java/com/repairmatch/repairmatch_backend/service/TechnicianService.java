@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public interface TechnicianService {
     TechnicianProfileResponseDto getPublicProfile(UUID technicianId);
+    TechnicianProfileResponseDto getOwnProfile(UUID userId);
     TechnicianProfileResponseDto updateProfile(UUID userId, TechnicianProfileUpdateRequestDto dto);
     TechnicianProfileResponseDto updateServiceArea(UUID userId, ServiceAreaUpdateRequestDto dto);
     List<MatchingRequestResponseDto> getMatchingRequests(UUID userId);
