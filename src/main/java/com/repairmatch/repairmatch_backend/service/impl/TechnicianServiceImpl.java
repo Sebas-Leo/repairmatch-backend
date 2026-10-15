@@ -52,6 +52,25 @@ public class TechnicianServiceImpl implements TechnicianService {
         return profile;
     }
 
+    /**
+     * The technician's full private profile. A technician who has not saved a profile yet gets an empty one built from the
+     * account (nothing is written), so the UI can render the form; matching still answers 404 until a profile exists.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public TechnicianProfileResponseDto getOwnProfile(UUID userId) {
+        return technicianRepository.findByIdWithApplianceTypes(userId).map(this::mapToProfileDto).orElseGet(() -> {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con email: " + userId));
+            TechnicianProfileResponseDto empty = new TechnicianProfileResponseDto();
+            empty.setId(user.getId());
+            empty.setFullName(user.getName());
+            empty.setEmail(user.getEmail());
+            empty.setApplianceTypes(Collections.emptyList());
+            return empty;
+        });
+    }
+
     @Override
     @Transactional
     public TechnicianProfileResponseDto updateProfile(UUID userId, TechnicianProfileUpdateRequestDto dto) {

@@ -53,6 +53,14 @@ public class ProposalService {
                 .toList();
     }
 
+    /** Every proposal the calling technician has submitted, newest first, whatever the state of its request. */
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public List<ProposalResponseDto> listOwn() {
+        UUID technician = accountAccess.requireRole(Role.TECHNICIAN);
+        return proposalRepository.findByTechnicianIdOrderByCreatedAtDescIdDesc(technician).stream().map(this::toResponse).toList();
+    }
+
     @Transactional
     @PreAuthorize("hasRole('TECHNICIAN')")
     public ProposalResponseDto submit(Long requestId, com.repairmatch.repairmatch_backend.dto.CreateProposalDto dto) {
@@ -60,7 +68,9 @@ public class ProposalService {
         Request request = requestRepository.findLockedById(requestId).orElseThrow(() -> new com.repairmatch.repairmatch_backend.exception.ResourceNotFoundException("Request not found"));
         if (!CompatibilityPolicy.isOpen(request)) throw new com.repairmatch.repairmatch_backend.exception.InvalidStateException("Request no longer accepts proposals");
         var technician = technicianRepository.findByIdWithApplianceTypes(id).orElseThrow(() -> new com.repairmatch.repairmatch_backend.exception.IncompleteProfileException("Configure the technician profile first"));
-        if (!compatibilityPolicy.matches(technician, request)) throw new com.repairmatch.repairmatch_backend.exception.ForbiddenOperationException("Technician is not compatible with this request");
+        compatibilityPolicy.rejectionReason(technician, request).ifPresent(reason -> {
+            throw new com.repairmatch.repairmatch_backend.exception.ForbiddenOperationException("Technician is not compatible with this request: " + reason);
+        });
         if (proposalRepository.existsByRequestIdAndTechnicianId(requestId, id)) throw new com.repairmatch.repairmatch_backend.exception.InvalidStateException("Only one proposal per technician and request is allowed");
         Proposal proposal = proposalRepository.saveAndFlush(new Proposal(request, technician.getUser(), dto.diagnosticCost(), dto.availableAt(), dto.conditions().strip()));
         request.setStatus(Request.RequestStatus.CON_PROPUESTAS);
