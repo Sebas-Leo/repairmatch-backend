@@ -76,17 +76,23 @@ class TechnicianFlowIntegrationTests extends BackendTestSupport {
         accept(rivalProposal, owner);
 
         mvc.perform(get("/api/technicians/me/proposals").header("Authorization", bearer(tech)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].id").value(secondProposal)).andExpect(jsonPath("$[0].requestId").value(second.getId()))
-                .andExpect(jsonPath("$[0].status").value("PENDING"))
-                .andExpect(jsonPath("$[0].technicianId").value(tech.getId().toString()))
-                .andExpect(jsonPath("$[0].diagnosticCost").value(45.5))
-                .andExpect(jsonPath("$[1].id").value(firstProposal)).andExpect(jsonPath("$[1].status").value("REJECTED"));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].id").value(secondProposal)).andExpect(jsonPath("$.content[0].requestId").value(second.getId()))
+                .andExpect(jsonPath("$.content[0].status").value("PENDING"))
+                .andExpect(jsonPath("$.content[0].technicianId").value(tech.getId().toString()))
+                .andExpect(jsonPath("$.content[0].diagnosticCost").value(45.5))
+                .andExpect(jsonPath("$.content[1].id").value(firstProposal)).andExpect(jsonPath("$.content[1].status").value("REJECTED"));
         mvc.perform(get("/api/technicians/me/proposals").header("Authorization", bearer(rival)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(rivalProposal)).andExpect(jsonPath("$[0].status").value("ACCEPTED"));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id").value(rivalProposal)).andExpect(jsonPath("$.content[0].status").value("ACCEPTED"));
         mvc.perform(get("/api/technicians/me/proposals").header("Authorization", bearer(technician(type, LAT, LON))))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(0)));
+        mvc.perform(get("/api/technicians/me/proposals?page=1&size=1").header("Authorization", bearer(tech)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id").value(firstProposal))
+                .andExpect(jsonPath("$.totalElements").value(2)).andExpect(jsonPath("$.totalPages").value(2));
+        mvc.perform(get("/api/technicians/me/proposals?size=101").header("Authorization", bearer(tech)))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     @Test
@@ -154,16 +160,22 @@ class TechnicianFlowIntegrationTests extends BackendTestSupport {
         located(owner, served, null, null, Request.RequestStatus.PUBLICADA);              // no location
 
         mvc.perform(get("/api/technicians/me/matching-requests").header("Authorization", bearer(tech)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].requestId").value(near.getId())).andExpect(jsonPath("$[0].distanceKm").value(1.11))
-                .andExpect(jsonPath("$[0].status").value("PUBLICADA")).andExpect(jsonPath("$[0].latitude").doesNotExist())
-                .andExpect(jsonPath("$[1].requestId").value(farther.getId())).andExpect(jsonPath("$[1].status").value("CON_PROPUESTAS"));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].requestId").value(near.getId())).andExpect(jsonPath("$.content[0].distanceKm").value(1.11))
+                .andExpect(jsonPath("$.content[0].status").value("PUBLICADA")).andExpect(jsonPath("$.content[0].latitude").doesNotExist())
+                .andExpect(jsonPath("$.content[1].requestId").value(farther.getId())).andExpect(jsonPath("$.content[1].status").value("CON_PROPUESTAS"));
         mvc.perform(get("/api/technicians/me/matching-requests?page=0&size=1").header("Authorization", bearer(tech)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1))).andExpect(jsonPath("$[0].requestId").value(near.getId()));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(1))).andExpect(jsonPath("$.content[0].requestId").value(near.getId()));
         mvc.perform(get("/api/technicians/me/matching-requests?page=1&size=1").header("Authorization", bearer(tech)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1))).andExpect(jsonPath("$[0].requestId").value(farther.getId()));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(1))).andExpect(jsonPath("$.content[0].requestId").value(farther.getId()));
         mvc.perform(get("/api/technicians/me/matching-requests?page=2&size=1").header("Authorization", bearer(tech)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(0)));
+        mvc.perform(get("/api/technicians/me/matching-requests?page=0&size=1").header("Authorization", bearer(tech)))
+                .andExpect(jsonPath("$.page").value(0)).andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.totalElements").value(2)).andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.first").value(true)).andExpect(jsonPath("$.last").value(false));
+        mvc.perform(get("/api/technicians/me/matching-requests?page=1&size=1").header("Authorization", bearer(tech)))
+                .andExpect(jsonPath("$.first").value(false)).andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
@@ -176,9 +188,9 @@ class TechnicianFlowIntegrationTests extends BackendTestSupport {
         Request request = located(owner, type, LAT + 0.02, LON, Request.RequestStatus.PUBLICADA);
 
         mvc.perform(get("/api/technicians/me/matching-requests").header("Authorization", bearer(atBoundary)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1))).andExpect(jsonPath("$[0].requestId").value(request.getId()));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(1))).andExpect(jsonPath("$.content[0].requestId").value(request.getId()));
         mvc.perform(get("/api/technicians/me/matching-requests").header("Authorization", bearer(justShort)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(0)));
     }
 
     @Test
@@ -204,7 +216,7 @@ class TechnicianFlowIntegrationTests extends BackendTestSupport {
         profile.setApplianceTypes(new java.util.HashSet<>());
         technicians.save(profile);
         mvc.perform(get("/api/technicians/me/matching-requests").header("Authorization", bearer(noTypes)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(0)));
 
         User tech = technician(type, LAT, LON);
         for (String query : new String[] {"page=-1", "size=0", "size=101", "page=abc"}) {

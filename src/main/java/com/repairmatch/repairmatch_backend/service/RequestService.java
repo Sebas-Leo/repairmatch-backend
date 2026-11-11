@@ -3,6 +3,7 @@ package com.repairmatch.repairmatch_backend.service;
 import com.repairmatch.repairmatch_backend.dto.CreateEvidenceDto;
 import com.repairmatch.repairmatch_backend.dto.CreateRequestDto;
 import com.repairmatch.repairmatch_backend.dto.EvidenceResponseDto;
+import com.repairmatch.repairmatch_backend.dto.PageResponse;
 import com.repairmatch.repairmatch_backend.dto.RequestResponseDto;
 import com.repairmatch.repairmatch_backend.model.Evidence;
 import com.repairmatch.repairmatch_backend.model.EvidenceId;
@@ -13,6 +14,9 @@ import com.repairmatch.repairmatch_backend.repository.ApplianceTypeRepository;
 import com.repairmatch.repairmatch_backend.repository.EvidenceRepository;
 import com.repairmatch.repairmatch_backend.repository.ProposalRepository;
 import com.repairmatch.repairmatch_backend.repository.RequestRepository;
+import com.repairmatch.repairmatch_backend.repository.RequestSpecifications;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import com.repairmatch.repairmatch_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import com.repairmatch.repairmatch_backend.security.AccountAccess;
@@ -80,12 +84,13 @@ public class RequestService {
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('CLIENT')")
-    public List<RequestResponseDto> getOwnRequests() {
+    public PageResponse<RequestResponseDto> getOwnRequests(
+            Request.RequestStatus status, String search, PageRequest pageRequest) {
         UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
-        return requestRepository.findByClientIdOrderByCreatedAtDesc(currentUserId)
-                .stream()
-                .map(this::mapToResponseDto)
-                .toList();
+        Specification<Request> filter = RequestSpecifications.ownedBy(currentUserId)
+                .and(RequestSpecifications.hasStatus(status))
+                .and(RequestSpecifications.matches(search));
+        return PageResponse.from(requestRepository.findAll(filter, pageRequest), this::mapToResponseDto);
     }
 
     @Transactional

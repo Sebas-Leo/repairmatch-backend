@@ -86,7 +86,8 @@ class RequestIntegrationTests {
         mockMvc.perform(get("/api/requests")
                         .header("Authorization", bearer(client)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(requestId));
+                .andExpect(jsonPath("$.content[0].id").value(requestId))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
