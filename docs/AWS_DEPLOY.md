@@ -6,7 +6,7 @@ RepairMatch es solo una API Spring Boot. El recorrido propuesto para el laborato
 
 Desde la raíz del repositorio, ejecutar `./mvnw.cmd --batch-mode --no-transfer-progress verify` en Windows y `docker build -t repairmatch-backend:lab .`. La imagen utiliza Java 17 para compilar y ejecutar, y arranca con el perfil `prod`.
 
-La aplicación escucha en el puerto 8080 y expone `GET /actuator/health` sin autenticación para el ALB. El perfil `prod` exige `DB_URL`, `DB_USER`, `DB_PASSWORD` y `JWT_SECRET`. La URL es JDBC (`jdbc:postgresql://HOST:5432/repairmatch`), no una URL `postgres://`. No guardar secretos ni credenciales AWS en Git, en capturas ni en un archivo compartido.
+La aplicación escucha en el puerto 8080 y expone `GET /actuator/health` sin autenticación para el ALB. El perfil `prod` exige `DB_URL`, `DB_USER`, `DB_PASSWORD` y `JWT_SECRET`. La URL es JDBC (`jdbc:postgresql://HOST:5432/repairmatch`), no una URL `postgres://`. `JWT_SECRET` tiene que ser **Base64 estándar** de al menos 32 bytes (por ejemplo, la salida de `openssl rand -base64 48`). Una clave Base64 URL-safe, con `-` o `_`, hace fallar el arranque con `Illegal base64 character`. Para que el navegador acepte la web desplegada, `CORS_ALLOWED_ORIGINS` tiene que incluir el origen exacto del frontend, por ejemplo `https://repairmatch.vercel.app`, sin `/` al final y sin comodines. No guardar secretos ni credenciales AWS en Git, en capturas ni en un archivo compartido.
 
 ## Esquema de una base nueva
 
@@ -30,3 +30,21 @@ El ALB HTTP del laboratorio no ofrece TLS por sí mismo. Evitar datos personales
 ## Al terminar
 
 Reducir el service a cero tasks y eliminar el ALB si ya no se usará. RDS puede seguir generando cargos aunque el Lab esté detenido; revisar recursos y créditos en la consola. No borrar una RDS con datos que se deban conservar sin una copia verificada.
+
+## HTTPS para la web
+
+Un frontend servido por HTTPS (Vercel, Netlify, Amplify) **no puede** llamar a una API por HTTP: el navegador bloquea esas llamadas por contenido mixto. El ALB HTTP de esta guía alcanza para Postman, pero no para la web. Hay tres opciones:
+
+- poner CloudFront con su certificado por defecto delante del ALB, y apuntar `VITE_API_BASE_URL` a `https://<id>.cloudfront.net/api`;
+- agregar un listener 443 al ALB, con un certificado de ACM para un dominio propio;
+- desplegar la misma imagen en una plataforma que ya da HTTPS, como Render, Railway o App Runner.
+
+## Datos de demo
+
+Con la API ya en marcha, `node scripts/seed-demo.cjs <URL> --yes` crea por la API pública:
+
+- una clienta con 14 solicitudes, que son más de una página;
+- tres técnicos con perfil y zona;
+- ofertas, un servicio completado con reseña, uno programado y una solicitud cancelada.
+
+Para una API que no es local, la contraseña de las cuentas sale de `DEMO_PASSWORD`. Correrlo de nuevo reutiliza las cuentas.

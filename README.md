@@ -11,6 +11,18 @@ La [guía de despliegue académico](docs/AWS_DEPLOY.md) documenta la imagen, el 
 Para ejecutar la API y una base PostgreSQL aislada con Docker, consulta [la guía de ejecución local](docs/LOCAL_RUNTIME.md).
 
 
+## Participación del equipo
+
+La rúbrica del Proyecto 2 pide esta tabla. El docente multiplica la nota grupal por el porcentaje de cada integrante: 100 % significa que cumplió por completo sus responsabilidades. **Los porcentajes los acuerda el equipo antes de la entrega.**
+
+| Integrante | Principales aportes (según el historial de PRs) | Participación |
+| --- | --- | --- |
+| Sebas-Leo | Flujo de colaboración, propuestas y comparación, consistencia de la API, despliegue, contrato, paginación y frontend | por definir |
+| AdrianPacheco12343 | Entidades, datos iniciales y endpoints de servicios | por definir |
+| andrehcv | Perfil del técnico, área de cobertura y motor de compatibilidad | por definir |
+| becomon | Base Spring Boot, identidad (registro, JWT, refresh, CORS), permisos y Postman | por definir |
+| camilaalfaro-afk | Solicitudes, evidencias, ciclo de la solicitud y contenedor Docker | por definir |
+
 ## Flujo de trabajo y seguimiento del avance
 
 Consulta la [guía de trabajo del equipo](docs/TEAM_WORKFLOW.md) y el [tablero compartido de avance](https://github.com/Sebas-Leo/repairmatch-backend/issues/1). Las tareas, sus aprobaciones, las solicitudes de integración (pull requests o PR) revisadas y las evidencias de verificación permiten identificar las contribuciones. GitHub Actions comprueba los datos de los PR y actualiza el tablero; ejecuta la verificación Maven del backend; la ejecución de Postman se describe en la guía de registro. Los estados y las listas de verificación son declarados por el equipo; los PR y las integraciones registradas son evidencias observables, no calificaciones ni pruebas de que una funcionalidad esté terminada.
