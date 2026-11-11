@@ -15,5 +15,6 @@ public interface ProposalRepository extends JpaRepository<Proposal, Long> {
     List<Proposal> findByRequestIdOrderByDiagnosticCostAscAvailableAtAsc(Long requestId);
 
     @EntityGraph(attributePaths = {"technician", "request"})
-    List<Proposal> findByTechnicianIdOrderByCreatedAtDescIdDesc(java.util.UUID technicianId);
+    org.springframework.data.domain.Page<Proposal> findByTechnicianId(
+            java.util.UUID technicianId, org.springframework.data.domain.Pageable pageable);
 }

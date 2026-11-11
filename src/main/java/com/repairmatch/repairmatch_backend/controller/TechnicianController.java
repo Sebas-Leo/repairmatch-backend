@@ -4,6 +4,8 @@ import com.repairmatch.repairmatch_backend.dto.*;
 import com.repairmatch.repairmatch_backend.service.ProposalService;
 import com.repairmatch.repairmatch_backend.service.TechnicianService;
 import jakarta.validation.Valid;
+import com.repairmatch.repairmatch_backend.model.Role;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -45,7 +47,12 @@ public class TechnicianController {
 
     @GetMapping("/me/proposals")
     @PreAuthorize("hasAuthority('ROLE_TECHNICIAN') or hasRole('TECHNICIAN')")
-    public List<ProposalResponseDto> getOwnProposals() { return proposalService.listOwn(); }
+    public PageResponse<ProposalResponseDto> getOwnProposals(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + PageResponse.DEFAULT_SIZE) int size) {
+        var order = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+        return proposalService.listOwn(PageResponse.request(page, size, order));
+    }
 
     @PutMapping("/me/profile")
     @PreAuthorize("hasAuthority('ROLE_TECHNICIAN') or hasRole('TECHNICIAN')")
@@ -65,8 +72,13 @@ public class TechnicianController {
 
     @GetMapping("/me/matching-requests")
     @PreAuthorize("hasAuthority('ROLE_TECHNICIAN') or hasRole('TECHNICIAN')")
-    public ResponseEntity<List<MatchingRequestResponseDto>> getMatchingRequests(Authentication authentication, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-        if (page < 0 || size < 1 || size > 100) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid page or size");
-        return ResponseEntity.ok(technicianService.getMatchingRequests(accountAccess.requireRole(com.repairmatch.repairmatch_backend.model.Role.TECHNICIAN)).stream().skip((long) page * size).limit(size).toList());
+    public ResponseEntity<PageResponse<MatchingRequestResponseDto>> getMatchingRequests(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + PageResponse.DEFAULT_SIZE) int size) {
+        // Distance filtering happens in memory, so the full result is computed and then sliced.
+        var window = PageResponse.request(page, size, Sort.unsorted());
+        var all = technicianService.getMatchingRequests(accountAccess.requireRole(Role.TECHNICIAN));
+        return ResponseEntity.ok(PageResponse.slice(all, window));
     }
 }

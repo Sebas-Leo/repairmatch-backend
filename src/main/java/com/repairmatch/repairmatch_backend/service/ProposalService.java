@@ -5,7 +5,9 @@ import com.repairmatch.repairmatch_backend.model.Proposal;
 import com.repairmatch.repairmatch_backend.model.Request;
 import com.repairmatch.repairmatch_backend.repository.ProposalRepository;
 import com.repairmatch.repairmatch_backend.repository.RequestRepository;
+import com.repairmatch.repairmatch_backend.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +58,9 @@ public class ProposalService {
     /** Every proposal the calling technician has submitted, newest first, whatever the state of its request. */
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('TECHNICIAN')")
-    public List<ProposalResponseDto> listOwn() {
+    public PageResponse<ProposalResponseDto> listOwn(PageRequest pageRequest) {
         UUID technician = accountAccess.requireRole(Role.TECHNICIAN);
-        return proposalRepository.findByTechnicianIdOrderByCreatedAtDescIdDesc(technician).stream().map(this::toResponse).toList();
+        return PageResponse.from(proposalRepository.findByTechnicianId(technician, pageRequest), this::toResponse);
     }
 
     @Transactional

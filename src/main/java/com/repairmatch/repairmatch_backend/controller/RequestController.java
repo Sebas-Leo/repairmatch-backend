@@ -3,13 +3,17 @@ package com.repairmatch.repairmatch_backend.controller;
 import com.repairmatch.repairmatch_backend.dto.CreateEvidenceDto;
 import com.repairmatch.repairmatch_backend.dto.CreateRequestDto;
 import com.repairmatch.repairmatch_backend.dto.EvidenceResponseDto;
+import com.repairmatch.repairmatch_backend.dto.PageResponse;
 import com.repairmatch.repairmatch_backend.dto.RequestResponseDto;
+import com.repairmatch.repairmatch_backend.model.Request;
 import com.repairmatch.repairmatch_backend.service.RequestService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -41,9 +45,20 @@ public class RequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /** Own requests, newest first by default; `status`, `search` and `sort` are optional. */
     @GetMapping
-    public List<RequestResponseDto> getOwnRequests() {
-        return requestService.getOwnRequests();
+    public PageResponse<RequestResponseDto> getOwnRequests(
+            @RequestParam(required = false) Request.RequestStatus status,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "newest") String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + PageResponse.DEFAULT_SIZE) int size) {
+        Sort order = switch (sort) {
+            case "newest" -> Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+            case "oldest" -> Sort.by(Sort.Order.asc("createdAt"), Sort.Order.asc("id"));
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sort: use newest or oldest");
+        };
+        return requestService.getOwnRequests(status, search, PageResponse.request(page, size, order));
     }
 
     @GetMapping("/{requestId}")

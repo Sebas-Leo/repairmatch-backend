@@ -9,7 +9,8 @@ Base URL (local): `http://localhost:8080/api`. All bodies are `application/json`
 - **Enums**: strings only (numbers are rejected). `Role`: `CLIENT | TECHNICIAN`. Request status: `PUBLICADA | CON_PROPUESTAS | CERRADA | CANCELADA | EXPIRADA`. Proposal status: `PENDING | ACCEPTED | REJECTED`. Service status: `PROGRAMADO | EN_ATENCION | COMPLETADO | CANCELADO`. Request/proposal `status` fields are plain strings with those values.
 - **Money**: `diagnosticCost` is a decimal number (max 10 integer + 2 fraction digits).
 - **IDs**: users/technicians are UUID strings; requests, proposals, services, appliance types are numbers.
-- **Lists**: plain JSON arrays, no envelope, no pagination, always scoped to the authenticated user (`GET /technicians/{uuid}/reviews` and `GET /appliance-types` are readable by any authenticated account). Only `GET /technicians/me/matching-requests` takes `page` (default 0) / `size` (default 20, max 100) and still returns a plain array.
+- **Lists**: always scoped to the authenticated user (`GET /technicians/{uuid}/reviews` and `GET /appliance-types` are readable by any authenticated account). Three lists are **paginated** and return a `Page` envelope: `GET /requests`, `GET /technicians/me/proposals` and `GET /technicians/me/matching-requests`. The other lists are plain JSON arrays.
+- **Page** = `{ content: [...], page, size, totalElements, totalPages, first, last }`. `page` is zero-based (default 0); `size` defaults to 20, max 100. `page < 0`, `size` outside 1..100 or a non-numeric value answer 400. A page past the end answers 200 with an empty `content` and the real `totalElements`.
 - **Messages are mixed Spanish/English** (server-side text). Show `message` as-is or map by `status`.
 
 ## Error shape (every error path)
@@ -68,7 +69,7 @@ Role: P = public, A = any authenticated, C = CLIENT, T = TECHNICIAN.
 | Method & path | Role | Request | Response | Status |
 |---|---|---|---|---|
 | POST `/requests` | C | `{ applianceTypeId* (number), originalDescription* (<=5000), brand (<=100), model (<=100), latitude (-90..90), longitude (-180..180) }` (lat/lng both or neither) | Request | 201, 400, 404 (unknown type) |
-| GET `/requests` | C | - | `[Request]` own, newest first | 200 |
+| GET `/requests?page&size&status&search&sort` | C | - | Page of own Request. `status` = one Request status; `search` = case-insensitive text in description, brand, model or appliance type name (blank = no filter); `sort` = `newest` (default) or `oldest` | 200, 400 (bad page/size/status/sort) |
 | GET `/requests/{id}` | C owner, or T with a proposal on the request | - | Request (for a technician `latitude`/`longitude` are `null` unless that technician's proposal was accepted) | 200, 403, 404 |
 | GET `/requests/{id}/service` | C owner | - | Service created by accepting a proposal on this request | 200, 403, 404 (unknown request, or no service yet) |
 | PATCH `/requests/{id}/location` | C owner | `{ latitude*, longitude* }` | Request (only while `PUBLICADA`) | 200, 400, 403, 404, 409 |
@@ -126,14 +127,14 @@ Accepting a proposal runs in one transaction: it takes a pessimistic write lock 
 | GET `/technicians/{uuid}/reputation` | A | - | `{ technicianId, averageRating, reviewCount }` | 200, 400 (bad uuid), 404 |
 | GET `/technicians/{uuid}/reviews` | A | - | `[Review]` of that technician's jobs, newest first (`[]` when none) | 200, 400, 404 |
 | GET `/technicians/me/profile` | T | - | full own profile; before the first save only `{ id, fullName, email, applianceTypes: [] }` (nothing is created by the GET) | 200 |
-| GET `/technicians/me/proposals` | T | - | `[Proposal]` submitted by the caller, newest first, whatever the state of their request | 200 |
+| GET `/technicians/me/proposals?page&size` | T | - | Page of Proposal submitted by the caller, newest first, whatever the state of their request | 200, 400 (bad page/size) |
 | PUT `/technicians/me/profile` | T | `{ experienceYears (0-70), bio (<=1000), phone (<=20), applianceTypeIds [number] }` (omitted/null fields keep current value) | full own profile | 200, 400, 404 |
 | PUT `/technicians/me/service-areas` | T | `{ latitude*, longitude*, maxRadiusKm* (1-300) }` | full own profile | 200, 400 |
-| GET `/technicians/me/matching-requests?page&size` | T | - | `[{ requestId, applianceTypeName, brand, model, description, status, distanceKm }]` nearest first | 200, 400, 404 (no profile), 400 (area not configured) |
+| GET `/technicians/me/matching-requests?page&size` | T | - | Page of `{ requestId, applianceTypeName, brand, model, description, status, distanceKm }` nearest first | 200, 400, 404 (no profile), 400 (area not configured) |
 
 Profile = `{ id, fullName, email, experienceYears, bio, phone, latitude, longitude, maxRadiusKm, applianceTypes: [name] }` (null fields omitted). `GET /technicians/{uuid}` is the public view of the same profile without email, phone and coordinates.
 
-**Compatibility rule** (one policy shared by the opportunity list and proposal submission): the request is open (`PUBLICADA` or `CON_PROPUESTAS`), has a location, its appliance type is one the technician serves, and the great-circle (Haversine) distance to the technician's centre is `<=` `maxRadiusKm` (a request exactly at the radius is included). Availability is not a filter; it is expressed in the proposal. The list answers an empty array when the technician serves no types. Submitting a proposal on an incompatible request is `403` with `message` ending in the reason: `Technician service area is not configured`, `Request has no location`, `Technician does not cover this appliance type` or `Request is outside the technician's service radius`. `page`/`size` slice the full in-memory result, so every page costs a full scan; fine for the MVP.
+**Compatibility rule** (one policy shared by the opportunity list and proposal submission): the request is open (`PUBLICADA` or `CON_PROPUESTAS`), has a location, its appliance type is one the technician serves, and the great-circle (Haversine) distance to the technician's centre is `<=` `maxRadiusKm` (a request exactly at the radius is included). Availability is not a filter; it is expressed in the proposal. The list answers an empty page (`content: []`, `totalElements: 0`) when the technician serves no types. Submitting a proposal on an incompatible request is `403` with `message` ending in the reason: `Technician service area is not configured`, `Request has no location`, `Technician does not cover this appliance type` or `Request is outside the technician's service radius`. `page`/`size` slice the full in-memory result (distance is computed in Java), so every page costs a full scan; fine for the MVP.
 
 **Reputation**: `averageRating` is the unrounded mean of the ratings of reviews on that technician's services (`0.0` and `reviewCount: 0` when there are none). It is derived from Service -> Proposal -> Technician and cannot be edited; any authenticated account can read it, and the reviews, but reviewers are never identified.
 
