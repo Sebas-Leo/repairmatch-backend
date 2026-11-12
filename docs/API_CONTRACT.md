@@ -152,6 +152,19 @@ Both endpoints run an **in-process model** (Naive Bayes text classifiers trained
 
 `Chip` = `{ key, label, value }` with `key` in `appliance`, `symptom`, `brand`, `status`, `since`, `keyword`: what the search understood, for the UI to show (and let the client remove). The search always applies ownership first, so it can only return the caller's requests; then appliance type, status, age ("la semana pasada" = 14 days), brand and any of the symptom's words in the description (accent-insensitive). Free keywords are used only when nothing structured was understood.
 
+### Recommendations
+
+Transparent rankings, not AI: each score is a weighted sum of named factors in [0, 1], returned with the result together with the reasons that stand out, so the UI can show "why first".
+
+| Method & path | Role | Request | Response | Status |
+|---|---|---|---|---|
+| GET `/requests/{id}/proposals/recommended` | C (owner) | - | `[RecommendedProposal]`, best first | 200, 401, 403, 404 |
+| GET `/technicians/me/recommended-requests` | T | `page`, `size` | Page of `RecommendedRequest`, best first | 200, 401, 403, 404, 409 |
+
+- `RecommendedProposal` = `{ proposal: Proposal, score, recommended (first only), distanceKm, averageRating, reviewCount, factors: [Factor], reasons: [Reason] }`. Score = 0.35 reputation (Bayesian mean of the ratings, prior 3.5 worth 3 reviews; the caller's own past rating of that technician counts twice) + 0.25 price (cheapest / this) + 0.20 availability (1 / (1 + hours / 24)) + 0.20 distance (1 / (1 + km / 5)). Reason codes: `WORKED_WITH_YOU`, `TOP_RATED`, `CHEAPEST`, `SOONEST`, `CLOSEST` (only for a strict winner; ties give none) and `NO_REVIEWS`.
+- `RecommendedRequest` = `{ request: MatchingRequest, createdAt, proposalCount, symptom, score, factors, reasons }`. It lists the open compatible requests the technician has not proposed on yet. Score = 0.30 distance + 0.30 experience + 0.20 freshness (1 / (1 + hours since published / 48)) + 0.20 competition (1 / (1 + proposals)). Experience comes from the technician's won, non-cancelled jobs: 0.5 × share with the same appliance type, 0.25 × share with the same brand and 0.25 × share with the same symptom. The symptom of each description is read by the local AI and is `null` when it is not confident. Reason codes, at most 3: `NEAR`, `SYMPTOM_EXPERIENCE`, `BRAND_EXPERIENCE`, `NO_COMPETITION`, `FRESH`.
+- `Factor` = `{ key, weight, value }`. `Reason` = `{ code, label }`. `label` is Spanish UI copy, and `code` stays stable for translation.
+
 ### Ops
 
 `GET /actuator/health` is public (no CORS).

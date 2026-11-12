@@ -101,15 +101,6 @@ public class ProposalService {
     }
 
     private ProposalResponseDto toResponse(Proposal proposal) {
-        return new ProposalResponseDto(
-                proposal.getId(),
-                proposal.getRequest().getId(),
-                proposal.getTechnician().getId(),
-                proposal.getTechnician().getName(),
-                proposal.getDiagnosticCost(),
-                proposal.getAvailableAt(),
-                proposal.getConditions(),
-                proposal.getCreatedAt(), proposal.getStatus().name()
-        );
+        return ProposalResponseDto.from(proposal);
     }
 }

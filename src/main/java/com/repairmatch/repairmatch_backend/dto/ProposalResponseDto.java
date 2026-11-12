@@ -19,4 +19,17 @@ public class ProposalResponseDto {
     private String conditions;
     private LocalDateTime createdAt;
     private String status;
+
+    public static ProposalResponseDto from(com.repairmatch.repairmatch_backend.model.Proposal proposal) {
+        return new ProposalResponseDto(
+                proposal.getId(),
+                proposal.getRequest().getId(),
+                proposal.getTechnician().getId(),
+                proposal.getTechnician().getName(),
+                proposal.getDiagnosticCost(),
+                proposal.getAvailableAt(),
+                proposal.getConditions(),
+                proposal.getCreatedAt(),
+                proposal.getStatus().name());
+    }
 }

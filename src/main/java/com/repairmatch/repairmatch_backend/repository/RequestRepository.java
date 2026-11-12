@@ -26,6 +26,12 @@ public interface RequestRepository extends JpaRepository<Request, Long>, JpaSpec
     List<Request> findByApplianceTypeId(Long applianceTypeId);
 
     @EntityGraph(attributePaths = {"client", "applianceType"})
+    /** Requests of the jobs this technician won, except the cancelled ones: the history behind "Para ti". */
+    @Query("select r from Request r left join fetch r.applianceType where r.id in "
+            + "(select s.request.id from ServiceEntity s where s.proposal.technician.id = :id "
+            + "and s.status <> com.repairmatch.repairmatch_backend.model.ServiceEntity.ServiceStatus.CANCELADO)")
+    List<Request> findWonBy(@Param("id") UUID technicianId);
+
     @Query("select r from Request r where r.id = :id")
     Optional<Request> findWithDetailsById(@Param("id") Long id);
 
