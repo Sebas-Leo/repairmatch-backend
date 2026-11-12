@@ -23,6 +23,8 @@ public final class TextNormalizer {
             "que", "se", "si", "su", "sus", "tiene", "un", "una", "uno", "y", "ya", "o", "hace", "cuando",
             "tengo", "estoy", "solo", "sale", "todo", "toda", "cada", "veces", "poco", "mucho");
 
+    private static final Set<String> CLITICS = Set.of("se", "me", "le", "lo", "la", "te", "nos", "les", "los", "las");
+
     private TextNormalizer() {
     }
 
@@ -49,8 +51,11 @@ public final class TextNormalizer {
             String word = words.get(i);
             if (word.equals("no") && i + 1 < words.size()) {
                 // "no enfria" and "enfria" mean opposite things: keep the negation as its own feature.
-                features.add("no_" + stem(words.get(i + 1)));
-                i++; // the negated word only counts as part of the pair
+                // Skip clitics so "no se enciende" negates "enciende", not "se".
+                int target = i + 1;
+                while (target < words.size() - 1 && CLITICS.contains(words.get(target))) target++;
+                features.add("no_" + stem(words.get(target)));
+                i = target; // the negated word only counts as part of the pair
                 continue;
             }
             if (STOP_WORDS.contains(word) || word.length() < 2) continue;

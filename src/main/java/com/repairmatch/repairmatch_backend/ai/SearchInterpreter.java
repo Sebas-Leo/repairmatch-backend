@@ -26,7 +26,7 @@ public class SearchInterpreter {
     private static final Pattern AGO = Pattern.compile("hace (\\d{1,3}) (dia|dias|semana|semanas|mes|meses)");
     /** Word prefixes that name an appliance, so plurals and variants count ("lavadoras", "refris"). */
     private static final List<String> APPLIANCE_PREFIXES = List.of(
-            "refri", "nevera", "frigid", "congelador", "freezer", "lavador", "lavarop", "secador");
+            "refri", "nevera", "frigid", "congelador", "freezer", "lavador", "lavarop");
 
     public record Interpretation(
             Optional<ApplianceKind> appliance,
@@ -87,8 +87,10 @@ public class SearchInterpreter {
 
     /** Guards against weak guesses: the query must contain one of the symptom's own words. */
     private static boolean mentionsSymptom(String folded, Symptom symptom) {
-        for (String term : symptom.searchTerms()) {
-            if (folded.contains(term)) return true;
+        for (String word : TextNormalizer.words(folded)) {
+            for (String term : symptom.searchTerms()) {
+                if (word.startsWith(term)) return true;
+            }
         }
         return false;
     }
@@ -96,9 +98,11 @@ public class SearchInterpreter {
     static Optional<Request.RequestStatus> status(String folded) {
         if (folded.matches(".*\\b(cancelad[ao]s?|anulad[ao]s?)\\b.*")) return Optional.of(Request.RequestStatus.CANCELADA);
         if (folded.matches(".*\\b(cerrad[ao]s?|terminad[ao]s?|reparad[ao]s?|resuelt[ao]s?)\\b.*")) return Optional.of(Request.RequestStatus.CERRADA);
+        // "sin propuestas" first: it also contains the word "propuestas".
+        if (folded.matches(".*\\bsin (propuestas?|ofertas?)\\b.*")) return Optional.of(Request.RequestStatus.PUBLICADA);
         if (folded.matches(".*\\b(con propuestas?|con ofertas?|propuestas|ofertas)\\b.*")) return Optional.of(Request.RequestStatus.CON_PROPUESTAS);
         if (folded.matches(".*\\b(expirad[ao]s?|vencid[ao]s?)\\b.*")) return Optional.of(Request.RequestStatus.EXPIRADA);
-        if (folded.matches(".*\\b(publicad[ao]s?|pendientes?|esperando|sin propuestas?)\\b.*")) return Optional.of(Request.RequestStatus.PUBLICADA);
+        if (folded.matches(".*\\b(publicad[ao]s?|pendientes?|esperando)\\b.*")) return Optional.of(Request.RequestStatus.PUBLICADA);
         return Optional.empty();
     }
 
@@ -108,10 +112,10 @@ public class SearchInterpreter {
             int n = Integer.parseInt(ago.group(1));
             String unit = ago.group(2);
             int days = unit.startsWith("dia") ? n : unit.startsWith("semana") ? n * 7 : n * 31;
-            return Optional.of(Math.max(1, Math.min(days, 3650)));
+            return Optional.of(Math.max(0, Math.min(days, 3650)));
         }
-        if (folded.matches(".*\\bhoy\\b.*")) return Optional.of(1);
-        if (folded.matches(".*\\bayer\\b.*")) return Optional.of(2);
+        if (folded.matches(".*\\bhoy\\b.*")) return Optional.of(0);
+        if (folded.matches(".*\\bayer\\b.*")) return Optional.of(1);
         if (folded.contains("semana pasada") || folded.contains("hace una semana")) return Optional.of(14);
         if (folded.contains("esta semana")) return Optional.of(7);
         if (folded.contains("mes pasado") || folded.contains("hace un mes")) return Optional.of(62);

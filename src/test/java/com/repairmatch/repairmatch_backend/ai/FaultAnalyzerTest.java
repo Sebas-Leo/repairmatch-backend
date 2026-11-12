@@ -2,46 +2,20 @@ package com.repairmatch.repairmatch_backend.ai;
 
 import com.repairmatch.repairmatch_backend.model.Request;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** The local model, on phrasings that are NOT in the training file (it must generalize, not memorize). */
+/** Behaviour of the local model (generalization is measured in {@link HeldOutAccuracyTest}). */
 class FaultAnalyzerTest {
     private final FaultAnalyzer analyzer = new FaultAnalyzer();
     private final SearchInterpreter interpreter = new SearchInterpreter(analyzer);
 
-    @ParameterizedTest
-    @CsvSource(delimiter = '|', value = {
-            "Mi refri Samsung ya no enfría nada, la luz sí prende | REFRIGERADORA",
-            "el refrigerador gotea agua debajo de los cajones | REFRIGERADORA",
-            "se forma mucho hielo en el congelador | REFRIGERADORA",
-            "La lavadora LG no centrifuga y la ropa queda empapada | LAVADORA",
-            "mi lavadora suena fuerte cuando lava | LAVADORA",
-            "no bota el agua al terminar el lavado | LAVADORA"
-    })
-    void classifiesTheApplianceOfUnseenDescriptions(String text, ApplianceKind expected) {
-        var guess = analyzer.classifyAppliance(text).orElseThrow();
-        assertThat(guess.value()).isEqualTo(expected);
-        assertThat(guess.confidence()).isGreaterThanOrEqualTo(FaultAnalyzer.MIN_CONFIDENCE);
-    }
-
-    @ParameterizedTest
-    @CsvSource(delimiter = '|', value = {
-            "dejó de enfriar desde el lunes | NO_ENFRIA",
-            "hay un charco debajo, gotea bastante | FUGA_AGUA",
-            "no prende para nada desde ayer | NO_ENCIENDE",
-            "hace un ruido fuerte y vibra | RUIDO",
-            "la ropa sale empapada, no centrifuga | NO_CENTRIFUGA",
-            "se queda llena de agua y no desagua | NO_DESAGUA",
-            "el jebe de la puerta está despegado | PUERTA",
-            "huele horrible por dentro | MAL_OLOR"
-    })
-    void classifiesTheSymptomOfUnseenDescriptions(String text, Symptom expected) {
-        assertThat(analyzer.classifySymptom(text).orElseThrow().value()).isEqualTo(expected);
+    @Test
+    void keepsNegationAcrossPronouns() {
+        assertThat(TextNormalizer.features("no se enciende")).containsExactly("no_encien");
+        assertThat(analyzer.classifySymptom("no se enciende para nada").orElseThrow().value()).isEqualTo(Symptom.NO_ENCIENDE);
     }
 
     @Test
@@ -52,6 +26,10 @@ class FaultAnalyzerTest {
 
         assertThat(analyzer.analyze("lavadora LG WM22VV2S6R").brand()).contains("LG");
         assertThat(analyzer.analyze("lavadora lg").model()).isEmpty();
+        // Quantities and ordinals are not model numbers; everyday words are not brands.
+        assertThat(analyzer.analyze("lavadora de 10kg a 220v desde las 9am").model()).isEmpty();
+        assertThat(analyzer.analyze("no quiere hacer hielo").brand()).isEmpty();
+        assertThat(analyzer.analyze("la media hora que demora").brand()).isEmpty();
     }
 
     @Test
@@ -96,6 +74,10 @@ class FaultAnalyzerTest {
         assertThat(status.status()).contains(Request.RequestStatus.CANCELADA);
 
         assertThat(interpreter.interpret("solicitudes con propuestas").status()).contains(Request.RequestStatus.CON_PROPUESTAS);
+        assertThat(interpreter.interpret("solicitudes sin propuestas").status()).contains(Request.RequestStatus.PUBLICADA);
+        assertThat(interpreter.interpret("las de hoy").sinceDays()).contains(0);
+        assertThat(interpreter.interpret("las de ayer").sinceDays()).contains(1);
+        assertThat(interpreter.interpret("tengo un paraguas mojado").symptom()).isEmpty();
         assertThat(interpreter.interpret("hace 3 dias").sinceDays()).contains(3);
         assertThat(interpreter.interpret("hace 2 meses").sinceDays()).contains(62);
         assertThat(interpreter.interpret("samsung").brand()).contains("Samsung");

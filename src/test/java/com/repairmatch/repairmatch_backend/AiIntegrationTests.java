@@ -14,6 +14,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** /api/ai: the local model structures descriptions and searches only the caller's own requests. */
 class AiIntegrationTests extends BackendTestSupport {
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     private ApplianceType catalog(String name) {
         return types.save(ApplianceType.builder().name(name).description("Test").build());
@@ -101,6 +103,28 @@ class AiIntegrationTests extends BackendTestSupport {
         mvc.perform(post("/api/ai/search").header("Authorization", bearer(owner))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"query\":\"refri que no enfria\"}"))
                 .andExpect(jsonPath("$.results.content[0].id").value(warm.getId()));
+    }
+
+    @Test
+    void returnsNothingWhenItUnderstandsNothingAndRespectsTheAge() throws Exception {
+        User owner = user(Role.CLIENT);
+        ApplianceType fridge = catalog("Refrigerator");
+        Request recent = request(owner, fridge, "La refri gotea", Request.RequestStatus.PUBLICADA);
+        Request old = request(owner, fridge, "La refri gotea hace tiempo", Request.RequestStatus.PUBLICADA);
+        // createdAt is not updatable through JPA: age the row directly.
+        jdbc.update("update requests set created_at = ? where id = ?",
+                java.sql.Timestamp.valueOf(java.time.LocalDateTime.now().minusDays(40)), old.getId());
+
+        mvc.perform(post("/api/ai/search").header("Authorization", bearer(owner))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"query\":\"de la que\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.understood", hasSize(0)))
+                .andExpect(jsonPath("$.results.totalElements").value(0));
+
+        mvc.perform(post("/api/ai/search").header("Authorization", bearer(owner))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"query\":\"la refri que gotea desde la semana pasada\"}"))
+                .andExpect(jsonPath("$.results.totalElements").value(1))
+                .andExpect(jsonPath("$.results.content[0].id").value(recent.getId()));
     }
 
     @Test

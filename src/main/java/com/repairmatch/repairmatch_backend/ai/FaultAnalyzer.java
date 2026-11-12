@@ -24,13 +24,17 @@ import java.util.regex.Pattern;
 public class FaultAnalyzer {
     /** Below this posterior probability a guess is not shown as a fact. */
     public static final double MIN_CONFIDENCE = 0.6;
+    static final int TYPO_MIN_LENGTH = 6;
 
     static final List<String> BRANDS = List.of(
             "Samsung", "LG", "Mabe", "Whirlpool", "Electrolux", "Bosch", "Indurama", "Panasonic",
             "Daewoo", "Sole", "Frigidaire", "Haier", "Midea", "Oster", "Coldex", "General Electric");
 
-    // Letters and digits mixed, 3-20 chars: RT38K5930SL, WM22VV2S6R, GT32. Times like 9:00 never match.
+    // Letters and digits mixed, 3-20 chars: RT38K5930SL, WM22VV2S6R, GT32.
     private static final Pattern MODEL = Pattern.compile("\\b(?=[A-Za-z0-9-]*\\d)(?=[A-Za-z0-9-]*[A-Za-z])[A-Za-z0-9-]{3,20}\\b");
+    // A number with a unit or a time ("10kg", "220v", "9am", "2do") is not a model.
+    private static final Pattern QUANTITY = Pattern.compile(
+            "(?i)\\d+(kg|kgs|g|lt|lts|l|v|w|kw|hz|cm|mm|m|am|pm|hrs?|h|min|seg|s|do|ro|er|to|mo|vo|no|pulg|in|pies)");
 
     public record Guess<T>(T value, double confidence) {
     }
@@ -77,7 +81,7 @@ public class FaultAnalyzer {
         return symptomClassifier.predict(text).map(p -> new Guess<>(p.label(), p.probability()));
     }
 
-    /** A known brand, tolerating one typo in names of 5+ letters ("Samsumg" -> Samsung). */
+    /** A known brand, tolerating one typo in names of 6+ letters ("Samsumg" -> Samsung). */
     public Optional<String> detectBrand(String text) {
         List<String> words = TextNormalizer.words(text);
         String folded = " " + String.join(" ", words) + " ";
@@ -85,11 +89,15 @@ public class FaultAnalyzer {
             String key = TextNormalizer.fold(brand);
             if (folded.contains(" " + key + " ")) return Optional.of(brand);
         }
+        // One typo is tolerated only in names of 6+ letters: shorter ones sit
+        // one letter away from everyday words ("hacer" / Haier, "media" / Midea).
         for (String word : words) {
-            if (word.length() < 5) continue;
+            if (word.length() < TYPO_MIN_LENGTH) continue;
             for (String brand : BRANDS) {
                 String key = TextNormalizer.fold(brand);
-                if (key.length() >= 5 && !key.contains(" ") && levenshtein(word, key) <= 1) return Optional.of(brand);
+                if (key.length() >= TYPO_MIN_LENGTH && !key.contains(" ") && levenshtein(word, key) <= 1) {
+                    return Optional.of(brand);
+                }
             }
         }
         return Optional.empty();
@@ -100,6 +108,7 @@ public class FaultAnalyzer {
         while (matcher.find()) {
             String candidate = matcher.group();
             if (brand != null && candidate.equalsIgnoreCase(brand)) continue;
+            if (QUANTITY.matcher(candidate).matches()) continue;
             return Optional.of(candidate.toUpperCase(Locale.ROOT));
         }
         return Optional.empty();

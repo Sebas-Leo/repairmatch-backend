@@ -70,9 +70,15 @@ public class AiService {
     @Transactional(readOnly = true)
     public AiDtos.SearchResult search(String query, int page, int size) {
         SearchInterpreter.Interpretation understood = interpreter.interpret(query);
+        if (understood.isEmpty()) {
+            // Nothing to filter by: an empty answer, not every request of the client.
+            return new AiDtos.SearchResult(query, List.of(),
+                    new PageResponse<>(List.of(), page, size, 0, 0, true, true), AiDtos.SOURCE);
+        }
         Long applianceTypeId = understood.appliance().flatMap(this::catalogId).orElse(null);
+        // Calendar days: "hoy" (0) starts at today's midnight, "ayer" (1) at yesterday's.
         LocalDateTime createdAfter = understood.sinceDays()
-                .map(days -> LocalDateTime.now().minusDays(days))
+                .map(days -> java.time.LocalDate.now().minusDays(days).atStartOfDay())
                 .orElse(null);
         RequestService.RequestSearchFilter filter = new RequestService.RequestSearchFilter(
                 understood.status().orElse(null),
@@ -99,8 +105,8 @@ public class AiService {
     }
 
     private static String sinceLabel(int days) {
-        if (days <= 1) return "hoy";
-        if (days == 2) return "ayer";
+        if (days <= 0) return "hoy";
+        if (days == 1) return "ayer";
         if (days < 31) return "hace " + days + " días";
         return "hace " + Math.round(days / 31.0) + " meses";
     }
