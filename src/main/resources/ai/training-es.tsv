@@ -1,0 +1,89 @@
+# Training examples for the local text classifiers (Naive Bayes).
+# Format: <task>\t<label>\t<text>. Tasks: appliance (ApplianceKind), symptom (Symptom).
+# Add real phrasings here to improve the model; no code change needed.
+appliance	REFRIGERADORA	mi refrigeradora no enfria
+appliance	REFRIGERADORA	la refri dejo de enfriar desde ayer
+appliance	REFRIGERADORA	el refrigerador hace ruido y gotea
+appliance	REFRIGERADORA	la nevera esta tibia por dentro
+appliance	REFRIGERADORA	el congelador se llena de escarcha
+appliance	REFRIGERADORA	sale agua debajo de los cajones de verduras
+appliance	REFRIGERADORA	la refrigeradora samsung no prende la luz
+appliance	REFRIGERADORA	el freezer congela pero abajo no enfria
+appliance	REFRIGERADORA	la puerta de la refri no cierra bien y el jebe esta roto
+appliance	REFRIGERADORA	el compresor de la refrigeradora suena y no arranca
+appliance	REFRIGERADORA	hay hielo en la parte de atras del refrigerador
+appliance	REFRIGERADORA	la comida se malogra porque la refri no enfria
+appliance	REFRIGERADORA	huele feo dentro de la refrigeradora
+appliance	REFRIGERADORA	el motor de la refri hace clic cada rato
+appliance	REFRIGERADORA	mi frigider no hiela
+appliance	LAVADORA	mi lavadora no centrifuga
+appliance	LAVADORA	la lavadora no bota el agua al final del ciclo
+appliance	LAVADORA	la ropa sale empapada de la lavadora
+appliance	LAVADORA	la lavadora hace un golpeteo fuerte al lavar
+appliance	LAVADORA	no carga agua la lavadora lg
+appliance	LAVADORA	la lavadora no prende ni enciende la pantalla
+appliance	LAVADORA	sale agua por debajo de la lavadora
+appliance	LAVADORA	el tambor no gira
+appliance	LAVADORA	la tapa de la lavadora no cierra y no empieza el lavado
+appliance	LAVADORA	la lavadora vibra mucho y se mueve
+appliance	LAVADORA	se queda llena de agua y no desagua
+appliance	LAVADORA	la lavadora huele a humedad
+appliance	LAVADORA	mi lavaropas hace ruido al exprimir
+appliance	LAVADORA	el ciclo de enjuague no termina
+appliance	LAVADORA	la secadora de la lavadora no seca la ropa
+symptom	NO_ENFRIA	no enfria
+symptom	NO_ENFRIA	dejo de enfriar
+symptom	NO_ENFRIA	esta tibia por dentro
+symptom	NO_ENFRIA	la comida se calienta y se malogra
+symptom	NO_ENFRIA	el congelador funciona pero abajo no enfria
+symptom	NO_ENFRIA	no hiela nada
+symptom	NO_ENFRIA	enfria muy poco
+symptom	NO_ENFRIA	las bebidas no se ponen frias
+symptom	ESCARCHA	se forma escarcha en el congelador
+symptom	ESCARCHA	hay mucho hielo atras
+symptom	ESCARCHA	se congela todo y se llena de hielo
+symptom	ESCARCHA	se acumula escarcha en las paredes
+symptom	ESCARCHA	el hielo tapa la salida de aire
+symptom	FUGA_AGUA	gotea agua por debajo
+symptom	FUGA_AGUA	sale agua y moja el piso
+symptom	FUGA_AGUA	hay un charco de agua debajo
+symptom	FUGA_AGUA	tiene una fuga de agua
+symptom	FUGA_AGUA	chorrea agua por la puerta
+symptom	FUGA_AGUA	gotea agua debajo de los cajones
+symptom	NO_ENCIENDE	no prende
+symptom	NO_ENCIENDE	no enciende para nada
+symptom	NO_ENCIENDE	no arranca el motor
+symptom	NO_ENCIENDE	esta muerta no hace nada
+symptom	NO_ENCIENDE	la pantalla no prende
+symptom	NO_ENCIENDE	no funciona desde el apagon
+symptom	RUIDO	hace mucho ruido
+symptom	RUIDO	suena un golpeteo fuerte
+symptom	RUIDO	vibra y se mueve de su sitio
+symptom	RUIDO	hace un zumbido raro
+symptom	RUIDO	el motor suena raro
+symptom	RUIDO	hace clic cada rato
+symptom	RUIDO	golpea como si algo estuviera suelto
+symptom	NO_CENTRIFUGA	no centrifuga
+symptom	NO_CENTRIFUGA	la ropa sale empapada
+symptom	NO_CENTRIFUGA	no exprime la ropa
+symptom	NO_CENTRIFUGA	el tambor no gira al final
+symptom	NO_CENTRIFUGA	la ropa queda mojada
+symptom	NO_DESAGUA	no bota el agua
+symptom	NO_DESAGUA	se queda llena de agua
+symptom	NO_DESAGUA	no desagua
+symptom	NO_DESAGUA	el agua queda estancada al final
+symptom	NO_DESAGUA	no drena el agua sucia
+symptom	NO_CARGA_AGUA	no carga agua
+symptom	NO_CARGA_AGUA	no le entra agua
+symptom	NO_CARGA_AGUA	no se llena para lavar
+symptom	NO_CARGA_AGUA	el agua no ingresa
+symptom	PUERTA	la puerta no cierra bien
+symptom	PUERTA	el jebe de la puerta esta roto
+symptom	PUERTA	la tapa no cierra y no empieza
+symptom	PUERTA	el empaque de la puerta esta despegado
+symptom	PUERTA	no sella la puerta
+symptom	MAL_OLOR	huele feo
+symptom	MAL_OLOR	tiene mal olor
+symptom	MAL_OLOR	huele a humedad
+symptom	MAL_OLOR	apesta por dentro
+symptom	MAL_OLOR	salen hongos y huele mal

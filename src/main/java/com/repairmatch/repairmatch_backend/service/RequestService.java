@@ -93,6 +93,41 @@ public class RequestService {
         return PageResponse.from(requestRepository.findAll(filter, pageRequest), this::mapToResponseDto);
     }
 
+    /**
+     * Own requests narrowed by the filters the smart search understood. Every
+     * filter is optional; ownership always applies, so a search can never
+     * reach another client's requests.
+     */
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('CLIENT')")
+    public PageResponse<RequestResponseDto> searchOwnRequests(RequestSearchFilter search, PageRequest pageRequest) {
+        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
+        Specification<Request> filter = RequestSpecifications.ownedBy(currentUserId)
+                .and(RequestSpecifications.hasStatus(search.status()))
+                .and(RequestSpecifications.hasApplianceType(search.applianceTypeId()))
+                .and(RequestSpecifications.createdAfter(search.createdAfter()))
+                .and(RequestSpecifications.descriptionContainsAny(search.anyOfTerms()))
+                .and(RequestSpecifications.matches(search.brand()));
+        for (String keyword : search.allOfKeywords()) {
+            filter = filter.and(RequestSpecifications.matches(keyword));
+        }
+        return PageResponse.from(requestRepository.findAll(filter, pageRequest), this::mapToResponseDto);
+    }
+
+    /** Structured filters for {@link #searchOwnRequests}; null or empty means "no filter". */
+    public record RequestSearchFilter(
+            Request.RequestStatus status,
+            Long applianceTypeId,
+            java.time.LocalDateTime createdAfter,
+            java.util.List<String> anyOfTerms,
+            String brand,
+            java.util.List<String> allOfKeywords) {
+        public RequestSearchFilter {
+            anyOfTerms = anyOfTerms == null ? java.util.List.of() : java.util.List.copyOf(anyOfTerms);
+            allOfKeywords = allOfKeywords == null ? java.util.List.of() : java.util.List.copyOf(allOfKeywords);
+        }
+    }
+
     @Transactional
     @PreAuthorize("hasRole('CLIENT')")
     public EvidenceResponseDto addEvidence(Long requestId, CreateEvidenceDto dto) {

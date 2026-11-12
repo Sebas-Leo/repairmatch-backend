@@ -9,6 +9,7 @@ Base URL (local): `http://localhost:8080/api`. All bodies are `application/json`
 - **Enums**: strings only (numbers are rejected). `Role`: `CLIENT | TECHNICIAN`. Request status: `PUBLICADA | CON_PROPUESTAS | CERRADA | CANCELADA | EXPIRADA`. Proposal status: `PENDING | ACCEPTED | REJECTED`. Service status: `PROGRAMADO | EN_ATENCION | COMPLETADO | CANCELADO`. Request/proposal `status` fields are plain strings with those values.
 - **Money**: `diagnosticCost` is a decimal number (max 10 integer + 2 fraction digits).
 - **IDs**: users/technicians are UUID strings; requests, proposals, services, appliance types are numbers.
+- **Text search is accent-insensitive** (`enfria` finds `enfría`) wherever a `search` is accepted.
 - **Lists**: always scoped to the authenticated user (`GET /technicians/{uuid}/reviews` and `GET /appliance-types` are readable by any authenticated account). Three lists are **paginated** and return a `Page` envelope: `GET /requests`, `GET /technicians/me/proposals` and `GET /technicians/me/matching-requests`. The other lists are plain JSON arrays.
 - **Page** = `{ content: [...], page, size, totalElements, totalPages, first, last }`. `page` is zero-based (default 0); `size` defaults to 20, max 100. `page < 0`, `size` outside 1..100 or a non-numeric value answer 400. A page past the end answers 200 with an empty `content` and the real `totalElements`.
 - **Messages are mixed Spanish/English** (server-side text). Show `message` as-is or map by `status`.
@@ -137,6 +138,19 @@ Profile = `{ id, fullName, email, experienceYears, bio, phone, latitude, longitu
 **Compatibility rule** (one policy shared by the opportunity list and proposal submission): the request is open (`PUBLICADA` or `CON_PROPUESTAS`), has a location, its appliance type is one the technician serves, and the great-circle (Haversine) distance to the technician's centre is `<=` `maxRadiusKm` (a request exactly at the radius is included). Availability is not a filter; it is expressed in the proposal. The list answers an empty page (`content: []`, `totalElements: 0`) when the technician serves no types. Submitting a proposal on an incompatible request is `403` with `message` ending in the reason: `Technician service area is not configured`, `Request has no location`, `Technician does not cover this appliance type` or `Request is outside the technician's service radius`. `page`/`size` slice the full in-memory result (distance is computed in Java), so every page costs a full scan; fine for the MVP.
 
 **Reputation**: `averageRating` is the unrounded mean of the ratings of reviews on that technician's services (`0.0` and `reviewCount: 0` when there are none). It is derived from Service -> Proposal -> Technician and cannot be edited; any authenticated account can read it, and the reviews, but reviewers are never identified.
+
+### Local AI (client)
+
+Both endpoints run an **in-process model** (Naive Bayes text classifiers trained on `src/main/resources/ai/training-es.tsv`, a brand dictionary with one-typo tolerance and date/status rules). No external service, no API key, no cost per call. The model only suggests: it never diagnoses and never chooses a technician; the client confirms every field before publishing. `source` is always `"local-ml"`.
+
+| Method & path | Role | Request | Response | Status |
+|---|---|---|---|---|
+| POST `/ai/structure-request` | C | `{ description* (<=5000) }` | `StructuredFault` | 200, 400, 401, 403 |
+| POST `/ai/search` | C | `{ query* (<=300), page (>=0), size (1-100) }` | `{ query, understood: [Chip], results: Page of own Request, source }` | 200, 400, 401, 403 |
+
+`StructuredFault` = `{ applianceTypeId, appliance: Field, symptom: Field, brand, model, originalDescription, source }`. `Field` = `{ value, label, confidence (0-1), confident }`: `confident` is true from 0.6, and `applianceTypeId` is set only then (the catalog type whose name matches the appliance kind). Fields the model could not infer are omitted (`null`). `appliance.value` is `LAVADORA` or `REFRIGERADORA`; `symptom.value` is one of `NO_ENFRIA`, `ESCARCHA`, `FUGA_AGUA`, `NO_ENCIENDE`, `RUIDO`, `NO_CENTRIFUGA`, `NO_DESAGUA`, `NO_CARGA_AGUA`, `PUERTA`, `MAL_OLOR`.
+
+`Chip` = `{ key, label, value }` with `key` in `appliance`, `symptom`, `brand`, `status`, `since`, `keyword`: what the search understood, for the UI to show (and let the client remove). The search always applies ownership first, so it can only return the caller's requests; then appliance type, status, age ("la semana pasada" = 14 days), brand and any of the symptom's words in the description (accent-insensitive). Free keywords are used only when nothing structured was understood.
 
 ### Ops
 
