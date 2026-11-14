@@ -9,17 +9,26 @@
 
 ---
 
-## Índice
-1. [Introducción](#introducción)
-2. [Identificación del Problema o Necesidad](#identificación-del-problema-o-necesidad)
-3. [Descripción de la Solución](#descripción-de-la-solución)
-4. [Modelo de Entidades](#modelo-de-entidades)
-5. [Manejo de Errores](#manejo-de-errores)
-6. [Medidas de Seguridad Implementadas](#medidas-de-seguridad-implementadas)
-7. [Eventos y Asincronía](#eventos-y-asincronía)
-8. [GitHub & Management](#github--management)
-9. [Conclusión](#conclusión)
-10. [Apéndices y Referencias](#apéndices-y-referencias)
+Para la exposición académica, consulta el [informe de presentación](docs/PRESENTATION_REPORT.md). El README sigue siendo la guía compartida del proyecto.
+
+La [guía de despliegue académico](docs/AWS_DEPLOY.md) documenta la imagen, el perfil `prod`, las variables requeridas y las limitaciones de una base sin migraciones versionadas.
+
+**Recorrido del MVP:** consulta [LOCAL_BACKEND.md](docs/LOCAL_BACKEND.md) para iniciar la API, ejecutar el escenario HTTP/Postman y revisar políticas, permisos y límites. Las secciones de planificación que siguen conservan el contexto original del equipo: sus estados históricos no sustituyen la verificación actual. No se incluyen migraciones versionadas de producción.
+
+Para ejecutar la API y una base PostgreSQL aislada con Docker, consulta [la guía de ejecución local](docs/LOCAL_RUNTIME.md).
+
+
+## Participación del equipo
+
+La rúbrica del Proyecto 2 pide esta tabla. El docente multiplica la nota grupal por el porcentaje de cada integrante: 100 % significa que cumplió por completo sus responsabilidades. **Los porcentajes los acuerda el equipo antes de la entrega.**
+
+| Integrante | Principales aportes (según el historial de PRs) | Participación |
+| --- | --- | --- |
+| Sebas-Leo | Flujo de colaboración, propuestas y comparación, consistencia de la API, despliegue, contrato, paginación y frontend | por definir |
+| AdrianPacheco12343 | Entidades, datos iniciales y endpoints de servicios | por definir |
+| andrehcv | Perfil del técnico, área de cobertura y motor de compatibilidad | por definir |
+| becomon | Base Spring Boot, identidad (registro, JWT, refresh, CORS), permisos y Postman | por definir |
+| camilaalfaro-afk | Solicitudes, evidencias, ciclo de la solicitud y contenedor Docker | por definir |
 
 ## Flujo de trabajo y seguimiento del avance
 

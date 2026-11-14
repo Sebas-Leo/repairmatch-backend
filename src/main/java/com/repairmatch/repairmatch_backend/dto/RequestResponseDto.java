@@ -8,6 +8,8 @@ import java.util.UUID;
 @Data
 @Builder
 public class RequestResponseDto {
+    private Double latitude;
+    private Double longitude;
     private Long id;
     private UUID clientId;
     private Long applianceTypeId;

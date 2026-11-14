@@ -17,6 +17,13 @@ public class ProposalController {
 
     private final ProposalService proposalService;
 
+    @org.springframework.web.bind.annotation.PostMapping
+    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    public ProposalResponseDto submit(@PathVariable Long requestId,
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.repairmatch.repairmatch_backend.dto.CreateProposalDto dto) {
+        return proposalService.submit(requestId, dto);
+    }
+
     @GetMapping
     public List<ProposalResponseDto> compareProposals(
             @PathVariable Long requestId

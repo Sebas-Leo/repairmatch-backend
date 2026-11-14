@@ -32,6 +32,7 @@ class PermissionIntegrationTests {
     @Autowired UserRepository users;
     @Autowired RequestRepository requests;
     @Autowired EvidenceRepository evidences;
+    @Autowired ProposalRepository proposals;
     @Autowired ApplianceTypeRepository types;
     @Autowired PasswordEncoder passwords;
     @Autowired JwtService tokens;
@@ -102,6 +103,44 @@ class PermissionIntegrationTests {
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.requestId").value(request.getId()))
                 .andExpect(jsonPath("$.evidenceNumber").value(2));
         assertThat(evidences.findByRequestId(request.getId())).hasSize(2);
+    }
+
+    @Test
+    void technicianWithProposalCanReadEvidences() throws Exception {
+        proposals.saveAndFlush(new Proposal(request, technician, new java.math.BigDecimal("40.00"),
+                java.time.LocalDateTime.now().plusDays(1), "Diagnostico en sitio"));
+        mvc.perform(operation("read").header("Authorization", "Bearer " + technicianToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].mediaUrl").value("https://example.com/private.jpg"));
+    }
+
+    @Test
+    void technicianWithProposalCannotModifyRequest() throws Exception {
+        proposals.saveAndFlush(new Proposal(request, technician, new java.math.BigDecimal("40.00"),
+                java.time.LocalDateTime.now().plusDays(1), "Diagnostico en sitio"));
+        for (String operation : new String[] {"add", "cancel", "close"}) {
+            mvc.perform(operation(operation).header("Authorization", "Bearer " + technicianToken))
+                    .andExpect(status().isForbidden());
+        }
+        unchanged();
+    }
+
+    @Test
+    void technicianWithoutProposalCannotReadEvidences() throws Exception {
+        User bidder = account(Role.TECHNICIAN);
+        proposals.saveAndFlush(new Proposal(request, bidder, new java.math.BigDecimal("40.00"),
+                java.time.LocalDateTime.now().plusDays(1), "Diagnostico en sitio"));
+        mvc.perform(operation("read").header("Authorization", "Bearer " + technicianToken))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("private.jpg"))));
+    }
+
+    @Test
+    void missingRequestReturns404ToTechnician() throws Exception {
+        mvc.perform(get("/api/requests/9223372036854775807/evidences")
+                        .header("Authorization", "Bearer " + technicianToken))
+                .andExpect(status().isNotFound());
     }
 
     @Test

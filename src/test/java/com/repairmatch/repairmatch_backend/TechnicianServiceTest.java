@@ -62,7 +62,7 @@ class TechnicianServiceTest {
     @Test
     @DisplayName("Debe retornar solicitud compatible dentro del radio y tipo atendido")
     void testMatchingRequestCompatible() {
-        when(technicianRepository.findByUserEmail("tech@repairmatch.com")).thenReturn(Optional.of(technician));
+        when(technicianRepository.findById(techId)).thenReturn(Optional.of(technician));
 
         Request compatibleRequest = new Request();
         compatibleRequest.setId(100L);
@@ -76,7 +76,7 @@ class TechnicianServiceTest {
 
         when(requestRepository.findAll()).thenReturn(Collections.singletonList(compatibleRequest));
 
-        List<MatchingRequestResponseDto> results = technicianService.getMatchingRequests("tech@repairmatch.com");
+        List<MatchingRequestResponseDto> results = technicianService.getMatchingRequests(techId);
 
         assertEquals(1, results.size());
         assertEquals(100L, results.get(0).getRequestId());
@@ -86,7 +86,7 @@ class TechnicianServiceTest {
     @Test
     @DisplayName("Debe descartar solicitud que excede el radio de cobertura del técnico")
     void testMatchingRequestOutsideRadius() {
-        when(technicianRepository.findByUserEmail("tech@repairmatch.com")).thenReturn(Optional.of(technician));
+        when(technicianRepository.findById(techId)).thenReturn(Optional.of(technician));
 
         Request farRequest = new Request();
         farRequest.setId(200L);
@@ -98,7 +98,7 @@ class TechnicianServiceTest {
 
         when(requestRepository.findAll()).thenReturn(Collections.singletonList(farRequest));
 
-        List<MatchingRequestResponseDto> results = technicianService.getMatchingRequests("tech@repairmatch.com");
+        List<MatchingRequestResponseDto> results = technicianService.getMatchingRequests(techId);
 
         assertTrue(results.isEmpty());
     }
@@ -106,7 +106,7 @@ class TechnicianServiceTest {
     @Test
     @DisplayName("Debe descartar solicitud con tipo de electrodoméstico no atendido")
     void testMatchingRequestDifferentApplianceType() {
-        when(technicianRepository.findByUserEmail("tech@repairmatch.com")).thenReturn(Optional.of(technician));
+        when(technicianRepository.findById(techId)).thenReturn(Optional.of(technician));
 
         Request diffTypeRequest = new Request();
         diffTypeRequest.setId(300L);
@@ -118,7 +118,7 @@ class TechnicianServiceTest {
 
         when(requestRepository.findAll()).thenReturn(Collections.singletonList(diffTypeRequest));
 
-        List<MatchingRequestResponseDto> results = technicianService.getMatchingRequests("tech@repairmatch.com");
+        List<MatchingRequestResponseDto> results = technicianService.getMatchingRequests(techId);
 
         assertTrue(results.isEmpty());
     }

@@ -3,13 +3,17 @@ package com.repairmatch.repairmatch_backend.controller;
 import com.repairmatch.repairmatch_backend.dto.CreateEvidenceDto;
 import com.repairmatch.repairmatch_backend.dto.CreateRequestDto;
 import com.repairmatch.repairmatch_backend.dto.EvidenceResponseDto;
+import com.repairmatch.repairmatch_backend.dto.PageResponse;
 import com.repairmatch.repairmatch_backend.dto.RequestResponseDto;
+import com.repairmatch.repairmatch_backend.model.Request;
 import com.repairmatch.repairmatch_backend.service.RequestService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -17,8 +21,19 @@ import java.util.List;
 @RequestMapping("/api/requests")
 @RequiredArgsConstructor
 public class RequestController {
+    @PatchMapping("/{requestId}/location")
+    public com.repairmatch.repairmatch_backend.dto.RequestResponseDto updateLocation(@PathVariable Long requestId, @jakarta.validation.Valid @RequestBody com.repairmatch.repairmatch_backend.dto.RequestLocationDto dto) {
+        return requestService.updateLocation(requestId, dto);
+    }
 
     private final RequestService requestService;
+    private final com.repairmatch.repairmatch_backend.service.ServiceService serviceService;
+
+    /** The service created when the owner accepted a proposal; 404 until then. */
+    @GetMapping("/{requestId}/service")
+    public com.repairmatch.repairmatch_backend.dto.ServiceResponseDTO getService(@PathVariable Long requestId) {
+        return serviceService.getServiceByRequest(requestId);
+    }
 
     @PostMapping
     public ResponseEntity<RequestResponseDto> createRequest(
@@ -30,9 +45,20 @@ public class RequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /** Own requests, newest first by default; `status`, `search` and `sort` are optional. */
     @GetMapping
-    public List<RequestResponseDto> getOwnRequests() {
-        return requestService.getOwnRequests();
+    public PageResponse<RequestResponseDto> getOwnRequests(
+            @RequestParam(required = false) Request.RequestStatus status,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "newest") String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + PageResponse.DEFAULT_SIZE) int size) {
+        Sort order = switch (sort) {
+            case "newest" -> Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+            case "oldest" -> Sort.by(Sort.Order.asc("createdAt"), Sort.Order.asc("id"));
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sort: use newest or oldest");
+        };
+        return requestService.getOwnRequests(status, search, PageResponse.request(page, size, order));
     }
 
     @GetMapping("/{requestId}")

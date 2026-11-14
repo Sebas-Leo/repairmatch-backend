@@ -1,43 +1,28 @@
 package com.repairmatch.repairmatch_backend.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
+/** Real contracts are kept separate from the legacy prototype services table. */
 @Entity
-@Table(name = "services")
+@Table(name = "service_contracts")
+@Getter @Setter @NoArgsConstructor
 public class ServiceEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "proposal_id", nullable = false)
-    private Long proposalId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "proposal_id", nullable = false, unique = true)
+    private Proposal proposal;
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "request_id", nullable = false, unique = true)
+    private Request request;
+    @Enumerated(EnumType.STRING) @Column(nullable = false)
     private ServiceStatus status = ServiceStatus.PROGRAMADO;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    public enum ServiceStatus {
-        PROGRAMADO,
-        EN_ATENCION,
-        COMPLETADO,
-        CANCELADO
-    }
-
-    // Getters y Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Long getProposalId() { return proposalId; }
-    public void setProposalId(Long proposalId) { this.proposalId = proposalId; }
-
-    public ServiceStatus getStatus() { return status; }
-    public void setStatus(ServiceStatus status) { this.status = status; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public enum ServiceStatus { PROGRAMADO, EN_ATENCION, COMPLETADO, CANCELADO }
+    public Long getProposalId() { return proposal.getId(); }
 }

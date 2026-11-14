@@ -3,6 +3,7 @@ package com.repairmatch.repairmatch_backend.service;
 import com.repairmatch.repairmatch_backend.dto.CreateEvidenceDto;
 import com.repairmatch.repairmatch_backend.dto.CreateRequestDto;
 import com.repairmatch.repairmatch_backend.dto.EvidenceResponseDto;
+import com.repairmatch.repairmatch_backend.dto.PageResponse;
 import com.repairmatch.repairmatch_backend.dto.RequestResponseDto;
 import com.repairmatch.repairmatch_backend.model.Evidence;
 import com.repairmatch.repairmatch_backend.model.EvidenceId;
@@ -11,7 +12,11 @@ import com.repairmatch.repairmatch_backend.model.Role;
 import com.repairmatch.repairmatch_backend.model.User;
 import com.repairmatch.repairmatch_backend.repository.ApplianceTypeRepository;
 import com.repairmatch.repairmatch_backend.repository.EvidenceRepository;
+import com.repairmatch.repairmatch_backend.repository.ProposalRepository;
 import com.repairmatch.repairmatch_backend.repository.RequestRepository;
+import com.repairmatch.repairmatch_backend.repository.RequestSpecifications;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import com.repairmatch.repairmatch_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import com.repairmatch.repairmatch_backend.security.AccountAccess;
@@ -30,6 +35,7 @@ public class RequestService {
 
     private final RequestRepository requestRepository;
     private final EvidenceRepository evidenceRepository;
+    private final ProposalRepository proposalRepository;
     private final UserRepository userRepository;
     private final AccountAccess accountAccess;
     private final ApplianceTypeRepository applianceTypeRepository;
@@ -51,25 +57,75 @@ public class RequestService {
                 .originalDescription(dto.getOriginalDescription().strip())
                 .brand(stripNullable(dto.getBrand()))
                 .model(stripNullable(dto.getModel()))
+                .latitude(dto.getLatitude()).longitude(dto.getLongitude())
                 .build();
 
         return mapToResponseDto(requestRepository.save(request));
     }
 
+    /**
+     * The owning client sees the request as stored. A technician who submitted a proposal on it sees it too, but the
+     * exact coordinates are withheld until that technician's proposal is accepted (matching only exposes distance).
+     */
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT')")
+    @PreAuthorize("hasAnyRole('CLIENT','TECHNICIAN')")
     public RequestResponseDto getRequest(Long requestId) {
-        return mapToResponseDto(loadOwnedRequest(requestId));
+        Request request = requireRequestReadAccess(requestId);
+        RequestResponseDto dto = mapToResponseDto(request);
+        UUID currentUserId = accountAccess.requireIdentity();
+        if (!currentUserId.equals(request.getClient().getId())
+                && !proposalRepository.existsByRequestIdAndTechnicianIdAndStatus(
+                        requestId, currentUserId, com.repairmatch.repairmatch_backend.model.Proposal.Status.ACCEPTED)) {
+            dto.setLatitude(null);
+            dto.setLongitude(null);
+        }
+        return dto;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('CLIENT')")
-    public List<RequestResponseDto> getOwnRequests() {
+    public PageResponse<RequestResponseDto> getOwnRequests(
+            Request.RequestStatus status, String search, PageRequest pageRequest) {
         UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
-        return requestRepository.findByClientIdOrderByCreatedAtDesc(currentUserId)
-                .stream()
-                .map(this::mapToResponseDto)
-                .toList();
+        Specification<Request> filter = RequestSpecifications.ownedBy(currentUserId)
+                .and(RequestSpecifications.hasStatus(status))
+                .and(RequestSpecifications.matches(search));
+        return PageResponse.from(requestRepository.findAll(filter, pageRequest), this::mapToResponseDto);
+    }
+
+    /**
+     * Own requests narrowed by the filters the smart search understood. Every
+     * filter is optional; ownership always applies, so a search can never
+     * reach another client's requests.
+     */
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('CLIENT')")
+    public PageResponse<RequestResponseDto> searchOwnRequests(RequestSearchFilter search, PageRequest pageRequest) {
+        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
+        Specification<Request> filter = RequestSpecifications.ownedBy(currentUserId)
+                .and(RequestSpecifications.hasStatus(search.status()))
+                .and(RequestSpecifications.hasApplianceType(search.applianceTypeId()))
+                .and(RequestSpecifications.createdAfter(search.createdAfter()))
+                .and(RequestSpecifications.descriptionContainsAny(search.anyOfTerms()))
+                .and(RequestSpecifications.matches(search.brand()));
+        for (String keyword : search.allOfKeywords()) {
+            filter = filter.and(RequestSpecifications.matches(keyword));
+        }
+        return PageResponse.from(requestRepository.findAll(filter, pageRequest), this::mapToResponseDto);
+    }
+
+    /** Structured filters for {@link #searchOwnRequests}; null or empty means "no filter". */
+    public record RequestSearchFilter(
+            Request.RequestStatus status,
+            Long applianceTypeId,
+            java.time.LocalDateTime createdAfter,
+            java.util.List<String> anyOfTerms,
+            String brand,
+            java.util.List<String> allOfKeywords) {
+        public RequestSearchFilter {
+            anyOfTerms = anyOfTerms == null ? java.util.List.of() : java.util.List.copyOf(anyOfTerms);
+            allOfKeywords = allOfKeywords == null ? java.util.List.of() : java.util.List.copyOf(allOfKeywords);
+        }
     }
 
     @Transactional
@@ -100,9 +156,9 @@ public class RequestService {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT')")
+    @PreAuthorize("hasAnyRole('CLIENT','TECHNICIAN')")
     public List<EvidenceResponseDto> getEvidencesByRequestId(Long requestId) {
-        loadOwnedRequest(requestId);
+        requireRequestReadAccess(requestId);
 
         return evidenceRepository.findById_RequestIdOrderById_EvidenceNumberAsc(requestId).stream()
                 .map(evidence -> EvidenceResponseDto.builder()
@@ -117,7 +173,7 @@ public class RequestService {
     @Transactional
     @PreAuthorize("hasRole('CLIENT')")
     public RequestResponseDto cancelRequest(Long requestId) {
-        Request request = loadOwnedRequest(requestId);
+        Request request = loadLockedOwnedRequest(requestId);
 
         if (request.getStatus() == Request.RequestStatus.CERRADA ||
                 request.getStatus() == Request.RequestStatus.CANCELADA ||
@@ -133,7 +189,7 @@ public class RequestService {
 
     @Transactional
     public void transitionToHasProposals(Long requestId) {
-        Request request = loadRequest(requestId);
+        Request request = requestRepository.findLockedById(requestId).orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
         if (request.getStatus() == Request.RequestStatus.PUBLICADA) {
             request.setStatus(Request.RequestStatus.CON_PROPUESTAS);
@@ -144,7 +200,7 @@ public class RequestService {
     @Transactional
     @PreAuthorize("hasRole('CLIENT')")
     public void closeRequest(Long requestId) {
-        Request request = loadOwnedRequest(requestId);
+        Request request = loadLockedOwnedRequest(requestId);
 
         if (request.getStatus() != Request.RequestStatus.CON_PROPUESTAS) {
             throw new InvalidStateException("Solo se pueden cerrar solicitudes con propuestas activas"
@@ -157,7 +213,7 @@ public class RequestService {
 
     @Transactional
     public void expireRequest(Long requestId) {
-        Request request = loadRequest(requestId);
+        Request request = requestRepository.findLockedById(requestId).orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
         if (request.getStatus() == Request.RequestStatus.PUBLICADA ||
                 request.getStatus() == Request.RequestStatus.CON_PROPUESTAS) {
@@ -176,14 +232,38 @@ public class RequestService {
                 .brand(request.getBrand())
                 .model(request.getModel())
                 .status(request.getStatus().name())
+                .latitude(request.getLatitude()).longitude(request.getLongitude())
                 .createdAt(request.getCreatedAt())
                 .build();
     }
 
-    private Request loadOwnedRequest(Long requestId) {
-        UUID currentUserId = accountAccess.requireRole(Role.CLIENT);
+    @Transactional
+    public RequestResponseDto updateLocation(Long requestId, com.repairmatch.repairmatch_backend.dto.RequestLocationDto dto) {
+        Request request = loadLockedOwnedRequest(requestId);
+        if (request.getStatus() != Request.RequestStatus.PUBLICADA) throw new InvalidStateException("Location cannot change after proposals arrive");
+        request.setLatitude(dto.latitude()); request.setLongitude(dto.longitude());
+        return mapToResponseDto(request);
+    }
+
+    private Request loadLockedOwnedRequest(Long id) {
+        UUID owner = accountAccess.requireRole(Role.CLIENT);
+        Request request = requestRepository.findLockedById(id).orElseThrow(() -> new ResourceNotFoundException("Request not found"));
+        accountAccess.requireOwner(owner, request.getClient().getId());
+        return request;
+    }
+
+    /** Same read rule for the request and its evidences: owner, or a technician with a proposal on it. */
+    private Request requireRequestReadAccess(Long requestId) {
+        UUID currentUserId = accountAccess.requireIdentity();
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AuthenticationRequiredException("Cuenta no disponible"));
         Request request = loadRequest(requestId);
-        accountAccess.requireOwner(currentUserId, request.getClient().getId());
+        if (user.getRole() == Role.CLIENT) {
+            accountAccess.requireOwner(currentUserId, request.getClient().getId());
+        } else if (user.getRole() != Role.TECHNICIAN
+                || !proposalRepository.existsByRequestIdAndTechnicianId(requestId, currentUserId)) {
+            throw new ForbiddenOperationException("No tiene acceso a este recurso");
+        }
         return request;
     }
 

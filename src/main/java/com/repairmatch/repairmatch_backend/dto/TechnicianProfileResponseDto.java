@@ -3,6 +3,7 @@ package com.repairmatch.repairmatch_backend.dto;
 import java.util.List;
 import java.util.UUID;
 
+@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
 public class TechnicianProfileResponseDto {
 
     private UUID id;

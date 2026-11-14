@@ -1,0 +1,653 @@
+{
+  "info": {
+    "name": "RepairMatch - MVP local",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Register client",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Smoke Client\",\n  \"email\": \"client-{{runId}}@example.com\",\n  \"password\": \"LocalSmoke2026!\",\n  \"role\": \"CLIENT\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('runId', Date.now()+'-'+Math.random().toString(16).slice(2));",
+              "pm.collectionVariables.set('availableAt', new Date(Date.now()+86400000).toISOString().slice(0,19));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('clientId', 'id'.split('.').reduce((v,k)=>v[k], pm.response.json()));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register technician",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Smoke Technician\",\n  \"email\": \"tech-{{runId}}@example.com\",\n  \"password\": \"LocalSmoke2026!\",\n  \"role\": \"TECHNICIAN\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('technicianId', 'id'.split('.').reduce((v,k)=>v[k], pm.response.json()));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login client",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"client-{{runId}}@example.com\",\n  \"password\": \"LocalSmoke2026!\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('clientToken', 'accessToken'.split('.').reduce((v,k)=>v[k], pm.response.json()));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login technician",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"tech-{{runId}}@example.com\",\n  \"password\": \"LocalSmoke2026!\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('techToken', 'accessToken'.split('.').reduce((v,k)=>v[k], pm.response.json()));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appliance catalog",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/appliance-types",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('applianceTypeId', '0.id'.split('.').reduce((v,k)=>v[k], pm.response.json()));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician specialties",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/technicians/me/profile",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{techToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"experienceYears\": 4,\n  \"bio\": \"Local smoke fixture\",\n  \"applianceTypeIds\": [\n    {{applianceTypeId}}\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician coverage",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/technicians/me/service-areas",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{techToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"latitude\": -12.0464,\n  \"longitude\": -77.0428,\n  \"maxRadiusKm\": 20\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Publish request",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/requests",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"applianceTypeId\": {{applianceTypeId}},\n  \"originalDescription\": \"Local smoke: appliance will not start\",\n  \"brand\": \"Demo\",\n  \"model\": \"Fixture\",\n  \"latitude\": -12.0464,\n  \"longitude\": -77.0428\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('requestId', 'id'.split('.').reduce((v,k)=>v[k], pm.response.json()));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Matching requests",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/technicians/me/matching-requests?page=0&size=100",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{techToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Submit proposal",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{techToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"diagnosticCost\": 45.5,\n  \"availableAt\": \"{{availableAt}}\",\n  \"conditions\": \"Diagnostic visit only\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('proposalId', 'id'.split('.').reduce((v,k)=>v[k], pm.response.json()));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject duplicate offer",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{techToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"diagnosticCost\": 45.5,\n  \"availableAt\": \"{{availableAt}}\",\n  \"conditions\": \"Duplicate\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Compare proposals",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject technician comparison",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/requests/{{requestId}}/proposals",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{techToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accept offer",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/proposals/{{proposalId}}/accept",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('serviceId', 'id'.split('.').reduce((v,k)=>v[k], pm.response.json()));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject repeated acceptance",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/proposals/{{proposalId}}/accept",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject premature review",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/services/{{serviceId}}/review",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Too early\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Start service",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/services/{{serviceId}}/status?status=EN_ATENCION",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{techToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Complete service",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/services/{{serviceId}}/status?status=COMPLETADO",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{techToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Review service",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/services/{{serviceId}}/review",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Local verification completed\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject duplicate review",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/services/{{serviceId}}/review",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Duplicate\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Derived reputation",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/technicians/{{technicianId}}/reputation",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Derived rating', () => { pm.expect(pm.response.json().averageRating).to.eql(5); pm.expect(pm.response.json().reviewCount).to.eql(1); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
