@@ -1,13 +1,16 @@
-# [Nombre Descriptivo del Proyecto - RepairMatch]
-**Curso:** CS 2031 Desarrollo Basado en Plataforma  
-**Integrantes:**  
-- Ariana Belen Blanco Anicama  
-- Camila Araceli Alfaro Chuquino  
-- Jairo Andre Cunya Villalta  
-- Royer Sebastian Ramos Vargas  
-- Adrian Luis Pacheco Sulluchuco## Flujo de trabajo y seguimiento del avance
+# RepairMatch Backend
 
----
+**Curso:** CS 2031 Desarrollo Basado en Plataforma (DBP, 2026-II)
+
+**Integrantes:**
+
+- Ariana Belen Blanco Anicama
+- Camila Araceli Alfaro Chuquino
+- Jairo Andre Cunya Villalta
+- Royer Sebastian Ramos Vargas
+- Adrian Luis Pacheco Sulluchuco
+
+RepairMatch conecta a personas que necesitan reparar un electrodoméstico con técnicos adecuados: el cliente publica una solicitud, recibe propuestas, selecciona un técnico, completa el servicio y deja una reseña.
 
 Para la exposición académica, consulta el [informe de presentación](docs/PRESENTATION_REPORT.md). El README sigue siendo la guía compartida del proyecto.
 
