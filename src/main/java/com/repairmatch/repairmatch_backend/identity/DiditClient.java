@@ -55,6 +55,12 @@ public class DiditClient {
             return new CreatedSession(sessionId, sessionUrl, status instanceof String s ? s : "Not Started");
         } catch (IdentityProviderException ex) {
             throw ex;
+        } catch (org.springframework.web.client.RestClientResponseException ex) {
+            // Didit's status and error body explain config problems (bad key, workflow, field); they hold no secrets.
+            String detail = ex.getResponseBodyAsString();
+            org.slf4j.LoggerFactory.getLogger(getClass()).warn("Didit session creation failed: HTTP {} {}",
+                    ex.getStatusCode().value(), detail.length() > 500 ? detail.substring(0, 500) : detail);
+            throw new IdentityProviderException("No pudimos iniciar la verificación. Inténtalo de nuevo en unos minutos");
         } catch (RuntimeException ex) {
             org.slf4j.LoggerFactory.getLogger(getClass()).warn("Didit session creation failed: {}", ex.getClass().getName());
             throw new IdentityProviderException("No pudimos iniciar la verificación. Inténtalo de nuevo en unos minutos");
