@@ -12,6 +12,6 @@ public final class IdentityDtos {
     public record SessionResponse(String url, IdentityStatus status) {
     }
 
-    public record StatusResponse(IdentityStatus status, LocalDateTime verifiedAt) {
+    public record StatusResponse(IdentityStatus status, LocalDateTime verifiedAt, Boolean nameMatches) {
     }
 }

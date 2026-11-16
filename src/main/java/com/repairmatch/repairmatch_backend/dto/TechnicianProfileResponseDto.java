@@ -17,8 +17,12 @@ public class TechnicianProfileResponseDto {
     private Double maxRadiusKm;
     private List<String> applianceTypes;
     private Boolean identityVerified;
+    private Boolean identityNameMatches;
 
     public TechnicianProfileResponseDto() {}
+
+    public Boolean getIdentityNameMatches() { return identityNameMatches; }
+    public void setIdentityNameMatches(Boolean identityNameMatches) { this.identityNameMatches = identityNameMatches; }
 
     public Boolean getIdentityVerified() { return identityVerified; }
     public void setIdentityVerified(Boolean identityVerified) { this.identityVerified = identityVerified; }

@@ -20,6 +20,7 @@ public class ProposalResponseDto {
     private LocalDateTime createdAt;
     private String status;
     private boolean identityVerified;
+    private Boolean identityNameMatches;
 
     public static ProposalResponseDto from(com.repairmatch.repairmatch_backend.model.Proposal proposal) {
         return new ProposalResponseDto(
@@ -32,6 +33,7 @@ public class ProposalResponseDto {
                 proposal.getConditions(),
                 proposal.getCreatedAt(),
                 proposal.getStatus().name(),
-                proposal.getTechnician().isIdentityVerified());
+                proposal.getTechnician().isIdentityVerified(),
+                proposal.getTechnician().getIdentityNameMatches());
     }
 }
