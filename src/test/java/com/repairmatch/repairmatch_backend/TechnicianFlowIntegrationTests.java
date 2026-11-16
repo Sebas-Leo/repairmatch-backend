@@ -1,11 +1,13 @@
 package com.repairmatch.repairmatch_backend;
 
 import com.repairmatch.repairmatch_backend.model.*;
+import com.repairmatch.repairmatch_backend.service.ApproximateLocation;
 import com.repairmatch.repairmatch_backend.service.CompatibilityPolicy;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -163,6 +165,11 @@ class TechnicianFlowIntegrationTests extends BackendTestSupport {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(2)))
                 .andExpect(jsonPath("$.content[0].requestId").value(near.getId())).andExpect(jsonPath("$.content[0].distanceKm").value(1.11))
                 .andExpect(jsonPath("$.content[0].status").value("PUBLICADA")).andExpect(jsonPath("$.content[0].latitude").doesNotExist())
+                .andExpect(jsonPath("$.content[0].longitude").doesNotExist())
+                .andExpect(jsonPath("$.content[0].approxLatitude").value(ApproximateLocation.snap(LAT + 0.01)))
+                .andExpect(jsonPath("$.content[0].approxLongitude").value(ApproximateLocation.snap(LON)))
+                .andExpect(jsonPath("$.content[0].approxLatitude").value(not(LAT + 0.01)))
+                .andExpect(jsonPath("$.content[0].approxLongitude").value(not(LON)))
                 .andExpect(jsonPath("$.content[1].requestId").value(farther.getId())).andExpect(jsonPath("$.content[1].status").value("CON_PROPUESTAS"));
         mvc.perform(get("/api/technicians/me/matching-requests?page=0&size=1").header("Authorization", bearer(tech)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(1))).andExpect(jsonPath("$.content[0].requestId").value(near.getId()));

@@ -9,6 +9,9 @@ public class MatchingRequestResponseDto {
     private String description;
     private String status;
     private Double distanceKm;
+    /** Snapped to a ~550 m grid (see ApproximateLocation); never the exact point. */
+    private Double approxLatitude;
+    private Double approxLongitude;
 
     public MatchingRequestResponseDto() {}
 
@@ -32,4 +35,10 @@ public class MatchingRequestResponseDto {
 
     public Double getDistanceKm() { return distanceKm; }
     public void setDistanceKm(Double distanceKm) { this.distanceKm = distanceKm; }
+
+    public Double getApproxLatitude() { return approxLatitude; }
+    public void setApproxLatitude(Double approxLatitude) { this.approxLatitude = approxLatitude; }
+
+    public Double getApproxLongitude() { return approxLongitude; }
+    public void setApproxLongitude(Double approxLongitude) { this.approxLongitude = approxLongitude; }
 }

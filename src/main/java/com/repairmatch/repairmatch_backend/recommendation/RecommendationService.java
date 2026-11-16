@@ -17,6 +17,7 @@ import com.repairmatch.repairmatch_backend.repository.RequestRepository;
 import com.repairmatch.repairmatch_backend.repository.ReviewRepository;
 import com.repairmatch.repairmatch_backend.repository.TechnicianRepository;
 import com.repairmatch.repairmatch_backend.security.AccountAccess;
+import com.repairmatch.repairmatch_backend.service.ApproximateLocation;
 import com.repairmatch.repairmatch_backend.service.CompatibilityPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -198,6 +199,8 @@ public class RecommendationService {
         item.setDescription(r.getOriginalDescription());
         item.setStatus(r.getStatus().name());
         item.setDistanceKm(Ranking.round(distanceKm));
+        item.setApproxLatitude(ApproximateLocation.snap(r.getLatitude()));
+        item.setApproxLongitude(ApproximateLocation.snap(r.getLongitude()));
         return item;
     }
 
