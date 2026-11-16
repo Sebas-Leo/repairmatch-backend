@@ -174,7 +174,7 @@ Optional trust layer ("es una persona real") powered by [Didit](https://docs.did
 | Method & path | Role | Request | Response | Status |
 |---|---|---|---|---|
 | POST `/verification/identity/session` | A | - | `{ url, status: "PENDING" }`: open `url` (Didit hosted page); Didit sends the user back to `DIDIT_CALLBACK_URL?verificationSessionId=..&status=..` | 201, 401, 409 (already `VERIFIED`), 502 (Didit failed), 503 (not configured) |
-| GET `/verification/identity` | A | - | `{ status, verifiedAt }` (`verifiedAt` null unless verified) | 200, 401 |
+| GET `/verification/identity` (alias `/verification/identity/status`) | A | - | `{ status, verifiedAt }` (`verifiedAt` null unless verified) | 200, 401 |
 | POST `/verification/identity/webhook` | P (Didit) | Didit `status.updated` event, raw JSON | empty | 200, 401 (bad/missing/stale signature), 503 (secret not configured) |
 
 - `status` = `NOT_STARTED | PENDING | VERIFIED | REJECTED`. Mapping from Didit: `Approved` -> `VERIFIED`; `Declined` -> `REJECTED`; `Not Started`, `In Progress`, `In Review`, `Resubmitted`, `Awaiting User` -> `PENDING`; `Expired`, `Abandoned`, `Kyc Expired` -> `NOT_STARTED` (the user can retry). `REJECTED` and `NOT_STARTED` can start a new session.

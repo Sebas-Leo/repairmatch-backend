@@ -89,6 +89,9 @@ class DiditIdentityIntegrationTests extends BackendTestSupport {
     private void identityIs(User user, String expected) throws Exception {
         mvc.perform(get("/api/verification/identity").header("Authorization", bearer(user)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.status").value(expected));
+        // The /status alias must answer the same.
+        mvc.perform(get("/api/verification/identity/status").header("Authorization", bearer(user)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value(expected));
     }
 
     // --- session creation -------------------------------------------------------------------

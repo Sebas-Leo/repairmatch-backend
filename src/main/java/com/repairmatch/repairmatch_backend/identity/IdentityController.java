@@ -22,7 +22,7 @@ public class IdentityController {
         return identity.createSession(access.requireIdentity());
     }
 
-    @GetMapping
+    @GetMapping({"", "/status"})
     public IdentityDtos.StatusResponse status() {
         return identity.status(access.requireIdentity());
     }
