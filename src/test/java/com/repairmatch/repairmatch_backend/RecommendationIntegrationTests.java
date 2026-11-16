@@ -4,6 +4,7 @@ import com.repairmatch.repairmatch_backend.model.ApplianceType;
 import com.repairmatch.repairmatch_backend.model.Request;
 import com.repairmatch.repairmatch_backend.model.Role;
 import com.repairmatch.repairmatch_backend.model.User;
+import com.repairmatch.repairmatch_backend.service.ApproximateLocation;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -88,6 +89,10 @@ class RecommendationIntegrationTests extends BackendTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(2))
                 .andExpect(jsonPath("$.content[0].request.requestId").value(similar.getId()))
+                .andExpect(jsonPath("$.content[0].request.approxLatitude").value(ApproximateLocation.snap(LAT)))
+                .andExpect(jsonPath("$.content[0].request.approxLongitude").value(ApproximateLocation.snap(LON)))
+                .andExpect(jsonPath("$.content[0].request.approxLatitude").value(not(LAT)))
+                .andExpect(jsonPath("$.content[0].request.latitude").doesNotExist())
                 .andExpect(jsonPath("$.content[0].reasons[*].code", hasItem("BRAND_EXPERIENCE")))
                 .andExpect(jsonPath("$.content[1].request.requestId").value(other.getId()))
                 .andExpect(jsonPath("$.content[*].request.requestId", not(hasItem(answered.getId().intValue()))));

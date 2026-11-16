@@ -14,6 +14,7 @@ import com.repairmatch.repairmatch_backend.repository.ApplianceTypeRepository;
 import com.repairmatch.repairmatch_backend.repository.RequestRepository;
 import com.repairmatch.repairmatch_backend.repository.TechnicianRepository;
 import com.repairmatch.repairmatch_backend.repository.UserRepository;
+import com.repairmatch.repairmatch_backend.service.ApproximateLocation;
 import com.repairmatch.repairmatch_backend.service.TechnicianService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -141,6 +142,8 @@ public class TechnicianServiceImpl implements TechnicianService {
                 item.setDescription(req.getOriginalDescription());
                 item.setStatus(req.getStatus().name());
                 item.setDistanceKm(Math.round(distance * 100.0) / 100.0);
+                item.setApproxLatitude(ApproximateLocation.snap(req.getLatitude()));
+                item.setApproxLongitude(ApproximateLocation.snap(req.getLongitude()));
                 compatible.add(item);
             }
         }
