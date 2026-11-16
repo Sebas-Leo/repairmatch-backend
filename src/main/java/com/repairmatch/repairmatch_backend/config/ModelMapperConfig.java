@@ -14,7 +14,8 @@ public class ModelMapperConfig {
     public ModelMapper modelMapper() {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        mapper.createTypeMap(User.class, UserResponseDto.class);
+        mapper.createTypeMap(User.class, UserResponseDto.class)
+                .addMappings(m -> m.map(User::isIdentityVerified, UserResponseDto::setIdentityVerified));
         mapper.validate();
         return mapper;
     }

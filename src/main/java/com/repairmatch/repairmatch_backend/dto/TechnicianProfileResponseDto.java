@@ -16,8 +16,12 @@ public class TechnicianProfileResponseDto {
     private Double longitude;
     private Double maxRadiusKm;
     private List<String> applianceTypes;
+    private Boolean identityVerified;
 
     public TechnicianProfileResponseDto() {}
+
+    public Boolean getIdentityVerified() { return identityVerified; }
+    public void setIdentityVerified(Boolean identityVerified) { this.identityVerified = identityVerified; }
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
