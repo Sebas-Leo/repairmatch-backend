@@ -33,6 +33,8 @@ public class DiditClient {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("workflow_id", properties.getWorkflowId());
         body.put("vendor_data", vendorData);
+        // Force the hosted flow into Spanish (ISO 639-1) instead of browser detection.
+        body.put("language", "es");
         if (properties.getCallbackUrl() != null && !properties.getCallbackUrl().isBlank()) {
             body.put("callback", properties.getCallbackUrl());
         }
