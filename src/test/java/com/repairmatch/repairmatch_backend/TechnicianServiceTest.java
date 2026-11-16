@@ -66,6 +66,7 @@ class TechnicianServiceTest {
 
         Request compatibleRequest = new Request();
         compatibleRequest.setId(100L);
+        compatibleRequest.setClient(new User(UUID.randomUUID(), "Cliente", "client@repairmatch.com", "passwordHash123", Role.CLIENT));
         compatibleRequest.setStatus(RequestStatus.PUBLICADA);
         compatibleRequest.setApplianceType(lavadoraType);
         compatibleRequest.setLatitude(-12.050000); // ~0.8 km de distancia
@@ -81,6 +82,7 @@ class TechnicianServiceTest {
         assertEquals(1, results.size());
         assertEquals(100L, results.get(0).getRequestId());
         assertTrue(results.get(0).getDistanceKm() <= 10.0);
+        assertFalse(results.get(0).isClientIdentityVerified());
     }
 
     @Test

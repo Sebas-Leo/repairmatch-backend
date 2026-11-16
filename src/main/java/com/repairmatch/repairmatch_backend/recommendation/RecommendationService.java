@@ -201,6 +201,7 @@ public class RecommendationService {
         item.setDistanceKm(Ranking.round(distanceKm));
         item.setApproxLatitude(ApproximateLocation.snap(r.getLatitude()));
         item.setApproxLongitude(ApproximateLocation.snap(r.getLongitude()));
+        item.setClientIdentityVerified(r.getClient().isIdentityVerified());
         return item;
     }
 

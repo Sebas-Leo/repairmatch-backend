@@ -164,3 +164,17 @@ Referencias oficiales de apoyo: [transacciones en Spring](https://spring.io/guid
 ## Permisos y propiedad — avance del #5
 
 La [política de autorización](docs/AUTHORIZATION.md) define los controles de solicitudes y evidencias implementados y las reglas propuestas para los módulos pendientes. La entrega es parcial: no cierra el #5. Ver [evidencias](docs/evidence/issue-5/README.md).
+
+## Verificación de identidad (Didit)
+
+Capa de confianza opcional ("es una persona real"): cualquier usuario puede verificarse y nunca bloquea el uso de la app. Solo se guardan el estado, la fecha y el id de sesión de Didit; no se guardan imágenes, números de documento ni datos biométricos. Contrato en [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md#identity-verification-didit).
+
+| Variable | Qué es | Dónde se obtiene en la consola de Didit |
+|---|---|---|
+| `DIDIT_API_KEY` | Clave de la API (cabecera `x-api-key`) | Business Console (API & Webhooks); la clave necesita el privilegio `read:sessions` |
+| `DIDIT_WORKFLOW_ID` | UUID del workflow KYC que se usará | Business Console, Workflows: id (UUID) del workflow KYC publicado |
+| `DIDIT_WEBHOOK_SECRET` | `secret_shared_key` del destino del webhook | API & Webhooks, Add destination (se muestra al crearlo) |
+| `DIDIT_CALLBACK_URL` | A dónde vuelve el usuario al terminar, p. ej. `https://repairmatch-frontend.vercel.app/verification/return` | Lo defines tú |
+| `DIDIT_BASE_URL` | Opcional, por defecto `https://verification.didit.me` | |
+
+Webhook: en Didit, agrega un destino con la URL `https://repairmatch-backend.onrender.com/api/verification/identity/webhook` (HTTPS obligatorio), versión `v3`, suscrito al evento `status.updated`. Si falta alguna variable, el endpoint de sesión responde 503 y el resto de la app sigue funcionando. Las columnas nuevas de `users` (`identity_status`, `identity_verified_at`, `identity_session_id`) son nulas por defecto, así que `ddl-auto=update` las agrega sin tocar las filas existentes.

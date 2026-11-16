@@ -12,8 +12,12 @@ public class MatchingRequestResponseDto {
     /** Snapped to a ~550 m grid (see ApproximateLocation); never the exact point. */
     private Double approxLatitude;
     private Double approxLongitude;
+    private boolean clientIdentityVerified;
 
     public MatchingRequestResponseDto() {}
+
+    public boolean isClientIdentityVerified() { return clientIdentityVerified; }
+    public void setClientIdentityVerified(boolean clientIdentityVerified) { this.clientIdentityVerified = clientIdentityVerified; }
 
     public Long getRequestId() { return requestId; }
     public void setRequestId(Long requestId) { this.requestId = requestId; }

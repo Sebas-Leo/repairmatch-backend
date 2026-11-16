@@ -3,6 +3,7 @@ package com.repairmatch.repairmatch_backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -12,7 +13,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class User {
 
     @Id
@@ -31,6 +31,37 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;
+
+    /**
+     * Identity verification state. Only the status, the timestamp and the provider session id are kept:
+     * never document images, document numbers or biometrics. The column is nullable so existing rows
+     * need no backfill (null reads as NOT_STARTED).
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "identity_status", length = 20)
+    private IdentityStatus identityStatus;
+
+    @Column(name = "identity_verified_at")
+    private LocalDateTime identityVerifiedAt;
+
+    @Column(name = "identity_session_id", length = 64)
+    private String identitySessionId;
+
+    public User(UUID id, String name, String email, String passwordHash, Role role) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+    }
+
+    public IdentityStatus getIdentityStatus() {
+        return identityStatus == null ? IdentityStatus.NOT_STARTED : identityStatus;
+    }
+
+    public boolean isIdentityVerified() {
+        return getIdentityStatus() == IdentityStatus.VERIFIED;
+    }
 
     public User(String name, String email, String passwordHash, Role role) {
         this.name = name;

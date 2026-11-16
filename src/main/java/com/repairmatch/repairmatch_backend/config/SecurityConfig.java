@@ -46,6 +46,8 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/login", "/api/auth/refresh", "/api/auth/logout"
                         ).permitAll()
+                        // Called by Didit; authenticity is the HMAC signature checked in IdentityService.
+                        .requestMatchers(HttpMethod.POST, "/api/verification/identity/webhook").permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/v3/api-docs/**",

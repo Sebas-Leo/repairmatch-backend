@@ -67,6 +67,7 @@ public class TechnicianServiceImpl implements TechnicianService {
             empty.setId(user.getId());
             empty.setFullName(user.getName());
             empty.setEmail(user.getEmail());
+            empty.setIdentityVerified(user.isIdentityVerified());
             empty.setApplianceTypes(Collections.emptyList());
             return empty;
         });
@@ -144,6 +145,7 @@ public class TechnicianServiceImpl implements TechnicianService {
                 item.setDistanceKm(Math.round(distance * 100.0) / 100.0);
                 item.setApproxLatitude(ApproximateLocation.snap(req.getLatitude()));
                 item.setApproxLongitude(ApproximateLocation.snap(req.getLongitude()));
+                item.setClientIdentityVerified(req.getClient().isIdentityVerified());
                 compatible.add(item);
             }
         }
@@ -183,6 +185,7 @@ public class TechnicianServiceImpl implements TechnicianService {
         dto.setLatitude(tech.getLatitude());
         dto.setLongitude(tech.getLongitude());
         dto.setMaxRadiusKm(tech.getMaxRadiusKm());
+        dto.setIdentityVerified(tech.getUser() != null && tech.getUser().isIdentityVerified());
 
         if (tech.getApplianceTypes() != null) {
             dto.setApplianceTypes(tech.getApplianceTypes().stream()
