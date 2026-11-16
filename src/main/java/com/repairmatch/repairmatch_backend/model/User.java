@@ -44,6 +44,13 @@ public class User {
     @Column(name = "identity_verified_at")
     private LocalDateTime identityVerifiedAt;
 
+    /**
+     * Whether the profile name matched the name on the identity document. Only this flag is kept, never the
+     * document name. Nullable: null when not verified or when the provider sent no name.
+     */
+    @Column(name = "identity_name_matches")
+    private Boolean identityNameMatches;
+
     @Column(name = "identity_session_id", length = 64)
     private String identitySessionId;
 

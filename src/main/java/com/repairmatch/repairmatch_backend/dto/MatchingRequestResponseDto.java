@@ -13,8 +13,12 @@ public class MatchingRequestResponseDto {
     private Double approxLatitude;
     private Double approxLongitude;
     private boolean clientIdentityVerified;
+    private Boolean clientIdentityNameMatches;
 
     public MatchingRequestResponseDto() {}
+
+    public Boolean getClientIdentityNameMatches() { return clientIdentityNameMatches; }
+    public void setClientIdentityNameMatches(Boolean clientIdentityNameMatches) { this.clientIdentityNameMatches = clientIdentityNameMatches; }
 
     public boolean isClientIdentityVerified() { return clientIdentityVerified; }
     public void setClientIdentityVerified(boolean clientIdentityVerified) { this.clientIdentityVerified = clientIdentityVerified; }

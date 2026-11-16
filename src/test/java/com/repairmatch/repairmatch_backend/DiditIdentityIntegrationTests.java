@@ -45,6 +45,7 @@ class DiditIdentityIntegrationTests extends BackendTestSupport {
 
     @MockitoBean DiditClient didit;
     @Autowired DiditProperties properties;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     @AfterEach
     void restoreConfig() {
@@ -253,6 +254,129 @@ class DiditIdentityIntegrationTests extends BackendTestSupport {
         signedWebhook("{\"webhook_type\":\"status.updated\",\"session_id\":\"sess-7\",\"status\":\"Approved\"}")
                 .andExpect(status().isOk());
         identityIs(user, "VERIFIED");
+    }
+
+    // --- profile name vs document name ----------------------------------------------------------
+
+    private static String approvedWithDocument(String sessionId, User user, String first, String last) {
+        return "{\"webhook_type\":\"status.updated\",\"session_id\":\"" + sessionId + "\",\"status\":\"Approved\","
+                + "\"vendor_data\":\"" + user.getId() + "\",\"decision\":{\"status\":\"Approved\",\"id_verifications\":["
+                + "{\"node_id\":\"n1\",\"status\":\"Approved\",\"first_name\":\"" + first + "\",\"last_name\":\"" + last + "\"}]}}";
+    }
+
+    private User namedUser(Role role, String name) {
+        User user = user(role);
+        user.setName(name);
+        return users.save(user);
+    }
+
+    @Test
+    void aMatchingDocumentNameSetsTheFlagToTrue() throws Exception {
+        User user = namedUser(Role.CLIENT, "Ana Mar\u00eda P\u00e9rez");
+        startSession(user, "sess-m1");
+        signedWebhook(approvedWithDocument("sess-m1", user, "MARIA ANA", "PEREZ GOMEZ")).andExpect(status().isOk());
+
+        org.junit.jupiter.api.Assertions.assertEquals(Boolean.TRUE, users.findById(user.getId()).orElseThrow().getIdentityNameMatches());
+        mvc.perform(get("/api/users/me").header("Authorization", bearer(user)))
+                .andExpect(jsonPath("$.identityVerified").value(true))
+                .andExpect(jsonPath("$.identityNameMatches").value(true));
+        mvc.perform(get("/api/verification/identity").header("Authorization", bearer(user)))
+                .andExpect(jsonPath("$.nameMatches").value(true));
+    }
+
+    @Test
+    void aDifferentDocumentNameSetsTheFlagToFalse() throws Exception {
+        User user = namedUser(Role.CLIENT, "Carlos Quispe");
+        startSession(user, "sess-m2");
+        signedWebhook(approvedWithDocument("sess-m2", user, "Luis", "Ramos")).andExpect(status().isOk());
+
+        mvc.perform(get("/api/users/me").header("Authorization", bearer(user)))
+                .andExpect(jsonPath("$.identityVerified").value(true))
+                .andExpect(jsonPath("$.identityNameMatches").value(false));
+        mvc.perform(get("/api/verification/identity").header("Authorization", bearer(user)))
+                .andExpect(jsonPath("$.nameMatches").value(false));
+    }
+
+    @Test
+    void aFullNameFieldIsUsedWhenPresent() throws Exception {
+        User user = namedUser(Role.CLIENT, "Carmen Espa\u00f1ola");
+        startSession(user, "sess-m3");
+        signedWebhook("{\"session_id\":\"sess-m3\",\"status\":\"Approved\",\"vendor_data\":\"" + user.getId()
+                + "\",\"decision\":{\"id_verifications\":[{\"full_name\":\"Carmen Espa\u00f1ola Espa\u00f1ola\"}]}}")
+                .andExpect(status().isOk());
+        org.junit.jupiter.api.Assertions.assertEquals(Boolean.TRUE, users.findById(user.getId()).orElseThrow().getIdentityNameMatches());
+    }
+
+    @Test
+    void aMissingDocumentNameLeavesTheFlagNull() throws Exception {
+        User user = namedUser(Role.CLIENT, "Carlos Quispe");
+        startSession(user, "sess-m4");
+        signedWebhook(event("sess-m4", "Approved", user)).andExpect(status().isOk());
+
+        org.junit.jupiter.api.Assertions.assertNull(users.findById(user.getId()).orElseThrow().getIdentityNameMatches());
+        identityIs(user, "VERIFIED");
+    }
+
+    @Test
+    void theFlagIsClearedWhenVerificationIsLost() throws Exception {
+        User user = namedUser(Role.CLIENT, "Carlos Quispe");
+        startSession(user, "sess-m5");
+        signedWebhook(approvedWithDocument("sess-m5", user, "Carlos", "Quispe")).andExpect(status().isOk());
+        signedWebhook(event("sess-m5", "Declined", user)).andExpect(status().isOk());
+
+        org.junit.jupiter.api.Assertions.assertNull(users.findById(user.getId()).orElseThrow().getIdentityNameMatches());
+    }
+
+    @Test
+    void theDocumentNameIsNeverPersisted() throws Exception {
+        User user = namedUser(Role.CLIENT, "Zed Quillfeather");
+        startSession(user, "sess-m6");
+        signedWebhook(approvedWithDocument("sess-m6", user, "Zed", "Quillfeather Zorbanz")).andExpect(status().isOk());
+
+        // Every column of the user row, as text, must be free of the document-only token.
+        java.util.Map<String, Object> row = jdbc.queryForMap("select * from users where id = ?", user.getId());
+        for (Object value : row.values()) {
+            org.junit.jupiter.api.Assertions.assertFalse(String.valueOf(value).toLowerCase().contains("zorbanz"), String.valueOf(value));
+        }
+        // And no other table holds it either.
+        for (String table : jdbc.queryForList("select table_name from information_schema.tables where table_schema = 'PUBLIC'", String.class)) {
+            for (java.util.Map<String, Object> r : jdbc.queryForList("select * from \"" + table + "\"")) {
+                for (Object value : r.values()) {
+                    org.junit.jupiter.api.Assertions.assertFalse(String.valueOf(value).toLowerCase().contains("zorbanz"), table);
+                }
+            }
+        }
+    }
+
+    @Test
+    void theNameFlagIsExposedWhereverIdentityVerifiedIs() throws Exception {
+        ApplianceType fridge = type();
+        User owner = namedUser(Role.CLIENT, "Rosa Flores");
+        User tech = technician(fridge, LAT, LON);
+        tech.setName("Juan Torres");
+        users.save(tech);
+        startSession(tech, "sess-x1");
+        signedWebhook(approvedWithDocument("sess-x1", tech, "Torres", "Juan Perez")).andExpect(status().isOk());
+        startSession(owner, "sess-x2");
+        signedWebhook(approvedWithDocument("sess-x2", owner, "Maria", "Lopez")).andExpect(status().isOk());
+        Request request = request(owner, fridge);
+        submit(request, tech);
+        Request open = request(owner, fridge); // not applied to yet, so it also shows in recommended-requests
+
+        mvc.perform(get("/api/technicians/{id}", tech.getId()).header("Authorization", bearer(owner)))
+                .andExpect(jsonPath("$.identityNameMatches").value(true));
+        mvc.perform(get("/api/technicians/me/profile").header("Authorization", bearer(tech)))
+                .andExpect(jsonPath("$.identityNameMatches").value(true));
+        mvc.perform(get("/api/requests/{id}/proposals", request.getId()).header("Authorization", bearer(owner)))
+                .andExpect(jsonPath("$[0].identityNameMatches").value(true));
+        mvc.perform(get("/api/requests/{id}/proposals/recommended", request.getId()).header("Authorization", bearer(owner)))
+                .andExpect(jsonPath("$[0].proposal.identityNameMatches").value(true));
+        mvc.perform(get("/api/technicians/me/proposals").header("Authorization", bearer(tech)))
+                .andExpect(jsonPath("$.content[0].identityNameMatches").value(true));
+        mvc.perform(get("/api/technicians/me/matching-requests").header("Authorization", bearer(tech)))
+                .andExpect(jsonPath("$.content[?(@.requestId==" + request.getId() + ")].clientIdentityNameMatches").value(false));
+        mvc.perform(get("/api/technicians/me/recommended-requests").header("Authorization", bearer(tech)))
+                .andExpect(jsonPath("$.content[?(@.request.requestId==" + open.getId() + ")].request.clientIdentityNameMatches").value(false));
     }
 
     // --- where the badge flag shows up ---------------------------------------------------------

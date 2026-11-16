@@ -17,4 +17,5 @@ public class UserResponseDto {
     private String email;
     private Role role;
     private boolean identityVerified;
+    private Boolean identityNameMatches;
 }

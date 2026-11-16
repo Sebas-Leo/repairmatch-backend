@@ -202,6 +202,7 @@ public class RecommendationService {
         item.setApproxLatitude(ApproximateLocation.snap(r.getLatitude()));
         item.setApproxLongitude(ApproximateLocation.snap(r.getLongitude()));
         item.setClientIdentityVerified(r.getClient().isIdentityVerified());
+        item.setClientIdentityNameMatches(r.getClient().getIdentityNameMatches());
         return item;
     }
 

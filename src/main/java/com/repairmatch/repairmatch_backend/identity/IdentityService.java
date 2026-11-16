@@ -14,6 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,7 +52,8 @@ public class IdentityService {
     @Transactional(readOnly = true)
     public IdentityDtos.StatusResponse status(UUID userId) {
         User user = users.findById(userId).orElseThrow(AccountUnavailableException::new);
-        return new IdentityDtos.StatusResponse(user.getIdentityStatus(), user.getIdentityVerifiedAt());
+        return new IdentityDtos.StatusResponse(user.getIdentityStatus(), user.getIdentityVerifiedAt(),
+                user.getIdentityNameMatches());
     }
 
     /** Maps a Didit session status (case-sensitive per the docs) to ours; empty means "ignore the event". */
@@ -95,7 +97,8 @@ public class IdentityService {
 
         Optional<IdentityStatus> mapped = map(diditStatus);
         if (mapped.isEmpty()) return;
-        findUser(payload.get("vendor_data"), sessionId).ifPresent(user -> apply(user, sessionId, mapped.get()));
+        findUser(payload.get("vendor_data"), sessionId).ifPresent(user -> apply(user, sessionId, mapped.get(),
+                mapped.get() == IdentityStatus.VERIFIED ? nameMatch(user, payload.get("decision")) : null));
     }
 
     private Optional<User> findUser(Object vendorData, String sessionId) {
@@ -110,14 +113,44 @@ public class IdentityService {
         return users.findByIdentitySessionId(sessionId);
     }
 
-    private void apply(User user, String sessionId, IdentityStatus next) {
+    /**
+     * Compares the profile name with the document name from {@code decision.id_verifications[]} (Didit v3).
+     * The document name lives only in local variables: it is neither stored nor logged. Null when absent.
+     */
+    private static Boolean nameMatch(User user, Object decision) {
+        if (!(decision instanceof Map<?, ?> d) || !(d.get("id_verifications") instanceof List<?> items)) return null;
+        for (Object item : items) {
+            if (!(item instanceof Map<?, ?> doc)) continue;
+            String documentName = documentName(doc);
+            if (documentName != null) return NameMatcher.matches(user.getName(), documentName);
+        }
+        return null;
+    }
+
+    private static String documentName(Map<?, ?> doc) {
+        if (doc.get("full_name") instanceof String full && !full.isBlank()) return full;
+        String first = doc.get("first_name") instanceof String f ? f.trim() : "";
+        String last = doc.get("last_name") instanceof String l ? l.trim() : "";
+        String joined = (first + " " + last).trim();
+        return joined.isEmpty() ? null : joined;
+    }
+
+    private void apply(User user, String sessionId, IdentityStatus next, Boolean nameMatches) {
         if (!sessionId.equals(user.getIdentitySessionId())) return; // stale session
         IdentityStatus current = user.getIdentityStatus();
-        if (current == next) return;
+        if (current == next) {
+            // Replays may backfill a flag that was missing (e.g. approved before this field existed).
+            if (next == IdentityStatus.VERIFIED && user.getIdentityNameMatches() == null && nameMatches != null) {
+                user.setIdentityNameMatches(nameMatches);
+                users.save(user);
+            }
+            return;
+        }
         // A late "In Progress" must not undo an approval; only a decline or an expiry can.
         if (current == IdentityStatus.VERIFIED && next == IdentityStatus.PENDING) return;
         user.setIdentityStatus(next);
         user.setIdentityVerifiedAt(next == IdentityStatus.VERIFIED ? LocalDateTime.now() : null);
+        user.setIdentityNameMatches(next == IdentityStatus.VERIFIED ? nameMatches : null);
         users.save(user);
     }
 }
