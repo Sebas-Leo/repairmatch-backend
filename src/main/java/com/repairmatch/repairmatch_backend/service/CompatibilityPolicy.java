@@ -23,7 +23,7 @@ public class CompatibilityPolicy {
         if (request.getApplianceType() == null || technician.getApplianceTypes().stream()
                 .noneMatch(t -> t.getId().equals(request.getApplianceType().getId())))
             return Optional.of("Technician does not cover this appliance type");
-        if (distanceKm(technician.getLatitude(), technician.getLongitude(), request.getLatitude(), request.getLongitude())
+        if (approxDistanceKm(technician, request)
                 > technician.getMaxRadiusKm())
             return Optional.of("Request is outside the technician's service radius");
         return Optional.empty();
@@ -37,6 +37,14 @@ public class CompatibilityPolicy {
         return r.getStatus() == Request.RequestStatus.PUBLICADA || r.getStatus() == Request.RequestStatus.CON_PROPUESTAS;
     }
 
+    /**
+     * The only distance a technician may observe: measured to the request's approximate grid point, never the exact
+     * one. An exact distance would let a technician move their service area a few times and trilaterate the home.
+     */
+    public static double approxDistanceKm(Technician technician, Request request) {
+        return distanceKm(technician.getLatitude(), technician.getLongitude(),
+                ApproximateLocation.snap(request.getLatitude()), ApproximateLocation.snap(request.getLongitude()));
+    }
     public static double distanceKm(double lat1, double lon1, double lat2, double lon2) {
         double a = Math.pow(Math.sin(Math.toRadians(lat2 - lat1) / 2), 2)
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))

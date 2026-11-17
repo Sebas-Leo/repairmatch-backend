@@ -27,13 +27,29 @@ class CompatibilityPolicyTest {
 
     @Test
     void radiusIsInclusiveAtTheExactDistance() {
-        double distance = CompatibilityPolicy.distanceKm(LAT, LON, LAT + 0.02, LON);
+        double distance = CompatibilityPolicy.distanceKm(LAT, LON,
+                com.repairmatch.repairmatch_backend.service.ApproximateLocation.snap(LAT + 0.02),
+                com.repairmatch.repairmatch_backend.service.ApproximateLocation.snap(LON));
         Request request = request(served, LAT + 0.02, LON, Request.RequestStatus.PUBLICADA);
 
         assertThat(policy.matches(technician(distance), request)).isTrue();
         assertThat(policy.matches(technician(Math.nextDown(distance)), request)).isFalse();
         assertThat(policy.rejectionReason(technician(Math.nextDown(distance)), request)).hasValueSatisfying(
                 reason -> assertThat(reason).contains("service radius"));
+    }
+
+    @Test
+    void twoHomesInTheSameGridCellAreIndistinguishableToATechnician() {
+        // ~200 m apart, both snap to the same approximate point: no radius or distance may tell them apart.
+        Request first = request(served, -12.0251, LON, Request.RequestStatus.PUBLICADA);
+        Request second = request(served, -12.0269, LON, Request.RequestStatus.PUBLICADA);
+
+        assertThat(CompatibilityPolicy.approxDistanceKm(technician(5.0), first))
+                .isEqualTo(CompatibilityPolicy.approxDistanceKm(technician(5.0), second));
+        for (double radius = 1.0; radius <= 4.0; radius += 0.01) {
+            assertThat(policy.matches(technician(radius), first)).as("radius %.2f", radius)
+                    .isEqualTo(policy.matches(technician(radius), second));
+        }
     }
 
     @Test
