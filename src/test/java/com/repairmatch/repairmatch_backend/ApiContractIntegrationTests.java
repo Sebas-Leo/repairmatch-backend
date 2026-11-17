@@ -143,10 +143,28 @@ class ApiContractIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"mediaUrl\":\"javascript:alert(1)\",\"mediaType\":\"image/jpeg\"}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.mediaUrl").isNotEmpty());
+        // Any host other than Cloudinary, or plain http, is rejected: it could track viewers or swap the image.
+        for (String foreign : new String[] {"https://tracker.example/pixel.jpg", "http://res.cloudinary.com/demo/a.jpg",
+                "https://res.cloudinary.com.evil.example/a.jpg"}) {
+            mvc.perform(post("/api/requests/{id}/evidences", id).header("Authorization", bearer(client))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"mediaUrl\":\"" + foreign + "\",\"mediaType\":\"image/jpeg\"}"))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.mediaUrl").isNotEmpty());
+        }
         mvc.perform(post("/api/requests/{id}/evidences", id).header("Authorization", bearer(client))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"mediaUrl\":\"https://example.com/a.jpg\",\"mediaType\":\"image/jpeg\"}"))
+                        .content("{\"mediaUrl\":\"https://res.cloudinary.com/demo/a.jpg\",\"mediaType\":\"image/jpeg\"}"))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.evidenceNumber").value(1));
+        for (int n = 2; n <= com.repairmatch.repairmatch_backend.service.RequestService.MAX_EVIDENCES; n++) {
+            mvc.perform(post("/api/requests/{id}/evidences", id).header("Authorization", bearer(client))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"mediaUrl\":\"https://res.cloudinary.com/demo/" + n + ".jpg\",\"mediaType\":\"image/jpeg\"}"))
+                    .andExpect(status().isCreated());
+        }
+        mvc.perform(post("/api/requests/{id}/evidences", id).header("Authorization", bearer(client))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mediaUrl\":\"https://res.cloudinary.com/demo/extra.jpg\",\"mediaType\":\"image/jpeg\"}"))
+                .andExpect(status().isConflict());
     }
 
     @Test

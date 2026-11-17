@@ -37,7 +37,7 @@ public class PermissionApiTestApplication {
                         .originalDescription("Solicitud de prueba de permisos")
                         .status(Request.RequestStatus.CON_PROPUESTAS).build());
                 evidences.saveAndFlush(Evidence.builder().id(new EvidenceId(request.getId(), 1)).request(request)
-                        .mediaUrl("https://example.com/private.jpg").mediaType("image/jpeg").build());
+                        .mediaUrl("https://res.cloudinary.com/demo/private.jpg").mediaType("image/jpeg").build());
                 Files.createDirectories(Path.of("target"));
                 Files.writeString(Path.of("target/permissions-fixture.json"),
                         "{\"requestId\": " + request.getId() + "}");
