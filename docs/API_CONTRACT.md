@@ -56,7 +56,7 @@ Role: P = public, A = any authenticated, C = CLIENT, T = TECHNICIAN.
 | Method & path | Role | Request | Response | Status |
 |---|---|---|---|---|
 | POST `/auth/register` | P | `{ name* (<=100), email* (email, <=254), password* (8-72, upper+lower+digit+symbol), role* (CLIENT\|TECHNICIAN) }` | `{ id, name, email, role, identityVerified: false }` | 201, 400, 409 |
-| POST `/auth/login` | P | `{ email*, password* }` | token pair | 200, 400, 401 |
+| POST `/auth/login` | P | `{ email*, password* }` | token pair | 200, 400, 401, 429 (10 failed attempts for that email in 15 min) |
 | POST `/auth/refresh` | P | `{ refreshToken* (<=512) }` | token pair | 200, 400, 401 |
 | POST `/auth/logout` | P | `{ refreshToken* }` | empty | 204, 400, 401 |
 | GET `/users/me` | A | - | `{ id, name, email, role, identityVerified, identityNameMatches }` | 200, 401 |
@@ -77,7 +77,7 @@ Role: P = public, A = any authenticated, C = CLIENT, T = TECHNICIAN.
 | PATCH `/requests/{id}/location` | C owner | `{ latitude*, longitude* }` | Request (only while `PUBLICADA`) | 200, 400, 403, 404, 409 |
 | PATCH `/requests/{id}/cancel` | C owner | - | Request | 200, 403, 404, 409 |
 | PATCH `/requests/{id}/close` | - | blocked (closing happens only via accepting a proposal) | - | 403 for any authenticated caller, 401 without a token |
-| POST `/requests/{id}/evidences` | C owner | `{ mediaUrl* (http/https URL, <=500), mediaType* (<=50, e.g. image/jpeg) }` | Evidence | 201, 400, 403, 404 |
+| POST `/requests/{id}/evidences` | C owner | `{ mediaUrl* (https://res.cloudinary.com/... only, <=500), mediaType* (<=50, e.g. image/jpeg) }` | Evidence | 201, 400, 403, 404, 409 (already 10 photos) |
 | GET `/requests/{id}/evidences` | C owner, or T with a proposal on the request | - | `[Evidence]` by `evidenceNumber` | 200, 403, 404 |
 
 `Request` = `{ id, clientId, applianceTypeId, applianceTypeName, originalDescription, brand, model, status, latitude, longitude, createdAt }` (nullable fields serialize as `null`).

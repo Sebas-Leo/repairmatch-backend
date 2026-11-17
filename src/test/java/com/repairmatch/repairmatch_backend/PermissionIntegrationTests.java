@@ -59,7 +59,7 @@ class PermissionIntegrationTests {
                 .originalDescription("Solicitud privada de prueba")
                 .status(Request.RequestStatus.CON_PROPUESTAS).build());
         evidences.saveAndFlush(Evidence.builder().id(new EvidenceId(request.getId(), 1))
-                .request(request).mediaUrl("https://example.com/private.jpg").mediaType("image/jpeg").build());
+                .request(request).mediaUrl("https://res.cloudinary.com/demo/private.jpg").mediaType("image/jpeg").build());
     }
 
     @ParameterizedTest
@@ -98,7 +98,7 @@ class PermissionIntegrationTests {
     void ownerCanReadAndAddEvidence() throws Exception {
         mvc.perform(operation("read").header("Authorization", "Bearer " + ownerToken))
                 .andExpect(status().isOk()).andExpect(jsonPath("$[0].mediaUrl")
-                        .value("https://example.com/private.jpg"));
+                        .value("https://res.cloudinary.com/demo/private.jpg"));
         mvc.perform(operation("add").header("Authorization", "Bearer " + ownerToken))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.requestId").value(request.getId()))
                 .andExpect(jsonPath("$.evidenceNumber").value(2));
@@ -111,7 +111,7 @@ class PermissionIntegrationTests {
                 java.time.LocalDateTime.now().plusDays(1), "Diagnostico en sitio"));
         mvc.perform(operation("read").header("Authorization", "Bearer " + technicianToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].mediaUrl").value("https://example.com/private.jpg"));
+                .andExpect(jsonPath("$[0].mediaUrl").value("https://res.cloudinary.com/demo/private.jpg"));
     }
 
     @Test
@@ -216,7 +216,7 @@ class PermissionIntegrationTests {
                     .content("{\"applianceTypeId\":" + request.getApplianceType().getId() + ",\"originalDescription\":\"Test\"}");
             case "read" -> get(url + "/evidences");
             case "add" -> post(url + "/evidences").contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"mediaUrl\":\"https://example.com/new.jpg\",\"mediaType\":\"image/jpeg\"}");
+                    .content("{\"mediaUrl\":\"https://res.cloudinary.com/demo/new.jpg\",\"mediaType\":\"image/jpeg\"}");
             case "cancel" -> patch(url + "/cancel");
             case "close" -> patch(url + "/close");
             default -> throw new IllegalArgumentException(operation);

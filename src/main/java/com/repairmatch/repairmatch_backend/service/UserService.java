@@ -27,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokens;
+    private final LoginAttemptLimiter loginAttempts;
     private final org.springframework.security.authentication.AuthenticationManager authenticationManager;
     private final ModelMapper modelMapper;
 
@@ -66,7 +67,11 @@ public class UserService {
                 .strip()
                 .toLowerCase(Locale.ROOT);
 
+        if (loginAttempts.isBlocked(email)) {
+            throw new com.repairmatch.repairmatch_backend.exception.TooManyLoginAttemptsException();
+        }
         if (request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
+            loginAttempts.recordFailure(email);
             throw new InvalidCredentialsException();
         }
 
@@ -74,8 +79,10 @@ public class UserService {
             authenticationManager.authenticate(
                     org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated(email,request.getPassword()));
         } catch (org.springframework.security.core.AuthenticationException ex) {
+            loginAttempts.recordFailure(email);
             throw new InvalidCredentialsException();
         }
+        loginAttempts.recordSuccess(email);
         User user=userRepository.findByEmail(email).orElseThrow(InvalidCredentialsException::new);
         return refreshTokens.startSession(user);
     }

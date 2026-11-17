@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RequestService {
 
+    /** Server-side ceiling of photos per request (the apps allow 5). */
+    public static final int MAX_EVIDENCES = 10;
+
     private final RequestRepository requestRepository;
     private final EvidenceRepository evidenceRepository;
     private final ProposalRepository proposalRepository;
@@ -135,6 +138,10 @@ public class RequestService {
         Request request = requestRepository.findLockedById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("La solicitud especificada no existe"));
         accountAccess.requireOwner(accountAccess.requireRole(Role.CLIENT), request.getClient().getId());
+        // The apps stop at 5 photos; the API keeps a hard ceiling so a script cannot flood one request.
+        if (evidenceRepository.countById_RequestId(requestId) >= MAX_EVIDENCES) {
+            throw new InvalidStateException("La solicitud ya tiene el máximo de " + MAX_EVIDENCES + " fotos");
+        }
         int nextEvidenceNumber = evidenceRepository.maxEvidenceNumber(requestId) + 1;
 
         EvidenceId evidenceId = new EvidenceId(requestId, nextEvidenceNumber);

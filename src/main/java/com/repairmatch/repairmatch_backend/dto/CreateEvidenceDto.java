@@ -10,7 +10,8 @@ public class CreateEvidenceDto {
 
     @NotBlank(message = "La URL del archivo es obligatoria")
     @Size(max = 500, message = "La URL no puede exceder los 500 caracteres")
-    @Pattern(regexp = "(?i)^https?://\\S+$", message = "La URL debe empezar con http:// o https://")
+    // Only photos hosted on Cloudinary: an arbitrary host could track whoever opens the request or swap the image later.
+    @Pattern(regexp = "^https://res\\.cloudinary\\.com/\\S+$", message = "La foto debe estar subida a Cloudinary (https://res.cloudinary.com/...)")
     private String mediaUrl;
 
     @NotBlank(message = "El tipo de archivo es obligatorio")

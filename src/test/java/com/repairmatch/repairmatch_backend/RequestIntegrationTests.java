@@ -113,7 +113,7 @@ class RequestIntegrationTests {
         evidenceRepository.save(Evidence.builder()
                 .id(new EvidenceId(request.getId(), 1))
                 .request(request)
-                .mediaUrl("https://example.com/evidence.jpg")
+                .mediaUrl("https://res.cloudinary.com/demo/evidence.jpg")
                 .mediaType("image/jpeg")
                 .build());
 
@@ -146,16 +146,16 @@ class RequestIntegrationTests {
         Request request = saveRequest(owner);
         evidenceRepository.save(Evidence.builder()
                 .id(new EvidenceId(request.getId(), 1)).request(request)
-                .mediaUrl("https://example.com/first.jpg").build());
+                .mediaUrl("https://res.cloudinary.com/demo/first.jpg").build());
         evidenceRepository.save(Evidence.builder()
                 .id(new EvidenceId(request.getId(), 3)).request(request)
-                .mediaUrl("https://example.com/third.jpg").build());
+                .mediaUrl("https://res.cloudinary.com/demo/third.jpg").build());
 
         mockMvc.perform(post("/api/requests/{requestId}/evidences", request.getId())
                         .header("Authorization", bearer(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"mediaUrl":"https://example.com/fourth.jpg","mediaType":"image/jpeg"}
+                                {"mediaUrl":"https://res.cloudinary.com/demo/fourth.jpg","mediaType":"image/jpeg"}
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.evidenceNumber").value(4));

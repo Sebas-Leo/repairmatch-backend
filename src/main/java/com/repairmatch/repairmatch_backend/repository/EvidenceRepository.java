@@ -16,4 +16,6 @@ public interface EvidenceRepository extends JpaRepository<Evidence, EvidenceId> 
 
     @Query("select coalesce(max(e.id.evidenceNumber), 0) from Evidence e where e.id.requestId = :requestId")
     int maxEvidenceNumber(@Param("requestId") Long requestId);
+
+    long countById_RequestId(Long requestId);
 }

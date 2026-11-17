@@ -143,6 +143,17 @@ class IdentityIntegrationTests {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.detail").value("Credenciales inválidas"))
                 .andExpect(jsonPath("$.accessToken").doesNotExist());
+
+        // After too many wrong passwords the account is locked for a while, even for the right one.
+        String wrong = "{\"email\":\"%s\",\"password\":\"Incorrecta123!\"}".formatted(email);
+        for (int i = 2; i <= com.repairmatch.repairmatch_backend.service.LoginAttemptLimiter.MAX_FAILURES; i++) {
+            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(wrong))
+                    .andExpect(status().isUnauthorized());
+        }
+        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"%s\",\"password\":\"PruebaLocal2026!\"}".formatted(email)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.accessToken").doesNotExist());
     }
     @Test
     void rejectsLoginWithUnknownEmail() throws Exception {
