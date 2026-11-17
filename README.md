@@ -25,13 +25,13 @@ Para ejecutar la API y una base PostgreSQL aislada con Docker, consulta [la guí
 
 La rúbrica del Proyecto 2 pide esta tabla. El docente multiplica la nota grupal por el porcentaje de cada integrante: 100 % significa que cumplió por completo sus responsabilidades. **Porcentajes acordados por el equipo.**
 
-| Integrante | Principales aportes (según el historial de PRs) | Participación |
-| --- | --- | --- |
-| Sebas-Leo | Backend: flujo de colaboración y contrato de errores, propuestas y comparación, paginación, IA local, rankings, verificación de identidad con Didit y ubicación aproximada de la demanda; web: base, sistema de diseño, dashboards, landing, modo oscuro y despliegue (Vercel, Render, Neon y Cloudinary); móvil: app con Expo Router y su identidad visual (PR #2 y #3) | 100 % |
-| AdrianPacheco12343 | Backend: entidades, datos iniciales y endpoints de servicios; móvil: prototipo de login, registro, lista y detalle de solicitudes (PR #25, en revisión); pruebas y testeo de la app | 100 % |
-| andrehcv | Backend: perfil del técnico, área de cobertura y motor de compatibilidad; web: perfil del técnico, zona de cobertura, geocodificación real de direcciones y pin en el mapa (PR #13 y #23) | 100 % |
-| becomon | Backend: base Spring Boot, identidad (registro, JWT, refresh, CORS), permisos y Postman; web: subida de fotos desde archivos, evidencias en solicitudes, resumen del inicio y pruebas (PR #20 y #21); móvil: módulo de cámara y galería, subida sin firma a Cloudinary, evidencias y pruebas (PR #1) | 100 % |
-| camilaalfaro-afk | Backend: solicitudes, evidencias, ciclo de la solicitud y contenedor Docker; web: ciclo de vida de los servicios y reseñas (PR #12, #15 y #16) | 100 % |
+| Integrante | Usuario de GitHub | Principales aportes (según el historial de PRs) | Participación |
+| --- | --- | --- | --- |
+| Royer Sebastian Ramos Vargas | Sebas-Leo | Backend: flujo de colaboración y contrato de errores, propuestas y comparación, paginación, IA local, rankings, verificación de identidad con Didit, ubicación aproximada de la demanda y endurecimiento de seguridad; web: base, sistema de diseño, dashboards, landing, modo oscuro, diseño responsive y despliegue (Vercel, Render, Neon y Cloudinary); móvil: app con Expo Router, identidad visual, mapa con OpenStreetMap y build del APK | 100 % |
+| Adrian Luis Pacheco Sulluchuco | AdrianPacheco12343 | Backend: entidades, datos iniciales y endpoints de servicios; móvil: prototipo de login, registro, lista y detalle de solicitudes (PR #25); pruebas y testeo de la app | 100 % |
+| Jairo Andre Cunya Villalta | andrehcv | Backend: perfil del técnico, área de cobertura y motor de compatibilidad; web: perfil del técnico, zona de cobertura, geocodificación real de direcciones y pin en el mapa (PR #13 y #23) | 100 % |
+| Ariana Belen Blanco Anicama | becomon | Backend: base Spring Boot, identidad (registro, JWT, refresh, CORS), permisos y Postman; web: subida de fotos desde archivos, evidencias en solicitudes, resumen del inicio y pruebas (PR #20 y #21); móvil: módulo de cámara y galería, subida sin firma a Cloudinary, evidencias, indicador de carga y mensajes de error de red, y pruebas (PR #1 y #12) | 100 % |
+| Camila Araceli Alfaro Chuquino | camilaalfaro-afk | Backend: solicitudes, evidencias, ciclo de la solicitud y contenedor Docker; web: ciclo de vida de los servicios y reseñas (PR #12, #15 y #16) | 100 % |
 
 ## Flujo de trabajo y seguimiento del avance
 
