@@ -163,7 +163,7 @@ class TechnicianFlowIntegrationTests extends BackendTestSupport {
 
         mvc.perform(get("/api/technicians/me/matching-requests").header("Authorization", bearer(tech)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(2)))
-                .andExpect(jsonPath("$.content[0].requestId").value(near.getId())).andExpect(jsonPath("$.content[0].distanceKm").value(1.11))
+                .andExpect(jsonPath("$.content[0].requestId").value(near.getId())).andExpect(jsonPath("$.content[0].distanceKm").value(1.29))
                 .andExpect(jsonPath("$.content[0].status").value("PUBLICADA")).andExpect(jsonPath("$.content[0].latitude").doesNotExist())
                 .andExpect(jsonPath("$.content[0].longitude").doesNotExist())
                 .andExpect(jsonPath("$.content[0].approxLatitude").value(ApproximateLocation.snap(LAT + 0.01)))
@@ -189,7 +189,9 @@ class TechnicianFlowIntegrationTests extends BackendTestSupport {
     void matchingRadiusIsInclusiveAtTheExactBoundary() throws Exception {
         User owner = user(Role.CLIENT);
         ApplianceType type = type();
-        double exact = CompatibilityPolicy.distanceKm(LAT, LON, LAT + 0.02, LON);
+        double exact = CompatibilityPolicy.distanceKm(LAT, LON,
+                com.repairmatch.repairmatch_backend.service.ApproximateLocation.snap(LAT + 0.02),
+                com.repairmatch.repairmatch_backend.service.ApproximateLocation.snap(LON));
         User atBoundary = technician(type, LAT, LON, exact);
         User justShort = technician(type, LAT, LON, Math.nextDown(exact));
         Request request = located(owner, type, LAT + 0.02, LON, Request.RequestStatus.PUBLICADA);

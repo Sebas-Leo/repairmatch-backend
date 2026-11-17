@@ -187,7 +187,7 @@ public class RecommendationService {
     private static Optional<Double> distance(Technician t, Request r) {
         if (t == null || t.getLatitude() == null || t.getLongitude() == null
                 || r.getLatitude() == null || r.getLongitude() == null) return Optional.empty();
-        return Optional.of(CompatibilityPolicy.distanceKm(t.getLatitude(), t.getLongitude(), r.getLatitude(), r.getLongitude()));
+        return Optional.of(CompatibilityPolicy.approxDistanceKm(t, r));
     }
 
     private static MatchingRequestResponseDto matching(Request r, double distanceKm) {

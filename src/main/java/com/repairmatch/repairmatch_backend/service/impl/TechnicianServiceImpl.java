@@ -135,7 +135,7 @@ public class TechnicianServiceImpl implements TechnicianService {
 
         for (Request req : allRequests) {
             if (new com.repairmatch.repairmatch_backend.service.CompatibilityPolicy().matches(technician, req)) {
-                double distance = calculateDistanceKm(technician.getLatitude(), technician.getLongitude(), req.getLatitude(), req.getLongitude());
+                double distance = com.repairmatch.repairmatch_backend.service.CompatibilityPolicy.approxDistanceKm(technician, req);
                 MatchingRequestResponseDto item = new MatchingRequestResponseDto();
                 item.setRequestId(req.getId());
                 item.setApplianceTypeName(req.getApplianceType().getName());
